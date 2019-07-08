@@ -16,6 +16,8 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
+using Windows.Storage.Pickers;
+using System.Xml.Serialization;
 
 namespace TV_Ratings_Predictions
 {
@@ -103,6 +105,11 @@ namespace TV_Ratings_Predictions
 
             //await NetworkDatabase.WriteSettingsAsync();
             NetworkDatabase.pendingSave = true;
+        }
+
+        private Network()
+        {
+
         }
 
         public Network (string n, ObservableCollection<String> f) //Define network by name and factors
@@ -364,6 +371,11 @@ namespace TV_Ratings_Predictions
             //NetworkDatabase.WriteSettings();
         }
 
+        private Show()
+        {
+
+        }
+
         public Show(string ShowName, Network n, ObservableCollection<bool> FactorList, int EpisodeCount, bool isHalfHour, ObservableCollection<string> names, double avg = 0, double index = 1, string status = "", bool ren = false, bool can = false)
         {
             Name = ShowName;
@@ -603,6 +615,25 @@ namespace TV_Ratings_Predictions
             }
         }
 
+        public static async Task WritePredictionsAsync()
+        {
+            var picker = new FileSavePicker();
+            picker.SuggestedStartLocation = PickerLocationId.Desktop;
+            picker.FileTypeChoices.Add("TV Predictions", new List<string>() { ".TVP" });
+
+            StorageFile file = await picker.PickSaveFileAsync();
+
+            if (file != null)
+            {            
+                using (Stream stream = await file.OpenStreamForWriteAsync())
+                {
+                    var serializer = new DataContractSerializer(typeof(NetworkSettings));
+                    serializer.WriteObject(stream, new NetworkSettings());
+                }
+            }
+                
+        }
+
         static T ReadFromBinaryFile<T>(string filePath)
         {
             using (Stream stream = File.Open(filePath, FileMode.Open))
@@ -614,7 +645,7 @@ namespace TV_Ratings_Predictions
     }
 
     [Serializable]
-    class NetworkSettings
+    public class NetworkSettings
     {
         public ObservableCollection<Network> NetworkList;
 
@@ -658,6 +689,8 @@ namespace TV_Ratings_Predictions
         public double? Episode24 { get { return GetEpisode(24); } set { SetEpisode(24, value); } }
         public double? Episode25 { get { return GetEpisode(25); } set { SetEpisode(25, value); } }
         public double? Episode26 { get { return GetEpisode(26); } set { SetEpisode(26, value); } }
+
+        private RatingsContainer() { }
 
         public RatingsContainer(Network n, Show s)
         {
@@ -751,6 +784,8 @@ namespace TV_Ratings_Predictions
 
         [NonSerialized]
         public bool isMutated;
+
+        private NeuralPredictionModel() { }
 
         public NeuralPredictionModel(Network n) //New Random Prediction Model
         {
@@ -2106,6 +2141,8 @@ namespace TV_Ratings_Predictions
             }
         }
 
+        private PredictionContainer() { }
+
         public PredictionContainer(Show s, Network n, bool a = false)
         {
             network = n;
@@ -2191,6 +2228,7 @@ namespace TV_Ratings_Predictions
             }
         }
 
+        private AverageContainer() { }
         public AverageContainer(Show s, Network n)
         {
             network = n;
@@ -2315,12 +2353,13 @@ namespace TV_Ratings_Predictions
         //This branch will start out with all 30 entries being totally randomized.
         //On the next generation, the top 4 models from this branch will be selected as parents (first 4 indexes)
         //children will be mutated from these 4 parents
-        
+
         //All 3 branche, when first created, will start out following the same behavior as the Randomized Branch
         //All 3 branches will continue to propogate their own evolution every generation
         //If any model from the CleanSlate or Randomized branches is selected to become a parent in the primary branch:
         //then that branch will start over, following the rules outlined above
 
+        private EvolutionTree() { }
 
         public EvolutionTree(Network n)
         {
