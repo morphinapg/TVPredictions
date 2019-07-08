@@ -1,0 +1,140 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
+using System.Threading.Tasks;
+using Windows.ApplicationModel.ExtendedExecution;
+using Windows.ApplicationModel.ExtendedExecution.Foreground;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+using Windows.System.Threading;
+using Windows.UI.Core;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
+
+// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
+
+namespace TV_Ratings_Predictions
+{
+    /// <summary>
+    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// </summary>
+    public sealed partial class HomePage : Page
+    {
+        //DispatcherTimer timer;
+
+        ObservableCollection<Network> NetworkList;
+        Thread[] EvolutionWork;
+        
+
+        public HomePage()
+        {
+            this.InitializeComponent();
+            NetworkList = NetworkDatabase.NetworkList;
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (NetworkDatabase.NetworkList.Count == 0)
+                Message.Visibility = Visibility.Visible;
+
+            NetworkDatabase.onHomePage = true;
+
+            StartEvolution.Visibility = NetworkDatabase.EvolutionStarted ? Visibility.Collapsed : Visibility.Visible;
+            StopEvolution.Visibility = NetworkDatabase.EvolutionStarted ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        {
+            NetworkDatabase.onHomePage = false;
+        }
+
+        private void StartEvolution_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (Network n in NetworkList)
+                if (n.PredictionAccuracy != n.model.TestAccuracy() * 100)
+                    n.ModelUpdate(n.model);
+
+            NetworkDatabase.cancelEvolution = false;
+            EvolutionWork = new Thread[NetworkList.Count];            
+
+            for (int i = 0; i < NetworkList.Count; i++)
+            {
+                EvolutionWork[i] = new Thread(new ParameterizedThreadStart(Background_EvolutionAsync));
+                EvolutionWork[i].IsBackground = true;
+                EvolutionWork[i].Priority = ThreadPriority.Lowest;
+                EvolutionWork[i].Start(NetworkList[i]);
+            }
+
+            StartEvolution.Visibility = Visibility.Collapsed;
+            StopEvolution.Visibility = Visibility.Visible;
+
+            NetworkDatabase.EvolutionStarted = true;
+        }
+
+        async void Background_EvolutionAsync(object param)
+        {            
+            Network n = (Network)param;
+
+            ExtendedExecutionForegroundSession newSession;
+            ExtendedExecutionForegroundResult result;
+
+            while (!NetworkDatabase.cancelEvolution)
+            {
+                newSession = new ExtendedExecutionForegroundSession();
+                newSession.Reason = ExtendedExecutionForegroundReason.Unconstrained;
+                result = await newSession.RequestExtensionAsync();
+               
+                n.evolution.NextGeneration();
+            }
+        }
+
+        private void StopEvolution_Click(object sender, RoutedEventArgs e)
+        {
+            NetworkDatabase.cancelEvolution = true;
+            NetworkDatabase.EvolutionStarted = false;
+
+            StopEvolution.Visibility = Visibility.Collapsed;
+            StartEvolution.Visibility = Visibility.Visible;
+
+            NetworkDatabase.pendingSave = true;            
+
+            NetworkDatabase.SortNetworks();
+
+        }
+
+        private async void SaveState_ClickAsync(object sender, RoutedEventArgs e)
+        {
+            ContentDialog dialog = new ContentDialog
+            {
+                PrimaryButtonText = "Yes",
+                CloseButtonText = "No",
+                Content = "This will replace the previously saved prediction state for the " + NetworkDatabase.CurrentYear + " - " + (NetworkDatabase.CurrentYear+1) + " TV Season. Continue?"
+            };
+            ContentDialogResult result;
+
+            result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                Parallel.ForEach(NetworkList, n =>
+                {
+                    Parallel.ForEach(n.FilteredShows, s =>
+                    {
+                        s.OldRating = s.AverageRating;
+                        s.OldOdds = s.PredictedOdds;
+                    });
+                });
+
+                NetworkDatabase.pendingSave = true;
+            }
+        }
+    }
+}

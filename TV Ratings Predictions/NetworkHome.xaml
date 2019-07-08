@@ -1,0 +1,121 @@
+﻿<Page x:Name="NetHome"
+    x:Class="TV_Ratings_Predictions.NetworkHome"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TV_Ratings_Predictions"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" NavigationCacheMode="Required">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock x:Name="NetworkName" FontSize="36" Margin="10" TextAlignment="Center"/>
+        <CheckBox x:Name="UseOdds" Content="Use Odds" Margin="20" VerticalAlignment="Center" IsChecked="{x:Bind local:NetworkDatabase.UseOdds}" Checked="UseOdds_Checked" Unchecked="UseOdds_Checked"/>
+        <TextBlock x:Name="HeaderThreshold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20" Text="Average Renewal Threshold:"  FontSize="16"/>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto" MinWidth="400"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.ColumnSpan="3">
+                <controls:WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="ShowsByRating" Content="View Shows by Rating" Margin="10" Click="ShowsByRating_Click"/>
+                    <Button x:Name="ShowsByFactor" Content="View Shows by Factor" Margin="10" Click="ShowsByFactor_Click"/>
+                    <Button x:Name="NetworkModel" Content="View Prediction Breakdown" Click="NetworkModel_Click" Margin="10"/>
+                    <Button x:Name="Accuracy" Content="View Network Accuracy" Click="Accuracy_Click" Margin="10"/>
+                    <Button x:Name="AddShow" Content="Add Show" HorizontalAlignment="Center" Click="AddShow_Click" Margin="10"/>                    
+                    <Button x:Name="EditRatings" Content="Edit Ratings" Margin="10" Click="EditRatings_Click"/>
+                    <Button x:Name="ModifyShows" Content="Modify Shows" Margin="10" Click="ModifyShows_Click"/>                    
+                </controls:WrapPanel>
+            </Grid>            
+        </Grid>
+        <ScrollViewer x:Name="GridScrollview" Grid.Row="2">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel x:Name="NetworkChart" HorizontalAlignment="Center" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+                    <Grid x:Name="ChartHeader">
+                        <TextBlock x:Name="ChartTitle" FontSize="36" Margin="10" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                        <TextBlock x:Name="RenewalThreshold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20" FontSize="16" Visibility="Collapsed"/>
+                    </Grid>
+
+                    <controls:DataGrid x:Name="ShowsList" Grid.Row="2" ItemsSource="{x:Bind Predictions}" HorizontalAlignment="Center" AutoGenerateColumns="False" IsHitTestVisible="False">
+                        <controls:DataGrid.Columns>
+                            <controls:DataGridTemplateColumn Header="Show Name" >
+                                <controls:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="local:PredictionContainer">
+                                        <TextBlock Text="{x:Bind Show}" Margin="5"/>
+                                    </DataTemplate>
+                                </controls:DataGridTemplateColumn.CellTemplate>
+                            </controls:DataGridTemplateColumn>
+
+                            <controls:DataGridTemplateColumn Header="Rating">
+                                <controls:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="local:PredictionContainer">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{x:Bind Rating}" Margin="5"/>
+                                            <TextBlock Text="{x:Bind RatingDifference}" Margin="5" Foreground="{x:Bind _ratingsDiff, Converter={StaticResource NumberColor}}"/>
+                                        </StackPanel>
+
+                                    </DataTemplate>
+                                </controls:DataGridTemplateColumn.CellTemplate>
+                            </controls:DataGridTemplateColumn>
+
+                            <controls:DataGridTemplateColumn Header="Target Rating">
+                                <controls:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="local:PredictionContainer">
+                                        <TextBlock Text="{x:Bind TargetRating}" Margin="5" HorizontalAlignment="Center"/>
+                                    </DataTemplate>
+                                </controls:DataGridTemplateColumn.CellTemplate>
+                            </controls:DataGridTemplateColumn>
+
+                            <controls:DataGridTemplateColumn Header="Status">
+                                <controls:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="local:PredictionContainer">
+                                        <TextBlock Text="{x:Bind Status}" Margin="5" Foreground="{x:Bind _StatusIndex, Converter={StaticResource StatusColor}}"/>
+                                    </DataTemplate>
+                                </controls:DataGridTemplateColumn.CellTemplate>
+                            </controls:DataGridTemplateColumn>
+
+                            <controls:DataGridTemplateColumn Header="Prediction">
+                                <controls:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="local:PredictionContainer">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{x:Bind Prediction, Mode=OneWay}" Margin="5"/>
+                                            <TextBlock Text="{x:Bind PredictionDifference, Mode=OneWay}" Foreground="{x:Bind _predictionDiff, Converter={StaticResource NumberColor}}" Margin="5"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </controls:DataGridTemplateColumn.CellTemplate>
+                            </controls:DataGridTemplateColumn>
+
+                            <controls:DataGridTemplateColumn Header="Category">
+                                <controls:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="local:PredictionContainer">
+                                        <TextBlock Text="{x:Bind Category}" Margin="5"/>
+                                    </DataTemplate>
+                                </controls:DataGridTemplateColumn.CellTemplate>
+                            </controls:DataGridTemplateColumn>
+                        </controls:DataGrid.Columns>
+                    </controls:DataGrid>
+                </StackPanel>
+            </Grid>                       
+        </ScrollViewer>        
+
+        <Button x:Name="SaveImage" Grid.Row="3" Content="💾 Save Image" HorizontalAlignment="Center" Margin="10" Click="SaveImage_Click"/>
+    </Grid>
+</Page>

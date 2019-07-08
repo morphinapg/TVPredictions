@@ -1,0 +1,80 @@
+﻿<Page
+    x:Class="TV_Ratings_Predictions.AddShow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TV_Ratings_Predictions"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Loaded="Page_Loaded">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Text="Add a New Show" FontSize="36" Margin="10" TextAlignment="Center"/>
+
+        <ScrollViewer Grid.Row="1">
+            <Grid >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="4*" MinWidth="400"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="Show Name:" FontSize="20" Margin="10,25,10,10"/>
+                    <TextBox x:Name="ShowName" FontSize="22"/>
+                    <TextBlock Text="Number of Episodes:" Margin="10"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Slider x:Name="EpisodeSlider" Value="{x:Bind episodes, Mode=TwoWay}" Minimum="1" Maximum="26" Margin="10"/>
+                        <TextBox Grid.Column="1" Text="{Binding ElementName=EpisodeSlider, Path=Value, Mode=TwoWay}" VerticalAlignment="Center" TextAlignment="Center" InputScope="Number" />
+                    </Grid>
+
+
+                    <ListView x:Name="FactorList" Margin="20,20,20,20" ItemsSource="{x:Bind factors}">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="local:Factor">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="{x:Bind name}" VerticalAlignment="Center"/>
+                                    <CheckBox Grid.Column="1" MinWidth="0" IsChecked="{x:Bind Setting, Mode=TwoWay}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    <RelativePanel>
+                        <ToggleSwitch x:Name="HalfHour" OffContent="" IsOn="{x:Bind halfhour, Mode=TwoWay}" OnContent="" RelativePanel.AlignHorizontalCenterWithPanel="True" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Center" Width="45" Toggled="HalfHour_Toggled"/>
+                        <TextBlock x:Name="_30Mins" Text="30 minutes" RelativePanel.LeftOf="HalfHour" RelativePanel.AlignVerticalCenterWith="HalfHour" Margin="0,0,10,0" Visibility="Visible"  Opacity="0.3"/>
+                        <TextBlock x:Name="_60Mins" Text="60 minutes" RelativePanel.RightOf="HalfHour" RelativePanel.AlignVerticalCenterWith="HalfHour" Margin="10,0,0,0"/>
+                    </RelativePanel>
+
+
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>        
+
+        <RelativePanel Grid.Row="2">
+            <Button x:Name="AddShowButton" Content="Add Show" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignBottomWithPanel="True" Margin="10" FontSize="18" FontWeight="Normal" Click="AddShowButton_Click"/>
+        </RelativePanel>
+    </Grid>
+</Page>

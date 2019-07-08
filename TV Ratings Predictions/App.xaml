@@ -1,0 +1,16 @@
+﻿<Application
+    x:Class="TV_Ratings_Predictions.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TV_Ratings_Predictions">
+    <Application.Resources>
+        <local:InverseBooleanConverter x:Key="BoolConverter"/>
+        <local:NullableBooleanToBooleanConverter x:Key="NullableBooleanToBooleanConverter"/>
+        <local:BooleanToVisibilityConverter x:Key="VisibilityConverter"/>
+        <local:DoubleToPercent x:Key="DoubleToPercent"/>
+        <local:DoubleToPercentUnrounded x:Key="DoubleToPercentUnrounded"/>
+        <local:LastUpdateConverter x:Key="LastUpdateConverter"/>
+        <local:NumberColor x:Key="NumberColor"/>
+        <local:StatusColor x:Key="StatusColor"/>
+    </Application.Resources>
+</Application>
