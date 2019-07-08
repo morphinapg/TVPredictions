@@ -107,11 +107,6 @@ namespace TV_Ratings_Predictions
             NetworkDatabase.pendingSave = true;
         }
 
-        private Network()
-        {
-
-        }
-
         public Network (string n, ObservableCollection<String> f) //Define network by name and factors
         {
             name = n;
@@ -369,11 +364,6 @@ namespace TV_Ratings_Predictions
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
             //NetworkDatabase.WriteSettings();
-        }
-
-        private Show()
-        {
-
         }
 
         public Show(string ShowName, Network n, ObservableCollection<bool> FactorList, int EpisodeCount, bool isHalfHour, ObservableCollection<string> names, double avg = 0, double index = 1, string status = "", bool ren = false, bool can = false)
@@ -785,7 +775,6 @@ namespace TV_Ratings_Predictions
         [NonSerialized]
         public bool isMutated;
 
-        private NeuralPredictionModel() { }
 
         public NeuralPredictionModel(Network n) //New Random Prediction Model
         {
@@ -2141,8 +2130,6 @@ namespace TV_Ratings_Predictions
             }
         }
 
-        private PredictionContainer() { }
-
         public PredictionContainer(Show s, Network n, bool a = false)
         {
             network = n;
@@ -2228,7 +2215,6 @@ namespace TV_Ratings_Predictions
             }
         }
 
-        private AverageContainer() { }
         public AverageContainer(Show s, Network n)
         {
             network = n;
@@ -2359,7 +2345,6 @@ namespace TV_Ratings_Predictions
         //If any model from the CleanSlate or Randomized branches is selected to become a parent in the primary branch:
         //then that branch will start over, following the rules outlined above
 
-        private EvolutionTree() { }
 
         public EvolutionTree(Network n)
         {
