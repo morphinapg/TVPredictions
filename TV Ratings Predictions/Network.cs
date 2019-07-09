@@ -22,6 +22,23 @@ using System.Xml.Serialization;
 namespace TV_Ratings_Predictions
 {
     [Serializable]
+    public class MiniNetwork
+    {
+        public string name;
+        public ObservableCollection<string> factors;
+        public List<Show> shows;
+        public NeuralPredictionModel model;
+
+        public MiniNetwork(Network n)
+        {
+            name = n.name;
+            factors = n.factors;
+            shows = n.shows;
+            model = n.model;
+        }
+    }
+
+    [Serializable]
     public class Network : IComparable<Network>, INotifyPropertyChanged
     {
         public string name;
@@ -614,11 +631,15 @@ namespace TV_Ratings_Predictions
             StorageFile file = await picker.PickSaveFileAsync();
 
             if (file != null)
-            {            
+            {
+                var Networks = new List<MiniNetwork>();
+                foreach (Network n in NetworkList)
+                    Networks.Add(new MiniNetwork(n));
+
                 using (Stream stream = await file.OpenStreamForWriteAsync())
                 {
-                    var serializer = new DataContractSerializer(typeof(NetworkSettings));
-                    serializer.WriteObject(stream, new NetworkSettings());
+                    var serializer = new DataContractSerializer(typeof(List<MiniNetwork>));
+                    serializer.WriteObject(stream, Networks);
                 }
             }
                 
