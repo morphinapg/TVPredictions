@@ -58,7 +58,7 @@ namespace TV_Ratings_Predictions
         {
             if (NetworkDatabase.onHomePage)
                 foreach (Network n in NetworkDatabase.NetworkList)
-                    n.RefreshLastUpdate();
+                    n.OnPropertyChangedAsync("LastUpdate");
 
             if (NetworkDatabase.pendingSave)
             {

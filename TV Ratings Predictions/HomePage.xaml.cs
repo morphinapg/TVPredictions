@@ -136,5 +136,10 @@ namespace TV_Ratings_Predictions
                 NetworkDatabase.pendingSave = true;
             }
         }
+
+        private async void Export_Click(object sender, RoutedEventArgs e)
+        {
+            await NetworkDatabase.WritePredictionsAsync();
+        }
     }
 }

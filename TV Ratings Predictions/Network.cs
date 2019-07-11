@@ -19,60 +19,226 @@ using Windows.UI;
 using Windows.Storage.Pickers;
 using System.Xml.Serialization;
 
-namespace TV_Ratings_Predictions
+namespace TV_Ratings_Predictions 
 {
-    [Serializable]
-    public class MiniNetwork
-    {
-        public string name;
-        public ObservableCollection<string> factors;
-        public List<Show> shows;
-        public NeuralPredictionModel model;
+    /// <summary>
+    /// This file includes nearly all of the classes necesary for the TV Predictions project
+    /// </summary>
 
-        public MiniNetwork(Network n)
+    static class NetworkDatabase //This class is used to store the database of all TVNetworks, Shows, etc, as well as additional global properties that are needed throughout the app
+    {
+        public static ObservableCollection<Network> NetworkList = new ObservableCollection<Network>();  //This list will contain all of the Networks loaded into the database
+
+        public static bool isAddPage = false;           //This describes whether the app is currently on the "Add Network" page
+                                                        //This is used to prevent accidental loss of data when adding a network
+
+        public static bool canGoBack = false;           //This describes whether the app is currently displaying a page that should display a back button, rather than a home button.
+        public static bool pendingSave = false;         //This describes whether the app should save its data on the next Timer tick (once per second)
+        public static bool onHomePage = true;           //This describes whether the app is on the home page. If not, there's no reason to update the UI's LastUpdate value
+        public static bool cancelEvolution = false;     //When true, this instructs the genetic algorithm threads to stop running
+        public static bool EvolutionStarted = false;    //This lets the app know that the genetic algoritm has begun processing, for displaying the correct button on the home page.
+        public static bool UseOdds = false;             //This is a togglable value that informs whether to use straight 0-100% odds for predictions, or use Renewed/Canceled with a confidence % instead.
+
+        [NonSerialized]
+        public static int MaxYear;                      //This value represents the current TV season start year, and is used to restrict a DatePicker on the MainPage
+                                                        //It is also used during the calculation of prediction accuracy, as TV shows closer to current airing get higher weight
+
+        static int _currentyear;                        //Stores the currently selected TV Season year
+        public static int CurrentYear                   //When the current year changes, the database needs to update the filtered selection of shows for each network
         {
-            name = n.name;
-            factors = n.factors;
-            shows = n.shows;
-            model = n.model;
+            get
+            {
+                return _currentyear;
+            }
+            set
+            {
+                _currentyear = value;
+                UpdateFilter();
+            }
         }
+
+        public static void SortNetworks()               //This sorts the networks according to their Average Renewal Threshold rating value
+        {        
+            Parallel.ForEach(NetworkList, n => n.model.GetNetworkRatingsThreshold(CurrentYear));    //Get the Average Renewal Threshold rating value for each network
+
+            //Because this is an ObservableCollection, we can't use Linq to sort, as that would break bindings, so we have to sort manually.
+            bool sorted = false;
+            if (NetworkList.Count > 1)  
+                while (!sorted)
+                {
+                    sorted = true;
+                    for (int i = 1; i < NetworkList.Count; i++)
+                    {
+                        if (NetworkList[i].model._ratingstheshold > NetworkList[i - 1].model._ratingstheshold)
+                        {
+                            sorted = false;
+                            NetworkList.Move(i, i - 1);
+                        }
+
+                    }
+                }
+        }
+
+        public static void UpdateFilter()           //The Filter method on a Network updates several collections to only include shows from the currently selected year
+        {                                           //It also performs several other actions, such as updating predictions. 
+            foreach (Network n in NetworkList)      //The Filter method must be called any time the current year changes
+                n.Filter(_currentyear);             //Or any time anything else changes that would affect predictions for the currently filtered list of shows.
+        }
+
+        public async static Task ReadSettings()                     //When the app opens, we need to read a large "Settings" file containing all networks, shows, ratings, prediction models and more
+        {
+            var helper = new LocalObjectStorageHelper();
+
+            if (await helper.FileExistsAsync("Settings"))           //If the Settings exists, read the settings and make a backup
+            {
+                var settings = ReadFromBinaryFile<NetworkSettings>(ApplicationData.Current.LocalFolder.Path + "\\Settings");
+                Read_Settings(settings);
+
+                StorageFolder localFolder = ApplicationData.Current.LocalFolder;
+                StorageFile newFile = await localFolder.GetFileAsync("Settings");
+                StorageFile copiedFile = await newFile.CopyAsync(ApplicationData.Current.LocalFolder, "Settings_bak", NameCollisionOption.ReplaceExisting);
+            }
+            else
+            {
+                if (await helper.FileExistsAsync("Settings_bak"))   //If not, try to read from the backup settings file
+                {
+                    var settings = ReadFromBinaryFile<NetworkSettings>(ApplicationData.Current.LocalFolder.Path + "\\Settings_bak");
+                    Read_Settings(settings);
+                }
+            }
+
+        }
+
+        static T ReadFromBinaryFile<T>(string filePath)     //Deserializing the Settings file into a usable format
+        {
+            using (Stream stream = File.Open(filePath, FileMode.Open))
+            {
+                var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                return (T)binaryFormatter.Deserialize(stream);
+            }
+        }
+
+        static void Read_Settings(NetworkSettings settings)
+        {
+            NetworkList.Clear();
+
+            Parallel.ForEach(settings.NetworkList, n =>                                 //We need to instantiate all NonSerialized properties
+            {
+                n.FilteredShows = new ObservableCollection<Show>();                     
+                n.NetworkRatings = new ObservableCollection<RatingsContainer>();
+                n.AlphabeticalShows = new ObservableCollection<Show>();
+                n.Predictions = new ObservableCollection<PredictionContainer>();
+                n.Averages = new ObservableCollection<AverageContainer>();
+
+                //n.model = new NeuralPredictionModel(n);                               //This commented code is here if I ever need to test
+                //n.evolution = new EvolutionTree(n);                                   //changes to the predictions with a fresh model
+
+                n.model.shows = n.shows;
+                n.PredictionAccuracy = n.model.TestAccuracy() * 100;
+
+                n.evolution.network = n;
+
+                Parallel.ForEach(n.shows, s =>
+                {
+                    s.factorNames = n.factors;
+                    s.network = n;
+                });
+
+                n.Filter(NetworkDatabase.CurrentYear);                                  //Once the Network is fully restored, perform a filter based on the current TV Season
+            }
+            );
+
+            foreach (Network n in settings.NetworkList)                                 //After all networks are restored and filtered, add them to the global database
+                NetworkList.Add(n);
+
+
+            NetworkDatabase.SortNetworks();                                             //and sort by Network Average Renewal threshold
+        }
+
+        public static void WriteSettings()  //Used to write the current database to the Settings file
+        {
+            WriteToBinaryFile<NetworkSettings>(ApplicationData.Current.LocalFolder.Path + "\\Settings", new NetworkSettings());
+        }
+
+        static void WriteToBinaryFile<T>(string filePath, T objectToWrite, bool append = false)
+        {
+            using (Stream stream = File.Open(filePath, append ? FileMode.Append : FileMode.Create))
+            {
+                var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                binaryFormatter.Serialize(stream, objectToWrite);
+
+            }
+        }
+
+        public static async Task WritePredictionsAsync()    //Similar to WriteSettings, but using a condensed version of each Network for use in the mobile app
+        {
+            var picker = new FileSavePicker();
+            picker.SuggestedStartLocation = PickerLocationId.Desktop;
+            picker.FileTypeChoices.Add("TV Predictions", new List<string>() { ".TVP" });
+
+            StorageFile file = await picker.PickSaveFileAsync();
+
+            if (file != null)
+            {
+                var Networks = new List<MiniNetwork>();
+                foreach (Network n in NetworkList)
+                    Networks.Add(new MiniNetwork(n));
+
+                using (Stream stream = await file.OpenStreamForWriteAsync())
+                {
+                    stream.SetLength(0);
+                    var serializer = new DataContractSerializer(typeof(List<MiniNetwork>));
+                    serializer.WriteObject(stream, Networks);
+                }
+            }
+        }        
     }
 
+
     [Serializable]
-    public class Network : IComparable<Network>, INotifyPropertyChanged
+    public class Network : INotifyPropertyChanged
     {
         public string name;
-        public ObservableCollection<string> factors;
-        public List<Show> shows;
+        public ObservableCollection<string> factors;                    //A factor is anything that might affect the renewability of a TV show. Described with true/false.
+
+        public List<Show> shows;                                        //A Show object contains all of the information necessary to describe an entire season of a show.
+                                                                        //This list tracks all seasons of all shows ever added to this network, for all years.
 
         [NonSerialized]
-        public ObservableCollection<Show> FilteredShows;
+        public ObservableCollection<Show> FilteredShows;                //This collection will include only the shows that apply to the currently selected tv season year, sorted by rating index
 
         [NonSerialized]
-        public ObservableCollection<RatingsContainer> NetworkRatings;
+        public ObservableCollection<Show> AlphabeticalShows;            //AlphabeticalShows is just FilteredShows, sorted by Show Name.
 
         [NonSerialized]
-        public ObservableCollection<PredictionContainer> Predictions;
+        public ObservableCollection<RatingsContainer> NetworkRatings;   //A RatingsContainer includes all of the episode ratings for a season of a show
+                                                                        //This collection includes a RatingsContainer for every Show in AlphabeticalShows
 
         [NonSerialized]
-        public ObservableCollection<AverageContainer> Averages;
+        public ObservableCollection<PredictionContainer> Predictions;   //A PredictionContainer contains all of the information needed to display predictions for a Show
+                                                                        //This collection includes a PredictionContainer for every show in FilteredShows
 
         [NonSerialized]
-        public ObservableCollection<Show> AlphabeticalShows;
+        public ObservableCollection<AverageContainer> Averages;         //An AverageContainer includes information used to display the current ratings averages for a show
+                                                                        //This collection includes an AverageContainer for each Show in FilteredShows        
 
-        public double[] ratingsAverages;
+        public double[] ratingsAverages;                                //Typically throughout a TV season, ratings will start out higher and fall throughout the season.
+                                                                        //This array describes that pattern for the network, based on ratings data for all shows ever tracked on the network.
 
-        public NeuralPredictionModel model;
+        public NeuralPredictionModel model;                             //A NeuralPredictionModel is a Neural Network used for predicting renewal or cancellation of a show.
 
         [NonSerialized]
-        public double PredictionAccuracy;
+        public double PredictionAccuracy;                               //A value used for storing the accuracy of the current model. This value is displayed on the Home Page.
+
+        public EvolutionTree evolution;                                 //This object represents a Genetic Algorithm system used to search for better prediction models.
 
         [NonSerialized]
-        public bool refreshEvolution, refreshPrediction;
+        public bool refreshEvolution, refreshPrediction;                //refreshEvolution instructs the EvolutionTree on whether to refresh its secondary branch, for added diversity
+                                                                        //refreshPrediction instructs the UI to call OnPropertyChanged for the PredictionAccuracy property                                                                        
                 
-        public DateTime _lastupdate;
+        public DateTime _lastupdate;                                    //This value represents the last time the prediction model was updated
 
-        public string LastUpdate
+        public string LastUpdate                                        //Displaying the _lastupdate property as a string, for display on the Home Page
         {
             get
             {
@@ -93,13 +259,11 @@ namespace TV_Ratings_Predictions
                 else
                     return " (updated " + diference.Seconds + (diference.Seconds > 1 ? " Seconds ago)" : " Second ago)");
             }
-        }
-
-        public EvolutionTree evolution;
+        }        
 
         [field:NonSerialized]
-        public event PropertyChangedEventHandler PropertyChanged;
-        public async void OnPropertyChangedAsync(string name)
+        public event PropertyChangedEventHandler PropertyChanged;   //This allows the UI to know when certain properties have changed
+        public async void OnPropertyChangedAsync(string name) 
         {
              await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
              {
@@ -107,21 +271,15 @@ namespace TV_Ratings_Predictions
              });            
         }
 
-        public void RefreshLastUpdate()
+        public void ModelUpdate(NeuralPredictionModel m)    //Update the Prediction Model with the new model, and let the UI know changes have happened
         {
-            OnPropertyChangedAsync("LastUpdate");
-        }
-
-        public void ModelUpdate(NeuralPredictionModel m)
-        {
-            model = m;
-            PredictionAccuracy = model.TestAccuracy() * 100;
+            model = m;                                          
+            PredictionAccuracy = model.TestAccuracy() * 100;    
             OnPropertyChangedAsync("PredictionAccuracy");
-            _lastupdate = DateTime.Now;
+            _lastupdate = DateTime.Now;                         
             OnPropertyChangedAsync("LastUpdate");
 
-            //await NetworkDatabase.WriteSettingsAsync();
-            NetworkDatabase.pendingSave = true;
+            NetworkDatabase.pendingSave = true;             //This ensures that the app will save the new model to Settings within the next second
         }
 
         public Network (string n, ObservableCollection<String> f) //Define network by name and factors
@@ -139,59 +297,109 @@ namespace TV_Ratings_Predictions
             evolution = new EvolutionTree(this);
         }
 
-        public void Filter(int year)
-        {
+        public void Filter(int year)                        //The Filter method, as mentioned earlier, is a very important part of this app's functionality
+        {                                                   
             FilteredShows.Clear();
             NetworkRatings.Clear();
             AlphabeticalShows.Clear();
+            
+            foreach (Show s in CustomFilter(year))          //Filter shows by year and sort by Average Rating
+                FilteredShows.Add(s);            
 
-            //foreach (Show s in shows)
-            Parallel.ForEach(shows, s =>
-            {
-                if (s.year == year)
-                    s.UpdateAverage();
-            });
-
-            shows.Sort();
-
-            foreach (Show s in shows.ToList())
-                if (s.year == year)
-                    FilteredShows.Add(s);
-
-            UpdateIndexes(NetworkDatabase.CurrentYear, true);
+            UpdateIndexes(true);                            //Update ratings indexes, and then populate the various collections used to display the data across the app
             RefreshPredictions(true);
             RefreshAverages();
 
-            AlphabeticalShows = new ObservableCollection<Show>(FilteredShows.OrderBy(x => x.Name));
-            foreach(Show s in AlphabeticalShows)
+            var tempList = FilteredShows.OrderBy(x => x.Name);
+            foreach(Show s in tempList)
+            {
+                AlphabeticalShows.Add(s);
                 NetworkRatings.Add(new RatingsContainer(this, s));
-
-            //foreach (string s in ShowNames)
-            //    foreach (Show ss in FilteredShows)
-            //        if (ss.Name == s)
-            //        {
-            //            NetworkRatings.Add(new RatingsContainer(this, ss));
-            //            AlphabeticalShows.Add(ss);
-            //        }
-
+            }
         }
 
-        public ObservableCollection<Show> CustomFilter(int year, bool reverse = false)
+        public List<Show> CustomFilter(int year)            //Returns a filtered list representing every show for a custom chosen year, sorted by rating
         {
-            var tempList = new ObservableCollection<Show>();
+            var tempList = shows.Where(x => x.year == year).ToList();
+            Parallel.ForEach(tempList, s => s.UpdateAverage());
+            tempList.Sort();
 
-            shows.Sort();
-
-            foreach (Show s in shows)
-                if (s.year == year)
-                    tempList.Add(s);
-
-            return reverse ? tempList : InvertSort(tempList);
+            return tempList;
         }
 
-        public void RefreshPredictions(bool parallel = false)
+        public void UpdateIndexes(bool parallel = false)                //The ShowIndex value represents a value between 0 to 1 for every show in a particular year
+        {                                                               //This is a cumulative weighted percentile of rating, exclusive of 0 and 1
+            var tempList = FilteredShows.Reverse().ToList();
+
+            double total = 0;
+
+            if (parallel)                                               //First calculate the total of all average ratings, this can be done in parallel or not
+            {
+                double[] totals = new double[tempList.Count];
+                Parallel.For(0, tempList.Count, i =>
+                {
+                    totals[i] = tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1);   //half hour shows are weighted half as much
+                });                                                                             //as the same ratings contribute half as much money to the network
+                total = totals.Sum();
+            }
+            else
+                foreach (Show s in tempList)
+                    total += s.AverageRating * (s.Halfhour ? 0.5 : 1);
+
+
+            double cumulativeTotal = 0;
+
+            foreach (Show s in tempList)                                //Now determine the cumulative total of each show, from lowest to highest rating
+                if (s.ratings.Count > 0)
+                {
+                    s.ShowIndex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;    //The ShowIndex is the cumulative total of the previous shows, plus half of the current show's weighted rating
+                    cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);                                //This allows ShowIndex to be representative of midpoints, rather that beginning/endpoints, resulting in a more balanced prediction
+                }
+        }
+
+        public void UpdateAverages()                                //This method updates the ratings falloff values
+        {                                                           //This is run whenever ratings numbers are changed
+            ratingsAverages = new double[26];                       //The more shows there are, the longer this can take
+                                                                    
+            for (int i = 0; i < 26; i++)
+            {
+                double total = 0, start = 0;
+                int weight = 0;
+                double[] totals = new double[shows.Count], starts = new double[shows.Count];          
+                int[] weights = new int[shows.Count];               
+
+                Parallel.For(0, shows.Count, x =>                        //Because there can be a lot of shows, we're going to iterate through each show in parallel and then sum the values
+                {
+                    if (shows[x].ratings.Count > 0)                      //We are averaging the ratings falloff for every show on the network, for every year
+                    {
+                        starts[x] = shows[x].ratingsAverages[0];
+                        totals[x] = shows[x].ratingsAverages[i];
+                        weights[x] = 1;
+                    }
+                });
+
+                total = totals.Sum();
+                start = starts.Sum();
+                weight = weights.Sum();
+
+                if (weight > 0)
+                    ratingsAverages[i] = total / start;
+                else if (i == 0)
+                    ratingsAverages[i] = 1;                         //If there are literally zero shows with ratings data, then it's just a flat ratings falloff at 1
+                else
+                    ratingsAverages[i] = ratingsAverages[i - 1];    //If there aren't enough episodes from any show, it simply stores the previous episode's value
+            }
+        }
+
+        void RefreshAverages()      //Updates the Averages collection with all of the ratings average data for every show in FilteredShows
         {
-            
+            Averages.Clear();
+            for (int i = FilteredShows.Count - 1; i >= 0; i--)
+                Averages.Add(new AverageContainer(FilteredShows[i], this));
+        }        
+
+        public void RefreshPredictions(bool parallel = false)   //Calculate predictions for every show in FilteredShows, and sort by odds (descending)
+        {
             UpdateOdds(parallel);
 
             Predictions.Clear();
@@ -204,109 +412,17 @@ namespace TV_Ratings_Predictions
 
             foreach (PredictionContainer p in tempList)
                 Predictions.Add(p);
-
-
-
         }
 
-        void RefreshAverages()
-        {
-            Averages.Clear();
-            //foreach (Show s in FilteredShows)
-            for (int i = FilteredShows.Count - 1; i >=0; i--)
-                Averages.Add(new AverageContainer(FilteredShows[i], this));
-        }
-
-        private ObservableCollection<Show> InvertSort(ObservableCollection<Show> showlist)
-        {
-            var templist = new ObservableCollection<Show>();
-            foreach (Show s in showlist)
-                templist.Insert(0, s);
-
-            return templist;
-        }
-
-        public void UpdateIndexes(int year, bool parallel = false)
-        {
-            var tempList = CustomFilter(year, true);
-
-            double total = 0;
-
-            if (parallel)
-            {
-                double[] totals = new double[tempList.Count];
-                Parallel.For(0, tempList.Count, i =>
-                {
-                    totals[i] = tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1);
-                });
-                total = totals.Sum();
-            }
-            else
-                foreach (Show s in tempList)
-                    total += s.AverageRating * (s.Halfhour ? 0.5 : 1);
-            
-
-            double cumulativeTotal = 0;
-
-            
-            foreach (Show s in tempList)
-            {
-                if (s.ratings.Count > 0)
-                {
-                    s.ShowIndex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;
-                    cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);
-                    //s.PredictedOdds = model.GetOdds(s);
-                }                
-            }
-
-            UpdateAverages();
-        }
-
-        public void UpdateOdds(bool parallel = false)
+        public void UpdateOdds(bool parallel = false)       //Calculate model accuracy, and then update the odds for every show in FilteredShows
         {
             PredictionAccuracy = model.TestAccuracy(parallel) * 100;
-
-            //foreach(Show s in shows)
             Parallel.ForEach(FilteredShows, s => s.PredictedOdds = model.GetOdds(s));
         }
 
-        public int CompareTo(Network other)
-        {
-            if (other == null) return 1;
-
-            return name.CompareTo(other.name);
-        }
-
-        public void UpdateAverages()
-        {
-            ratingsAverages = new double[26];
-
-            //for (int i = 0; i < 26; i++)
-            Parallel.For(0, 26, i =>
-            {
-                double total = 0, start = 0;
-                int weight = 0;
-
-                foreach (Show s in shows)
-                    if (s.ratings.Count > 0)
-                    {
-                        start += s.ratingsAverages[0];
-                        total += s.ratingsAverages[i];
-                        weight++;
-                    }
-
-                if (weight > 0)
-                    ratingsAverages[i] = total / start;
-                else if (i == 0)
-                    ratingsAverages[i] = 0;
-                else
-                    ratingsAverages[i] = ratingsAverages[i - 1];
-            });
-        }
-
-        public double AdjustAverage(int currentEpisode, int finalEpisode)
-        {
-            try
+        public double AdjustAverage(int currentEpisode, int finalEpisode)   //This applies the typical ratings falloff values to the current weighted ratings average for a show
+        {                                                                   //The result is a prediction for where the show's weighted ratings average will be at the end of the season
+            try                                                             //This allows for more of a fair comparison between shows at different points in their seasons
             {
                 return ratingsAverages[finalEpisode - 1] / ratingsAverages[currentEpisode - 1];
             }
@@ -320,7 +436,7 @@ namespace TV_Ratings_Predictions
     }
 
     [Serializable]
-    public class Show : INotifyPropertyChanged, IComparable<Show>
+    public class Show : INotifyPropertyChanged, IComparable<Show> //Contains all of the information necessary to describe an entire season of a show
     {
         public double[] ratingsAverages;
 
@@ -404,7 +520,7 @@ namespace TV_Ratings_Predictions
         }
 
         public void UpdateAverage()
-        {           
+        {
             AverageRating = CalculateAverage(ratings.Count) * network.AdjustAverage(ratings.Count, Episodes);
         }
 
@@ -449,230 +565,13 @@ namespace TV_Ratings_Predictions
         }
     }
 
-    class Factor : INotifyPropertyChanged
-    {
-        public string name;
-
-        
-
-        bool _setting;
-
-        public bool Setting
-        {
-            get { return _setting; }
-            set
-            {
-                _setting = value;
-                RaisePropertyChanged("setting");
-            }
-        }
-
-        public Factor(string n, bool s)
-        {
-            name = n;
-            Setting = s;
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void RaisePropertyChanged(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-    }
-
-    static class NetworkDatabase
-    {
-        public static ObservableCollection<Network> NetworkList = new ObservableCollection<Network>();
-        public static bool isAddPage = false;
-        //public static List<int> YearList = new List<int>();
-        public static bool canGoBack = false;
-        public static bool pendingSave = false;
-        public static bool onHomePage = true;
-        public static bool cancelEvolution = false;
-        public static bool EvolutionStarted = false;
-        public static bool UseOdds = false;
-
-        [NonSerialized]
-        public static int MaxYear;
-
-        static int _currentyear;
-        public static int CurrentYear
-        {
-            get
-            {
-                return _currentyear;
-            }
-            set
-            {
-                _currentyear = value;
-                UpdateFilter();
-            }
-        }
-
-        public static void SortNetworks()
-        {
-            bool sorted = false;
-
-            Parallel.ForEach(NetworkList, n => n.model.GetNetworkRatingsThreshold(CurrentYear));
-
-            if (NetworkList.Count > 1)
-                while (!sorted)
-                {
-                    sorted = true;
-                    for (int i = 1; i < NetworkList.Count; i++)
-                    {
-                        if (NetworkList[i].model._ratingstheshold > NetworkList[i-1].model._ratingstheshold)
-                        {
-                            sorted = false;
-                            NetworkList.Move(i, i - 1);
-                        }
-                            
-                    }
-                }
-        }
-
-        public static void UpdateFilter()
-        {
-            foreach (Network n in NetworkList)
-                n.Filter(_currentyear);
-
-            //Parallel.ForEach(NetworkList, n => n.Filter(_currentyear));
-        }
-
-        public async static Task ReadSettings()
-        {
-            var helper = new LocalObjectStorageHelper();
-
-            if (await helper.FileExistsAsync("Settings"))
-            {
-                var settings = ReadFromBinaryFile<NetworkSettings>(ApplicationData.Current.LocalFolder.Path + "\\Settings");
-                Read_Settings(settings);
-
-                StorageFolder localFolder = ApplicationData.Current.LocalFolder;
-                StorageFile newFile = await localFolder.GetFileAsync("Settings");
-                StorageFile copiedFile = await newFile.CopyAsync(ApplicationData.Current.LocalFolder, "Settings_bak", NameCollisionOption.ReplaceExisting);
-            }
-            else
-            {
-                if (await helper.FileExistsAsync("Settings_bak"))
-                {
-                    var settings = ReadFromBinaryFile<NetworkSettings>(ApplicationData.Current.LocalFolder.Path + "\\Settings_bak");
-                    Read_Settings(settings);
-                }
-            }
-                
-        }
-
-        static void Read_Settings(NetworkSettings settings)
-        {
-            bool resave = false;
-
-            //YearList = settings.YearList;
-            NetworkList.Clear();
-
-            //foreach (Network n in settings.NetworkList)
-            Parallel.ForEach(settings.NetworkList, n =>
-            {
-                n.FilteredShows = new ObservableCollection<Show>();
-                n.NetworkRatings = new ObservableCollection<RatingsContainer>();
-                n.AlphabeticalShows = new ObservableCollection<Show>();
-                n.Predictions = new ObservableCollection<PredictionContainer>();
-                n.Averages = new ObservableCollection<AverageContainer>();
-
-                //n.model = new NeuralPredictionModel(n);
-                //n.evolution = new EvolutionTree(n);
-
-                n.model.shows = n.shows;
-                n.PredictionAccuracy = n.model.TestAccuracy() * 100;
-
-                n.evolution.network = n;
-
-                Parallel.ForEach(n.shows, s =>
-                {
-                    s.factorNames = n.factors;
-                    s.network = n;
-                });
-
-                n.Filter(NetworkDatabase.CurrentYear);
-            }
-            );
-
-            foreach (Network n in settings.NetworkList)
-                NetworkList.Add(n);
-                
-
-            NetworkDatabase.SortNetworks();
-
-
-            if (resave) pendingSave = true;
-        }        
-
-        public static void WriteSettings()
-        {
-            WriteToBinaryFile<NetworkSettings>(ApplicationData.Current.LocalFolder.Path + "\\Settings", new NetworkSettings());
-        }
-
-        static void WriteToBinaryFile<T>(string filePath, T objectToWrite, bool append = false)
-        {
-            using (Stream stream = File.Open(filePath, append ? FileMode.Append : FileMode.Create))
-            {
-                var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                binaryFormatter.Serialize(stream, objectToWrite);
-                
-            }
-        }
-
-        public static async Task WritePredictionsAsync()
-        {
-            var picker = new FileSavePicker();
-            picker.SuggestedStartLocation = PickerLocationId.Desktop;
-            picker.FileTypeChoices.Add("TV Predictions", new List<string>() { ".TVP" });
-
-            StorageFile file = await picker.PickSaveFileAsync();
-
-            if (file != null)
-            {
-                var Networks = new List<MiniNetwork>();
-                foreach (Network n in NetworkList)
-                    Networks.Add(new MiniNetwork(n));
-
-                using (Stream stream = await file.OpenStreamForWriteAsync())
-                {
-                    var serializer = new DataContractSerializer(typeof(List<MiniNetwork>));
-                    serializer.WriteObject(stream, Networks);
-                }
-            }
-                
-        }
-
-        static T ReadFromBinaryFile<T>(string filePath)
-        {
-            using (Stream stream = File.Open(filePath, FileMode.Open))
-            {
-                var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                return (T)binaryFormatter.Deserialize(stream);
-            }
-        }
-    }
-
-    [Serializable]
-    public class NetworkSettings
-    {
-        public ObservableCollection<Network> NetworkList;
-
-        public NetworkSettings()
-        {
-            NetworkList = NetworkDatabase.NetworkList;
-        }
-    }
-
     public class RatingsContainer : INotifyPropertyChanged
     {
         List<double> Ratings;
         Show show;
         Network network;
 
-        public string ShowName { get; }  
+        public string ShowName { get; }
 
         public double? Episode1 { get { return GetEpisode(1); } set { SetEpisode(1, value); } }
         public double? Episode2 { get { return GetEpisode(2); } set { SetEpisode(2, value); } }
@@ -724,7 +623,7 @@ namespace TV_Ratings_Predictions
         double? GetEpisode(int ep)
         {
             if (Ratings.Count >= ep)
-                return Ratings[ep-1];
+                return Ratings[ep - 1];
             else
                 return null;
         }
@@ -741,7 +640,7 @@ namespace TV_Ratings_Predictions
             {
                 if (Ratings.Count >= ep)
                 {
-                    Ratings[ep-1] = (double)value;
+                    Ratings[ep - 1] = (double)value;
                     OnPropertyChanged("Episode" + ep);
                 }
                 else
@@ -751,30 +650,268 @@ namespace TV_Ratings_Predictions
                     OnPropertyChanged("Episode" + Ratings.Count);
                 }
 
-                show.UpdateAllAverages(ep-1);
-            }            
+                show.UpdateAllAverages(ep - 1);
+            }
         }
 
-       
+
     }
 
-    public class NullableValueConverter : IValueConverter
+    public class PredictionContainer : INotifyPropertyChanged, IComparable<PredictionContainer>
     {
-        public object Convert(object value, Type targetType, object parameter, string language)
+        Network network;
+        public Show show;
+
+        public string Show;
+        public double odds;
+        bool showAll;
+
+        double _rating;
+        public string Rating
         {
-            return value == null ? string.Empty : value.ToString();
+            get
+            {
+                return (show.ratings.Count > 0) ? Math.Round(_rating, 2).ToString("F2") : "";
+            }
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        public double _ratingsDiff
         {
-            string s = value as string;
-
-            if (!string.IsNullOrWhiteSpace(s) && Double.TryParse(s, out double result))
+            get
             {
-                return result;
+                return (show.OldRating == 0) ? 0 : Math.Round(_rating - show.OldRating, 2);
             }
+        }
 
-            return null;
+        public string RatingDifference
+        {
+            get
+            {
+                if (show.ratings.Count > 0)
+                    return (_ratingsDiff != 0) ? _ratingsDiff.ToString("+0.00; -0.00") : "";
+                else
+                    return "";
+            }
+        }
+
+        double _targetrating;
+        public string TargetRating { get; }
+
+        public string Status { get; }
+
+        public int _StatusIndex
+        {
+            get
+            {
+                if (show.Renewed)
+                    return 1;
+                else if (show.Canceled)
+                    return -1;
+                else
+                    return 0;
+            }
+        }
+
+        public string Prediction
+        {
+            get
+            {
+                if ((Status == "" && show.ratings.Count > 0) || showAll)
+                {
+                    if (NetworkDatabase.UseOdds)
+                    {
+                        return odds.ToString("P0") + " Odds";
+                    }
+                    else
+                    {
+                        if (odds > 0.5)
+                        {
+                            return "Renewed (" + Math.Round((odds - 0.5) * 200, 0) + "% Confidence)";
+                        }
+                        else if (odds < 0.5)
+                        {
+                            return "Canceled (" + Math.Round((0.5 - odds) * 200, 0) + "% Confidence)";
+                        }
+                        else
+                        {
+                            if (_rating > _targetrating)
+                                return "Renewed (0% Confidence)";
+                            else
+                                return "Canceled (0% Confidence)";
+                        }
+                    }
+                }
+                else
+                    return "";
+            }
+        }
+
+        public double _predictionDiff
+        {
+            get
+            {
+                if (NetworkDatabase.UseOdds)
+                    return (show.OldRating == 0) ? 0 : Math.Round(odds - show.OldOdds, 2);
+                else
+                    return (show.OldRating == 0) ? 0 : Math.Round((odds - show.OldOdds) * 2, 2);
+            }
+        }
+
+        public string PredictionDifference
+        {
+            get
+            {
+                if (show.ratings.Count > 0)
+                {
+                    return (_predictionDiff != 0 && Status == "") ? _predictionDiff.ToString("↑0%; ↓0%") : "";
+                }
+                else
+                    return "";
+            }
+        }
+
+        public string Category
+        {
+            get
+            {
+                if (Status == "" && show.ratings.Count > 0)
+                {
+                    if (odds > 0.8)
+                        return "✔✔✔";
+                    else if (odds > 0.6)
+                        return "✔✔";
+                    else if (odds > 0.5 || _rating > _targetrating)
+                        return "✔";
+                    else if (odds > 0.4)
+                        return "❌";
+                    else if (odds > 0.2)
+                        return "❌❌";
+                    else
+                        return "❌❌❌";
+                }
+                else
+                    return "";
+            }
+        }
+
+        public string Accuracy
+        {
+            get
+            {
+                if (show.Renewed)
+                    return (odds > 0.5) ? "✔" : "❌";
+                else if (show.Canceled)
+                    return (odds < 0.5) ? "✔" : "❌";
+                else
+                    return "";
+            }
+        }
+
+        public PredictionContainer(Show s, Network n, bool a = false)
+        {
+            network = n;
+            show = s;
+            Show = s.Name;
+            odds = s.PredictedOdds;
+            _rating = s.AverageRating;
+            Status = s.RenewalStatus;
+
+            _targetrating = n.model.GetTargetRating(s.year, n.model.GetThreshold(s));
+            TargetRating = Math.Round(_targetrating, 2).ToString("F2");
+            showAll = a;
+        }
+
+        public void UpdateOdds()
+        {
+            odds = show.PredictedOdds;
+            OnPropertyChanged("Rating");
+            OnPropertyChanged("RatingDifference");
+            OnPropertyChanged("Status");
+            OnPropertyChanged("Prediction");
+            OnPropertyChanged("Category");
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        public int CompareTo(PredictionContainer other)
+        {
+            //if (other == null) return 0;
+            //if (this.odds > other.odds) return -1;
+            //if (this.odds == other.odds) return 0;
+            //return 1;
+
+            return other.odds.CompareTo(this.odds);
+        }
+    }
+
+    public class AverageContainer : INotifyPropertyChanged
+    {
+        Network network;
+        Show show;
+
+        public string Show { get; }
+
+        double _weighted;
+        public string PredictedAverage
+        {
+            get
+            {
+                return (show.ratings.Count > 0) ? Math.Round(_weighted, 2).ToString("F2") : "";
+            }
+        }
+
+        public string CurrentAverage
+        {
+            get
+            {
+                return (show.ratings.Count > 0) ? Math.Round(show.CurrentAverage(), 2).ToString("F2") : "";
+            }
+        }
+
+        double _rating;
+        public string StraightAverage
+        {
+            get
+            {
+                return (show.ratings.Count > 0) ? Math.Round(_rating, 2).ToString("F2") : "";
+
+
+            }
+        }
+
+        double _index;
+        public string Index
+        {
+            get
+            {
+                return (show.ratings.Count > 0) ? Math.Round(_index, 3).ToString("F3") : "";
+            }
+        }
+
+        public AverageContainer(Show s, Network n)
+        {
+            network = n;
+            show = s;
+            Show = s.Name;
+            _rating = 0;
+            foreach (double r in s.ratings)
+                _rating += r;
+
+            _rating /= s.ratings.Count;
+
+            _weighted = s.AverageRating;
+
+            _index = s.ShowIndex;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 
@@ -851,7 +988,7 @@ namespace TV_Ratings_Predictions
             mutationrate = Breed(x.mutationrate, y.mutationrate);
             mutationintensity = Breed(x.mutationintensity, y.mutationintensity);
             neuralintensity = Breed(x.neuralintensity, y.neuralintensity);
-        }        
+        }
 
         public void SetElite()
         {
@@ -879,7 +1016,7 @@ namespace TV_Ratings_Predictions
 
             s._calculatedThreshold = (Output.GetOutput(SecondLayerOutputs) + 1) / 2;
 
-            
+
 
             return s._calculatedThreshold;
         }
@@ -893,7 +1030,7 @@ namespace TV_Ratings_Predictions
             {
                 var tempList = shows.ToList();
                 double[] totals = new double[tempList.Count];
-                int[] counts = new int[tempList.Count];                
+                int[] counts = new int[tempList.Count];
 
                 Parallel.For(0, tempList.Count, i =>
                 {
@@ -1066,7 +1203,7 @@ namespace TV_Ratings_Predictions
                                 }
                                 else
                                     weight /= 2;
-                                
+
                             }
 
                             totals += accuracy * weight;
@@ -1089,7 +1226,7 @@ namespace TV_Ratings_Predictions
                         }
                     }
                 }
-            }            
+            }
 
             _accuracy = (weights == 0) ? 0.0 : (totals / weights);
             _score = scores;
@@ -1400,6 +1537,307 @@ namespace TV_Ratings_Predictions
         //    return average;
         //}
     }
+
+    [Serializable]
+    public class EvolutionTree
+    {
+        List<NeuralPredictionModel> Primary, Randomized;
+        public long Generations, CleanGenerations, RandomGenerations;
+
+        [NonSerialized]
+        public Network network;
+
+        [NonSerialized]
+        bool Mutations, RandomMutations;
+
+        //Primary:
+        //First 4 entries will be the top 4 best performing models out of all 3 branches
+        //The rest of the entries will be mutations based on those 4 best.
+
+        //CleanSlate:
+        //This branch, when created, will set NetworkAverageIndex to GetAverageThreshold() for the top model in the Primary Branch
+        //Every TrueIndex and FalseIndex wil be set to be the same as NetworkAverageIndex
+        //EpisodeThreshold will be set to the EpisodeThreshold in the Primary Branch
+        //All weight values will be set to 0
+        //These will define the primary parent, and the remaining children will be mutations based on that
+        //On future generations, the top 4 models from this branch will be selected as the parents (first 4 indexed)
+        //children will be mutated based on those 4 parents
+
+        //Randomized:
+        //This branch will start out with all 30 entries being totally randomized.
+        //On the next generation, the top 4 models from this branch will be selected as parents (first 4 indexes)
+        //children will be mutated from these 4 parents
+
+        //All 3 branche, when first created, will start out following the same behavior as the Randomized Branch
+        //All 3 branches will continue to propogate their own evolution every generation
+        //If any model from the CleanSlate or Randomized branches is selected to become a parent in the primary branch:
+        //then that branch will start over, following the rules outlined above
+
+
+        public EvolutionTree(Network n)
+        {
+            network = n;
+
+            Primary = new List<NeuralPredictionModel>();
+            //CleanSlate = new List<NeuralPredictionModel>();
+            Randomized = new List<NeuralPredictionModel>();
+
+            for (int i = 0; i < 30; i++)
+            {
+                Primary.Add(new NeuralPredictionModel(n));
+                //CleanSlate.Add(new NeuralPredictionModel(n));
+                Randomized.Add(new NeuralPredictionModel(n));
+            }
+
+            Generations = 1;
+            CleanGenerations = 1;
+            RandomGenerations = 1;
+        }
+
+        public void NextGeneration()
+        {
+            //Update shows list
+            for (int i = 0; i < 30; i++)
+            {
+                Primary[i].shows = network.shows;
+                //CleanSlate[i].shows = network.shows;
+                Randomized[i].shows = network.shows;
+            }
+
+            //Sort all 3 Branches from Highest to lowest
+
+            for (int i = 0; i < 30; i++)
+            {
+                if (i == 2 || i == 3)
+                    Primary[i].SetElite();
+                else
+                    Primary[i].TestAccuracy(true);
+                Randomized[i].TestAccuracy(true);
+            }
+
+            Primary.Sort();
+            Randomized.Sort();
+
+            for (int i = 29; i > 0; i--)
+            {
+                if (Primary[i] == Primary[i - 1])
+                    Primary[i].SetElite();
+                if (Randomized[i] == Randomized[i - 1])
+                    Randomized[i].SetElite();
+            }
+
+            Primary.Sort();
+            Randomized.Sort();
+
+
+            //CHeck if any models in CleanSlate or Randomized beat any of the top 4 in Primary
+            //If so, add them to Primary
+            bool randomUpdate = false;
+
+            bool finished = false;
+
+            //Randomized
+            finished = false;
+            for (int i = 0; i < 4 && !finished; i++)
+            {
+                if (Randomized[i] > Primary[3])
+                {
+
+                    if (Randomized[i] > Primary[0])
+                    {
+                        Primary.Insert(0, Randomized[i]);
+                        randomUpdate = true;
+                    }
+                    else if (Randomized[i] > Primary[1])
+                    {
+                        Primary.Insert(1, Randomized[i]);
+                        randomUpdate = true;
+                    }
+                    else if (Randomized[i] > Primary[2])
+                    {
+                        Primary.Insert(2, Randomized[i]);
+                    }
+                    else
+                    {
+                        Primary.Insert(3, Randomized[i]);
+                    }
+                    Primary.RemoveAt(30);
+                }
+                else
+                {
+                    finished = true;
+                }
+            }
+
+            //If model has improved, replace model in network with current best model
+            if (Primary[0] > network.model)
+            {
+                network.ModelUpdate(Primary[0]);
+                network.refreshEvolution = false;
+                network.refreshPrediction = true;
+                randomUpdate = true;
+            }
+            else
+            {
+                if (network.refreshEvolution)
+                {
+                    network.refreshEvolution = false;
+                    //cleanUpdate = true;
+                    randomUpdate = true;
+                }
+            }
+
+            Mutations = false;
+            //CleanMutations = false;
+            RandomMutations = false;
+
+
+            //If models were chosen from Randomized, then reset that branch based on the above rules
+            //If not, perform normal evolution rules            
+            if (randomUpdate)
+            {
+                for (int i = 0; i < 30; i++)
+                    Randomized[i] = new NeuralPredictionModel(network);
+
+                RandomGenerations = 1;
+            }
+            else
+            {
+                while (!RandomMutations)
+                {
+                    Random r = new Random();
+
+                    for (int i = 4; i < 30; i++)
+                    {
+                        int Parent1 = r.Next(4), Parent2 = r.Next(4);
+                        while (Parent1 == Parent2)
+                            Parent2 = r.Next(4);
+
+                        Randomized[i] = Randomized[Parent1] + Randomized[Parent2];
+
+                        if (Randomized[i].isMutated) RandomMutations = true;
+                    }
+
+                    if (!RandomMutations)
+                        Randomized[r.Next(4)].IncreaseMutationRate();
+                }
+
+
+                RandomGenerations++;
+            }
+
+            //Evolve Primary Branch
+
+            while (!Mutations)
+            {
+                Random r = new Random();
+
+                for (int i = 4; i < 30; i++)
+                {
+
+                    int Parent1 = r.Next(4), Parent2 = r.Next(4);
+                    while (Parent1 == Parent2)
+                        Parent2 = r.Next(4);
+
+                    Primary[i] = Primary[Parent1] + Primary[Parent2];
+
+                    if (Primary[i].isMutated) Mutations = true;
+                }
+
+                if (!Mutations)
+                    Primary[r.Next(4)].IncreaseMutationRate();
+            }
+
+            Generations++;
+        }
+    }
+
+    [Serializable]
+    public class MiniNetwork //Smaller version of Network class to use for storing predictions for mobile app
+    {
+        public string name;
+        public ObservableCollection<string> factors;
+        public List<Show> shows;
+        public NeuralPredictionModel model;
+
+        public MiniNetwork(Network n)
+        {
+            name = n.name;
+            factors = n.factors;
+            shows = n.shows;
+            model = n.model;
+        }
+    }
+
+    
+
+    class Factor : INotifyPropertyChanged
+    {
+        public string name;
+
+        
+
+        bool _setting;
+
+        public bool Setting
+        {
+            get { return _setting; }
+            set
+            {
+                _setting = value;
+                RaisePropertyChanged("setting");
+            }
+        }
+
+        public Factor(string n, bool s)
+        {
+            name = n;
+            Setting = s;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void RaisePropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+    }
+
+    
+
+    [Serializable]
+    public class NetworkSettings
+    {
+        public ObservableCollection<Network> NetworkList;
+
+        public NetworkSettings()
+        {
+            NetworkList = NetworkDatabase.NetworkList;
+        }
+    }
+
+    
+
+    public class NullableValueConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            return value == null ? string.Empty : value.ToString();
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            string s = value as string;
+
+            if (!string.IsNullOrWhiteSpace(s) && Double.TryParse(s, out double result))
+            {
+                return result;
+            }
+
+            return null;
+        }
+    }
+
+    
 
     [Serializable]
     public class Neuron
@@ -2001,263 +2439,9 @@ namespace TV_Ratings_Predictions
         }
     }
 
-    public class PredictionContainer : INotifyPropertyChanged, IComparable<PredictionContainer>
-    {
-        Network network;
-        public Show show;
+    
 
-        public string Show;
-        public double odds;
-        bool showAll;
-
-        double _rating;
-        public string Rating
-        {
-            get
-            {
-                return (show.ratings.Count > 0) ? Math.Round(_rating, 2).ToString("F2") : "";
-            }
-        }
-
-        public double _ratingsDiff
-        {
-            get
-            {
-                return (show.OldRating == 0) ? 0 : Math.Round( _rating - show.OldRating, 2);
-            }
-        }
-
-        public string RatingDifference
-        {
-            get
-            {
-                if (show.ratings.Count > 0)
-                    return (_ratingsDiff != 0) ? _ratingsDiff.ToString("+0.00; -0.00") : "";
-                else
-                    return "";
-            }
-        }
-
-        double _targetrating;
-        public string TargetRating { get; }
-
-        public string Status { get; }
-        
-        public int _StatusIndex
-        {
-            get
-            {
-                if (show.Renewed)
-                    return 1;
-                else if (show.Canceled)
-                    return -1;
-                else
-                    return 0;
-            }
-        }
-
-        public string Prediction
-        {
-            get
-            {
-                if ((Status == "" && show.ratings.Count > 0) || showAll)
-                {
-                    if (NetworkDatabase.UseOdds)
-                    {
-                        return odds.ToString("P0") + " Odds";
-                    }
-                    else
-                    {
-                        if (odds > 0.5)
-                        {
-                            return "Renewed (" + Math.Round((odds - 0.5) * 200, 0) + "% Confidence)";
-                        }
-                        else if (odds < 0.5)
-                        {
-                            return "Canceled (" + Math.Round((0.5 - odds) * 200, 0) + "% Confidence)";
-                        }
-                        else
-                        {
-                            if (_rating > _targetrating)
-                                return "Renewed (0% Confidence)";
-                            else
-                                return "Canceled (0% Confidence)";
-                        }
-                    }                    
-                }
-                else
-                    return "";                
-            }
-        }        
-
-        public double _predictionDiff
-        {
-            get
-            {
-                if (NetworkDatabase.UseOdds)
-                    return (show.OldRating == 0) ? 0 : Math.Round(odds - show.OldOdds, 2);
-                else
-                    return (show.OldRating == 0) ? 0 : Math.Round((odds - show.OldOdds) * 2,2);
-            }
-        }
-
-        public string PredictionDifference
-        {
-            get
-            {
-                if (show.ratings.Count > 0)
-                {
-                    return (_predictionDiff != 0 && Status == "") ? _predictionDiff.ToString("↑0%; ↓0%") : "";
-                }
-                else
-                    return "";
-            }
-        }
-
-        public string Category
-        {
-            get
-            {
-                if (Status == "" && show.ratings.Count > 0)
-                {
-                    if (odds > 0.8)
-                        return "✔✔✔";
-                    else if (odds > 0.6)
-                        return "✔✔";
-                    else if (odds > 0.5 || _rating > _targetrating)
-                        return "✔";
-                    else if (odds > 0.4)
-                        return "❌";
-                    else if (odds > 0.2)
-                        return "❌❌";
-                    else
-                        return "❌❌❌";
-                }
-                else
-                    return "";                
-            }
-        }
-
-        public string Accuracy
-        {
-            get
-            {
-                if (show.Renewed)
-                    return (odds > 0.5) ? "✔" : "❌";
-                else if (show.Canceled)
-                    return (odds < 0.5) ? "✔" : "❌";
-                else
-                    return "";
-            }
-        }
-
-        public PredictionContainer(Show s, Network n, bool a = false)
-        {
-            network = n;
-            show = s;
-            Show = s.Name;
-            odds = s.PredictedOdds;
-            _rating = s.AverageRating;
-            Status = s.RenewalStatus;
-
-            _targetrating = n.model.GetTargetRating(s.year, n.model.GetThreshold(s));
-            TargetRating = Math.Round(_targetrating, 2).ToString("F2");
-            showAll = a;
-        }
-
-        public void UpdateOdds()
-        {
-            odds = show.PredictedOdds;
-            OnPropertyChanged("Rating");
-            OnPropertyChanged("RatingDifference");
-            OnPropertyChanged("Status");
-            OnPropertyChanged("Prediction");
-            OnPropertyChanged("Category");
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-
-        public int CompareTo(PredictionContainer other)
-        {
-            //if (other == null) return 0;
-            //if (this.odds > other.odds) return -1;
-            //if (this.odds == other.odds) return 0;
-            //return 1;
-
-            return other.odds.CompareTo(this.odds);
-        }
-    }
-
-    public class AverageContainer : INotifyPropertyChanged
-    {
-        Network network;
-        Show show;
-
-        public string Show { get; }
-
-        double _weighted;
-        public string PredictedAverage
-        {
-            get
-            {
-                return (show.ratings.Count > 0) ? Math.Round(_weighted, 2).ToString("F2") : "";
-            }
-        }
-
-        public string CurrentAverage
-        {
-            get
-            {
-                return (show.ratings.Count > 0) ? Math.Round(show.CurrentAverage(), 2).ToString("F2") : "";
-            }
-        }
-
-        double _rating;
-        public string StraightAverage
-        {
-            get
-            {
-                return (show.ratings.Count > 0) ? Math.Round(_rating, 2).ToString("F2") : "";
-
-                
-            }
-        }
-
-        double _index;
-        public string Index
-        {
-            get
-            {
-                return (show.ratings.Count > 0) ? Math.Round(_index, 3).ToString("F3") : "";
-            }
-        }
-
-        public AverageContainer(Show s, Network n)
-        {
-            network = n;
-            show = s;
-            Show = s.Name;
-            _rating = 0;
-            foreach (double r in s.ratings)
-                _rating += r;
-
-            _rating /= s.ratings.Count;
-
-            _weighted = s.AverageRating;
-
-            _index = s.ShowIndex;
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-    }
+    
 
     public class BooleanToVisibilityConverter : IValueConverter
     {
@@ -2331,219 +2515,7 @@ namespace TV_Ratings_Predictions
         }
     }
 
-    [Serializable]
-    public class EvolutionTree
-    {
-        List<NeuralPredictionModel> Primary, Randomized;
-        public long Generations, CleanGenerations, RandomGenerations;
-
-        [NonSerialized]
-        public Network network;
-
-        [NonSerialized]
-        bool Mutations, RandomMutations;
-
-        //Primary:
-        //First 4 entries will be the top 4 best performing models out of all 3 branches
-        //The rest of the entries will be mutations based on those 4 best.
-
-        //CleanSlate:
-        //This branch, when created, will set NetworkAverageIndex to GetAverageThreshold() for the top model in the Primary Branch
-        //Every TrueIndex and FalseIndex wil be set to be the same as NetworkAverageIndex
-        //EpisodeThreshold will be set to the EpisodeThreshold in the Primary Branch
-        //All weight values will be set to 0
-        //These will define the primary parent, and the remaining children will be mutations based on that
-        //On future generations, the top 4 models from this branch will be selected as the parents (first 4 indexed)
-        //children will be mutated based on those 4 parents
-
-        //Randomized:
-        //This branch will start out with all 30 entries being totally randomized.
-        //On the next generation, the top 4 models from this branch will be selected as parents (first 4 indexes)
-        //children will be mutated from these 4 parents
-
-        //All 3 branche, when first created, will start out following the same behavior as the Randomized Branch
-        //All 3 branches will continue to propogate their own evolution every generation
-        //If any model from the CleanSlate or Randomized branches is selected to become a parent in the primary branch:
-        //then that branch will start over, following the rules outlined above
-
-
-        public EvolutionTree(Network n)
-        {
-            network = n;
-
-            Primary = new List<NeuralPredictionModel>();
-            //CleanSlate = new List<NeuralPredictionModel>();
-            Randomized = new List<NeuralPredictionModel>();
-
-            for (int i = 0; i < 30; i++)
-            {
-                Primary.Add(new NeuralPredictionModel(n));
-                //CleanSlate.Add(new NeuralPredictionModel(n));
-                Randomized.Add(new NeuralPredictionModel(n));
-            }
-
-            Generations = 1;
-            CleanGenerations = 1;
-            RandomGenerations = 1;
-        }
-
-        public void NextGeneration()
-        {
-            //Update shows list
-            for (int i = 0; i < 30; i++)
-            {
-                Primary[i].shows = network.shows;
-                //CleanSlate[i].shows = network.shows;
-                Randomized[i].shows = network.shows;
-            }
-
-            //Sort all 3 Branches from Highest to lowest
-
-            for (int i = 0; i < 30; i++)
-            {
-                if (i == 2 || i == 3)
-                    Primary[i].SetElite();
-                else
-                    Primary[i].TestAccuracy(true);
-                Randomized[i].TestAccuracy(true);
-            }
-
-            Primary.Sort();
-            Randomized.Sort();
-
-            for (int i = 29; i > 0; i--)
-            {
-                if (Primary[i] == Primary[i - 1])
-                    Primary[i].SetElite();
-                if (Randomized[i] == Randomized[i - 1])
-                    Randomized[i].SetElite();
-            }
-
-            Primary.Sort();
-            Randomized.Sort();
-
-
-            //CHeck if any models in CleanSlate or Randomized beat any of the top 4 in Primary
-            //If so, add them to Primary
-            bool randomUpdate = false;
-
-            bool finished = false;            
-
-            //Randomized
-            finished = false;
-            for (int i = 0; i < 4 && !finished; i++)
-            {
-                if (Randomized[i] > Primary[3])
-                {
-
-                    if (Randomized[i] > Primary[0])
-                    {
-                        Primary.Insert(0, Randomized[i]);
-                        randomUpdate = true;
-                    }
-                    else if (Randomized[i] > Primary[1])
-                    {
-                        Primary.Insert(1, Randomized[i]);
-                        randomUpdate = true;
-                    }
-                    else if (Randomized[i] > Primary[2])
-                    {
-                        Primary.Insert(2, Randomized[i]);
-                    }
-                    else
-                    {
-                        Primary.Insert(3, Randomized[i]);
-                    }
-                    Primary.RemoveAt(30);
-                }
-                else
-                {
-                    finished = true;
-                }
-            }
-
-            //If model has improved, replace model in network with current best model
-            if (Primary[0] > network.model)
-            {
-                network.ModelUpdate(Primary[0]);
-                network.refreshEvolution = false;
-                network.refreshPrediction = true;
-                randomUpdate = true;
-            } 
-            else 
-            {
-                if (network.refreshEvolution)
-                {
-                    network.refreshEvolution = false;
-                    //cleanUpdate = true;
-                    randomUpdate = true;
-                }                
-            }
-
-            Mutations = false;
-            //CleanMutations = false;
-            RandomMutations = false;
-
-
-            //If models were chosen from Randomized, then reset that branch based on the above rules
-            //If not, perform normal evolution rules            
-            if (randomUpdate)
-            {
-                for (int i = 0; i < 30; i++)
-                    Randomized[i] = new NeuralPredictionModel(network);
-
-                RandomGenerations = 1;
-            }
-            else
-            {
-                while (!RandomMutations)
-                {
-                    Random r = new Random();
-                    
-                    for (int i = 4; i < 30; i++)
-                    {
-                        int Parent1 = r.Next(4), Parent2 = r.Next(4);
-                        while (Parent1 == Parent2)
-                            Parent2 = r.Next(4);
-
-                        Randomized[i] = Randomized[Parent1] + Randomized[Parent2];
-
-                        if (Randomized[i].isMutated) RandomMutations = true;
-                    }
-
-                    if (!RandomMutations)
-                        Randomized[r.Next(4)].IncreaseMutationRate();
-                }
-                
-
-                RandomGenerations++;
-            }
-
-            //Evolve Primary Branch
-
-            while (!Mutations)
-            {
-                Random r = new Random();
-
-                for (int i = 4; i < 30; i++)
-                {
-
-                    int Parent1 = r.Next(4), Parent2 = r.Next(4);
-                    while (Parent1 == Parent2)
-                        Parent2 = r.Next(4);
-
-                    Primary[i] = Primary[Parent1] + Primary[Parent2];
-
-                    if (Primary[i].isMutated) Mutations = true;
-                }
-
-                if (!Mutations)
-                    Primary[r.Next(4)].IncreaseMutationRate();
-            }            
-
-            Generations++;
-        }
-    }
+    
 
     public class NumberColor : IValueConverter
     {

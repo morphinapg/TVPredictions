@@ -41,7 +41,8 @@ namespace TV_Ratings_Predictions
 
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
         {
-            network.Filter(NetworkDatabase.CurrentYear);
+            network.UpdateAverages();
+            network.Filter(NetworkDatabase.CurrentYear);            
             NetworkDatabase.pendingSave = true;
             NetworkDatabase.canGoBack = false;
         }
