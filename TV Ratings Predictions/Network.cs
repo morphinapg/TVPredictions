@@ -357,6 +357,28 @@ namespace TV_Ratings_Predictions
                 }
         }
 
+        public void UpdateIndexes(int year)                             //Update Indexes for a custom year
+        {
+            var tempList = shows.Where(x => x.year == year).OrderByDescending(x => x.AverageRating).ToList();
+
+            double total = 0;
+            double[] totals = new double[tempList.Count];
+            Parallel.For(0, tempList.Count, i =>
+            {
+                totals[i] = tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1);   
+            });                                                                             
+            total = totals.Sum();
+
+            double cumulativeTotal = 0;
+
+            foreach (Show s in tempList)                                
+                if (s.ratings.Count > 0)
+                {
+                    s.ShowIndex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;    
+                    cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);                                
+                }
+        }
+
         public void UpdateAverages()                                //This method updates the ratings falloff values
         {                                                           //This is run whenever ratings numbers are changed
             ratingsAverages = new double[26];                       //The more shows there are, the longer this can take
@@ -1762,10 +1784,26 @@ namespace TV_Ratings_Predictions
 
         public MiniNetwork(Network n)
         {
+            List<int> yearlist = new List<int>();    
+
             name = n.name;
             factors = n.factors;
             shows = n.shows;
             model = n.model;
+
+            Parallel.ForEach(shows, s =>
+            {
+                s.UpdateAverage();
+                if (!yearlist.Contains(s.year))
+                    yearlist.Add(s.year);
+            });
+
+            shows.Sort();
+
+            foreach (int i in yearlist)
+                n.UpdateIndexes(i);
+
+            Parallel.ForEach(shows, s => s.PredictedOdds = model.GetOdds(s));
         }
     }
 
