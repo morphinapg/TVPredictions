@@ -329,7 +329,7 @@ namespace TV_Ratings_Predictions
 
         public void UpdateIndexes(bool parallel = false)                //The ShowIndex value represents a value between 0 to 1 for every show in a particular year
         {                                                               //This is a cumulative weighted percentile of rating, exclusive of 0 and 1
-            var tempList = FilteredShows.Reverse().ToList();
+            var tempList = FilteredShows.ToList();
 
             double total = 0;
 
@@ -359,7 +359,7 @@ namespace TV_Ratings_Predictions
 
         public void UpdateIndexes(int year)                             //Update Indexes for a custom year
         {
-            var tempList = shows.Where(x => x.year == year).OrderByDescending(x => x.AverageRating).ToList();
+            var tempList = shows.Where(x => x.year == year).OrderBy(x => x.AverageRating).ToList();
 
             double total = 0;
             double[] totals = new double[tempList.Count];
