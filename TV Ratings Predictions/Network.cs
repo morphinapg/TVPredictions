@@ -773,9 +773,9 @@ namespace TV_Ratings_Predictions
             get
             {
                 if (NetworkDatabase.UseOdds)
-                    return (show.OldRating == 0) ? 0 : Math.Round(odds - show.OldOdds, 2);
+                    return (show.OldRating == 0 && show.OldOdds == 0) ? 0 : Math.Round(odds - show.OldOdds, 2);
                 else
-                    return (show.OldRating == 0) ? 0 : Math.Round((odds - show.OldOdds) * 2, 2);
+                    return (show.OldRating == 0 && show.OldOdds == 0) ? 0 : Math.Round((odds - show.OldOdds) * 2, 2);
             }
         }
 
@@ -787,6 +787,17 @@ namespace TV_Ratings_Predictions
                 {
                     return (_predictionDiff != 0 && Status == "") ? _predictionDiff.ToString("↑0%; ↓0%") : "";
                 }
+                else
+                    return "";
+            }
+        }
+
+        public string NewShow
+        {
+            get
+            {
+                if (show.OldRating == 0 && show.OldOdds == 0)
+                    return "(NEW)";
                 else
                     return "";
             }

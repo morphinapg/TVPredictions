@@ -59,7 +59,11 @@
                             <controls:DataGridTemplateColumn Header="Show Name" >
                                 <controls:DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate x:DataType="local:PredictionContainer">
-                                        <TextBlock Text="{x:Bind Show}" Margin="5"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{x:Bind Show}" Margin="5"/>
+                                            <TextBlock Text="{x:Bind NewShow}" Margin="5" Foreground="DarkGoldenrod"/>
+                                        </StackPanel>
+                                        
                                     </DataTemplate>
                                 </controls:DataGridTemplateColumn.CellTemplate>
                             </controls:DataGridTemplateColumn>
