@@ -122,6 +122,9 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AddFactor.xaml.cs">
+      <DependentUpon>AddFactor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="AddNetwork.xaml.cs">
       <DependentUpon>AddNetwork.xaml</DependentUpon>
     </Compile>
@@ -162,6 +165,9 @@
     </Compile>
     <Compile Include="ShowsByRating.xaml.cs">
       <DependentUpon>ShowsByRating.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SortFactors.xaml.cs">
+      <DependentUpon>SortFactors.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -223,6 +229,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="AddFactor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="AddNetwork.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -268,6 +278,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ShowsByRating.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SortFactors.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

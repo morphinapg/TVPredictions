@@ -1047,7 +1047,7 @@ namespace TV_Ratings_Predictions
             for (int i = 0; i < NeuronCount; i++)
                 SecondLayerOutputs[i] = SecondLayer[i].GetOutput(FirstLayerOutputs);
 
-            s._calculatedThreshold = (Output.GetOutput(SecondLayerOutputs) + 1) / 2;
+            s._calculatedThreshold = (Output.GetOutput(SecondLayerOutputs, true) + 1) / 2;
 
 
 
@@ -1398,15 +1398,16 @@ namespace TV_Ratings_Predictions
             else
                 mutationintensity = MutateValue(mutationintensity);
 
-            neuralintensity = Math.Abs(neuralintensity + (r.NextDouble() * 2 - 1));
+            if (r.NextDouble() > 0.5)
+                neuralintensity = Math.Abs(neuralintensity + (r.NextDouble() * 2 - 1));
 
             Parallel.For(0, NeuronCount, i =>
             {
                 FirstLayer[i].isMutated = false;
-                FirstLayer[i].Mutate(mutationrate, neuralintensity);
+                FirstLayer[i].Mutate(mutationrate, neuralintensity, mutationintensity);
 
                 SecondLayer[i].isMutated = false;
-                SecondLayer[i].Mutate(mutationrate, neuralintensity);
+                SecondLayer[i].Mutate(mutationrate, neuralintensity, mutationintensity);
 
 
                 if (FirstLayer[i].isMutated || SecondLayer[i].isMutated)
@@ -1414,7 +1415,7 @@ namespace TV_Ratings_Predictions
             });
 
             Output.isMutated = false;
-            Output.Mutate(mutationrate, neuralintensity);
+            Output.Mutate(mutationrate, neuralintensity, mutationintensity);
             if (Output.isMutated)
                 isMutated = true;
         }
@@ -1891,7 +1892,7 @@ namespace TV_Ratings_Predictions
     [Serializable]
     public class Neuron
     {
-        double bias;
+        double bias, outputbias;
         double[] weights;
         int inputSize;
         public bool isMutated;
@@ -1902,6 +1903,7 @@ namespace TV_Ratings_Predictions
 
             Random r = new Random();
             bias = r.NextDouble() * 2 - 1;
+            outputbias = 0;
 
             weights = new double[inputs];
 
@@ -1922,6 +1924,7 @@ namespace TV_Ratings_Predictions
         {
             isMutated = false;
             bias = Breed(x.bias, y.bias);
+            outputbias = Breed(x.outputbias, y.outputbias);
 
             inputSize = x.inputSize;
 
@@ -1931,7 +1934,7 @@ namespace TV_Ratings_Predictions
                 weights[i] = Breed(x.weights[i],y.weights[i]);            
         }
 
-        public double GetOutput(double[] inputs)
+        public double GetOutput(double[] inputs, bool output = false)
         {
             double total = 0;
 
@@ -1940,7 +1943,7 @@ namespace TV_Ratings_Predictions
 
             total += bias;
 
-            return Activation(total);
+            return output ? Activation(total) : Activation(total) + outputbias;
         }
 
         double Activation(double d)
@@ -1958,7 +1961,7 @@ namespace TV_Ratings_Predictions
             return Math.Log((-d - 1) / (d - 1));
         }
 
-        public void Mutate(double mutationrate, double mutationintensity)
+        public void Mutate(double mutationrate, double neuralintensity, double mutationintensity)
         {
 
             Random r = new Random();
@@ -1968,7 +1971,7 @@ namespace TV_Ratings_Predictions
             {
                 if (r.NextDouble() < mutationrate)
                 {
-                    weights[i] += mutationintensity * (r.NextDouble() * 2 - 1);
+                    weights[i] += neuralintensity * (r.NextDouble() * 2 - 1);
                     isMutated = true;
                 }
                     
@@ -1976,7 +1979,20 @@ namespace TV_Ratings_Predictions
 
             if (r.NextDouble() < mutationrate)
             {
-                bias += mutationintensity * r.NextDouble();
+                bias += neuralintensity * r.NextDouble();
+                isMutated = true;
+            }
+
+            if (r.NextDouble() < mutationrate)
+            {
+                var d = (outputbias + 1) / 2;
+
+                double p = r.NextDouble();
+
+                double low = d * (1 - mutationintensity * p), high = 1 - (1 - d) * (1 - mutationintensity * p);
+                
+                var tempBias = r.NextDouble() * (high - low) + low;
+                outputbias = tempBias * 2 - 1;
                 isMutated = true;
             }
         }
@@ -2641,5 +2657,7 @@ namespace TV_Ratings_Predictions
                 StatusIndex = 0;
         }
     }
+
+
 
 }

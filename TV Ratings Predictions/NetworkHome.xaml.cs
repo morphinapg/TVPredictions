@@ -59,6 +59,8 @@ namespace TV_Ratings_Predictions
             ShowsList.ItemsSource = Predictions;
             Predictions.CollectionChanged += Predictions_CollectionChanged;
             UseOdds.IsChecked = NetworkDatabase.UseOdds;
+            AddFactor.IsEnabled = !NetworkDatabase.EvolutionStarted;
+            SortFactors.IsEnabled = !NetworkDatabase.EvolutionStarted;
 
             foreach (DataGridColumn c in ShowsList.Columns)
             {
@@ -180,6 +182,18 @@ namespace TV_Ratings_Predictions
         {
             NetworkDatabase.canGoBack = true;
             Frame.Navigate(typeof(NetworkAccuracy), network, new DrillInNavigationTransitionInfo());
+        }
+
+        private void AddFactor_Click(object sender, RoutedEventArgs e)
+        {
+            NetworkDatabase.canGoBack = true;
+            Frame.Navigate(typeof(AddFactor), network, new DrillInNavigationTransitionInfo());
+        }
+
+        private void SortFactors_Click(object sender, RoutedEventArgs e)
+        {
+            NetworkDatabase.canGoBack = true;
+            Frame.Navigate(typeof(SortFactors), network, new DrillInNavigationTransitionInfo());
         }
     }
 }

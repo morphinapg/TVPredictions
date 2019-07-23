@@ -117,7 +117,7 @@ namespace TV_Ratings_Predictions
             {
                 PrimaryButtonText = "Yes",
                 CloseButtonText = "No",
-                Content = "This will replace the previously saved prediction state for the " + NetworkDatabase.CurrentYear + " - " + (NetworkDatabase.CurrentYear+1) + " TV Season. Continue?"
+                Content = "This will replace the previously saved prediction state. Continue?"
             };
             ContentDialogResult result;
 
@@ -126,7 +126,7 @@ namespace TV_Ratings_Predictions
             {
                 Parallel.ForEach(NetworkList, n =>
                 {
-                    Parallel.ForEach(n.FilteredShows, s =>
+                    Parallel.ForEach(n.shows, s =>
                     {
                         s.OldRating = s.AverageRating;
                         s.OldOdds = s.PredictedOdds;

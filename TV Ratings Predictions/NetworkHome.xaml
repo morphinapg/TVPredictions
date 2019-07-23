@@ -30,13 +30,24 @@
 
             <Grid Grid.ColumnSpan="3">
                 <controls:WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button x:Name="ShowsByRating" Content="View Shows by Rating" Margin="10" Click="ShowsByRating_Click"/>
-                    <Button x:Name="ShowsByFactor" Content="View Shows by Factor" Margin="10" Click="ShowsByFactor_Click"/>
-                    <Button x:Name="NetworkModel" Content="View Prediction Breakdown" Click="NetworkModel_Click" Margin="10"/>
-                    <Button x:Name="Accuracy" Content="View Network Accuracy" Click="Accuracy_Click" Margin="10"/>
-                    <Button x:Name="AddShow" Content="Add Show" HorizontalAlignment="Center" Click="AddShow_Click" Margin="10"/>                    
-                    <Button x:Name="EditRatings" Content="Edit Ratings" Margin="10" Click="EditRatings_Click"/>
-                    <Button x:Name="ModifyShows" Content="Modify Shows" Margin="10" Click="ModifyShows_Click"/>                    
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="ShowsByRating" Content="View Shows by Rating" Margin="10" Click="ShowsByRating_Click"/>
+                        <Button x:Name="ShowsByFactor" Content="View Shows by Factor" Margin="10" Click="ShowsByFactor_Click"/>
+                        <Button x:Name="NetworkModel" Content="View Prediction Breakdown" Click="NetworkModel_Click" Margin="10"/>
+                        <Button x:Name="Accuracy" Content="View Network Accuracy" Click="Accuracy_Click" Margin="10"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="AddFactor" Content="Add Factor" Click="AddFactor_Click" Margin="10"/>
+                        <Button x:Name="SortFactors" Content="Sort Factors" Click="SortFactors_Click" Margin="10"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="AddShow" Content="Add Show" HorizontalAlignment="Center" Click="AddShow_Click" Margin="10"/>
+                        <Button x:Name="EditRatings" Content="Edit Ratings" Margin="10" Click="EditRatings_Click"/>
+                        <Button x:Name="ModifyShows" Content="Modify Shows" Margin="10" Click="ModifyShows_Click"/>
+                    </StackPanel>                                     
+                                        
                 </controls:WrapPanel>
             </Grid>            
         </Grid>
