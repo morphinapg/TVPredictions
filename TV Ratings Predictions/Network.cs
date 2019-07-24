@@ -1066,13 +1066,13 @@ namespace TV_Ratings_Predictions
             if (index > -1)
             {
                 for (int i = 0; i < InputCount - 2; i++)
-                    inputs[i] = s.factorValues[i] ? 1 : -1;
+                    inputs[i] = s.factorValues[i] ? 1 : -1;                
+                
+                inputs[InputCount - 1] = s.Halfhour ? 1 : -1;
 
                 inputs[index] = 0;
                 if (index2 > -1)
                     inputs[index2] = 0;
-                
-                inputs[InputCount - 1] = s.Halfhour ? 1 : -1;
 
             }
             else

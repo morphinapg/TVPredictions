@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Toolkit.Uwp.UI.Controls;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -334,7 +335,7 @@ namespace TV_Ratings_Predictions
                 else
                     detailName = "Hour long show";
 
-                NewOdds = network.model.GetOdds(s, false, true, s.factorNames.Count);
+                NewOdds = network.model.GetOdds(s, false, true, s.factorNames.Count + 1);
                 detailValue = CurrentOdds - NewOdds;
                 details.Add(new DetailsContainer(detailName, detailValue));
                 double max = 0;
@@ -413,20 +414,68 @@ namespace TV_Ratings_Predictions
                 foreach (DetailsContainer d in details)
                     change += d.Value;
 
-                var multiplier = (CurrentOdds - BaseOdds) / change;
+                double multiplier;
 
-                if (multiplier < 0)
+                if (change != 0 && change != (CurrentOdds - BaseOdds))
                 {
-                    multiplier *= -1;
+                    multiplier = (CurrentOdds - BaseOdds) / change;
 
-                    BaseOdds = CurrentOdds - change * multiplier;
+                    if (multiplier < 0)
+                        foreach (DetailsContainer d in details)
+                            d.Value *= -1;
+                }                    
 
-                    Base.Text = "Base Odds: " + BaseOdds.ToString("P");
+                double oldEx = 0, newEx = 0, exponent = 1;
+
+                while (oldEx == newEx)
+                {
+                    oldEx = newEx;
+                    change = 0;
+                    foreach (DetailsContainer d in details)
+                    {
+                        if (d.Value > 0)
+                            change += Math.Pow(d.Value, exponent);
+                        else
+                            change -= Math.Pow(-d.Value, exponent);
+                    }
+
+                    if (change != 0 && change != (CurrentOdds - BaseOdds))
+                        multiplier = (CurrentOdds - BaseOdds) / change;
+                    else
+                        multiplier = 1;
+
+                    if (multiplier > 1)
+                        newEx = -0.01;
+                    else if (multiplier < 1)
+                        newEx = 0.01;
+                    else
+                        newEx = 0;
+
+                    if (oldEx == 0)
+                        oldEx = newEx;
+
+                    exponent += newEx;
                 }
-                    
 
                 foreach (DetailsContainer d in details)
-                    d.Value *= multiplier;
+                {
+                    if (d.Value > 0)
+                        d.Value = Math.Pow(d.Value, exponent);
+                    else
+                        d.Value = -Math.Pow(-d.Value, exponent);
+                }                    
+
+                change = 0;
+                foreach (DetailsContainer d in details)
+                    change += d.Value;
+
+                if (change != 0 && change != (CurrentOdds - BaseOdds))
+                {
+                    multiplier = (CurrentOdds - BaseOdds) / change;
+
+                    foreach (DetailsContainer d in details)
+                        d.Value *= multiplier;
+                }
 
                 ShowName.Text = s.Name;
                 Odds.Text = "Predicted Odds: " + s.PredictedOdds.ToString("P");

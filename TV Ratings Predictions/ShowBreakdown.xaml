@@ -47,9 +47,9 @@
                     <TextBlock x:Name="ShowName" FontSize="36" Margin="10" TextAlignment="Center" Visibility="Collapsed"/>
 
                     <TextBlock Grid.Row="1" x:Name="Base" FontSize="24" Margin="10" TextAlignment="Center"/>
-                    <controls:DataGrid Grid.Row="2" x:Name="ShowDetails" Margin="15" ItemsSource="{x:Bind details}" HeadersVisibility="None" AutoGenerateColumns="False" HorizontalAlignment="Center" IsHitTestVisible="False">
+                    <controls:DataGrid Grid.Row="2" x:Name="ShowDetails" Margin="15" ItemsSource="{x:Bind details}" HeadersVisibility="Column" AutoGenerateColumns="False" HorizontalAlignment="Center" IsHitTestVisible="False">
                         <controls:DataGrid.Columns>
-                            <controls:DataGridTemplateColumn>
+                            <controls:DataGridTemplateColumn Header="Factor">
                                 <controls:DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate x:DataType="local:DetailsContainer">
                                         <TextBlock Text="{x:Bind Name}" Margin="5"/>
@@ -57,7 +57,7 @@
                                 </controls:DataGridTemplateColumn.CellTemplate>
                             </controls:DataGridTemplateColumn>
 
-                            <controls:DataGridTemplateColumn >
+                            <controls:DataGridTemplateColumn Header="Effect">
                                 <controls:DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate x:DataType="local:DetailsContainer">
                                         <TextBlock Text="{x:Bind FormattedValue, Mode=OneWay}" Foreground="{x:Bind Value, Converter={StaticResource StatusColor}, Mode=OneWay}" Margin="5"/>
