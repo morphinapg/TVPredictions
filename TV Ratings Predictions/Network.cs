@@ -997,7 +997,9 @@ namespace TV_Ratings_Predictions
             var r = new Random();
             var p = r.NextDouble();
 
-            return p > 0.5 ? x : y;
+            return (x * p) + (y * (1 - p));
+
+            //return p > 0.5 ? x : y;
         }
 
         private NeuralPredictionModel(NeuralPredictionModel x, NeuralPredictionModel y)
@@ -1959,7 +1961,9 @@ namespace TV_Ratings_Predictions
             var r = new Random();
             var p = r.NextDouble();
 
-            return p > 0.5 ? x : y;
+            return (x * p) + (y * (1 - p));
+
+            //return p > 0.5 ? x : y;
         }
 
         public Neuron(Neuron x, Neuron y)
@@ -2032,7 +2036,7 @@ namespace TV_Ratings_Predictions
                 double p = r.NextDouble();
 
                 double low = d * (1 - mutationintensity * p), high = 1 - (1 - d) * (1 - mutationintensity * p);
-                
+
                 var tempBias = r.NextDouble() * (high - low) + low;
                 outputbias = tempBias * 2 - 1;
                 isMutated = true;
