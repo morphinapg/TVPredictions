@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -52,331 +53,392 @@ namespace TV_Ratings_Predictions
         private void ShowSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var s = (Show)ShowSelector.SelectedItem;
-
-            details.Clear();
-
-            bool SyndicationFinished = false;
-            string detailName;
-            double CurrentOdds = network.model.GetOdds(s), NewOdds, detailValue;
-
-            Show tempShow;
-
-            for (int i = 0; i < network.factors.Count; i++)
+            
+            if (s != null)
             {
-                if ((network.factors[i] == "Syndication" || network.factors[i] == "Post-Syndication"))
+                details.Clear();
+
+                bool SyndicationFinished = false, OwnedFinished = false;
+                string detailName;
+                double CurrentOdds = network.model.GetOdds(s), NewOdds, detailValue;
+
+                var tempList = network.shows.OrderBy(x => x.Episodes).ToList();
+                int LowestEpisode = tempList.First().Episodes, HighestEpisode = tempList.Last().Episodes;
+
+                var AllOdds = new List<double>();
+
+                for (int i = LowestEpisode - 1; i < HighestEpisode; i++)
                 {
-                    if (!SyndicationFinished)
-                    {
-                        bool Syndication = false;
-                        bool PostSyndication = false;
-                        for (int x = 0; x < network.factors.Count; x++)
-                        {
-                            if (network.factors[x] == "Syndication")
-                                Syndication = s.factorValues[x];
-                            else if (network.factors[x] == "Post-Syndication")
-                                PostSyndication = s.factorValues[x];
-                        }
-
-                        ObservableCollection<bool> factors1 = new ObservableCollection<bool>(), factors2 = new ObservableCollection<bool>();
-
-                        if (Syndication)
-                        {
-                            detailName = "Will be syndicated next season";
-
-                            for (int x = 0; x < network.factors.Count; x++)
-                            {
-                                if (network.factors[x] == "Syndication")
-                                {
-                                    factors1.Add(false);
-                                    factors2.Add(false);
-                                }
-                                else if (network.factors[x] == "Post-Syndication")
-                                {
-                                    factors1.Add(false);
-                                    factors2.Add(true);
-                                }
-                                else
-                                {
-                                    factors1.Add(s.factorValues[x]);
-                                    factors2.Add(s.factorValues[x]);
-                                }
-                            }
-                        }
-                        else if (PostSyndication)
-                        {
-                            detailName = "Has already been syndicated";
-
-                            for (int x = 0; x < network.factors.Count; x++)
-                            {
-                                if (network.factors[x] == "Syndication")
-                                {
-                                    factors1.Add(false);
-                                    factors2.Add(true);
-                                }
-                                else if (network.factors[x] == "Post-Syndication")
-                                {
-                                    factors1.Add(false);
-                                    factors2.Add(false);
-                                }
-                                else
-                                {
-                                    factors1.Add(s.factorValues[x]);
-                                    factors2.Add(s.factorValues[x]);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            detailName = "Not syndicated yet";
-
-                            for (int x = 0; x < network.factors.Count; x++)
-                            {
-                                if (network.factors[x] == "Syndication")
-                                {
-                                    factors1.Add(true);
-                                    factors2.Add(false);
-                                }
-                                else if (network.factors[x] == "Post-Syndication")
-                                {
-                                    factors1.Add(false);
-                                    factors2.Add(true);
-                                }
-                                else
-                                {
-                                    factors1.Add(s.factorValues[x]);
-                                    factors2.Add(s.factorValues[x]);
-                                }
-                            }
-                        }
-
-                        Show
-                            tempshow1 = new Show(s.Name, network, factors1, s.Episodes, s.Halfhour, s.factorNames)
-                            {
-                                ShowIndex = s.ShowIndex
-                            },
-                            tempshow2 = new Show(s.Name, network, factors2, s.Episodes, s.Halfhour, s.factorNames)
-                            {
-                                ShowIndex = s.ShowIndex
-                            };
-
-                        NewOdds = (network.model.GetOdds(tempshow1) + network.model.GetOdds(tempshow2)) / 2;
-
-                        detailValue = CurrentOdds - NewOdds;
-
-                        details.Add(new DetailsContainer(detailName, detailValue));
-
-                        SyndicationFinished = true;
-                    }                    
-                }
-                else if ((network.factors[i] == "Spring" || network.factors[i] == "Summer"))
-                {
-                    bool Spring = false;
-                    bool Summer = false;
-
-                    for (int x = 0; x < network.factors.Count; x++)
-                    {
-                        if (network.factors[x] == "Spring")
-                            Spring = s.factorValues[x];
-                        else if (network.factors[x] == "Summer")
-                            Summer = s.factorValues[x];
-                    }
-
-                    if (network.factors[i] == "Spring")
-                    {
-                        if (Spring)
-                            detailName = "Premiered in the Spring";
-                        else if (Summer)
-                            detailName = "Did not premiere in the Spring";
-                        else
-                            detailName = "Premiered in the Fall";
-                    }
-                    else
-                    {
-                        if (Summer)
-                            detailName = "Aired in the Summer";
-                        else
-                            detailName = "Did not air in the Summer";
-                    }
-
-                    var factors = new ObservableCollection<bool>();
-                    for (int x = 0; x < s.factorValues.Count; x++)
-                    {
-                        if (x == i)
-                            factors.Add(!s.factorValues[i]);
-                        else
-                            factors.Add(s.factorValues[i]);
-                    }
-
-                    tempShow = new Show(s.Name, network, factors, s.Episodes, s.Halfhour, s.factorNames)
+                    var tShow = new Show(s.Name, network, s.factorValues, i, s.Halfhour, s.factorNames)
                     {
                         ShowIndex = s.ShowIndex
                     };
 
-                    NewOdds = network.model.GetOdds(tempShow);
-
-                    detailValue = CurrentOdds - NewOdds;
-
-                    details.Add(new DetailsContainer(detailName, detailValue));
+                    AllOdds.Add(network.model.GetOdds(tShow, false, true, -1));
                 }
-                else
-                {
-                    switch (network.factors[i])
-                    {
-                        case "Friday":
-                            {
-                                if (s.factorValues[i])
-                                    detailName = "Airs on Friday (or Saturday)";
-                                else
-                                    detailName = "Does not air on Friday (or Saturday)";
 
-                                break;
+                var BaseOdds = AllOdds.Sum() / AllOdds.Count;
+
+                //var averageIndex = network.model.GetAverageThreshold(true);
+                //var exponent = Math.Log(0.5) / Math.Log(averageIndex);
+                //var odds = Math.Pow(s.ShowIndex, exponent);
+
+                //var accuracy = network.model.TestAccuracy(true);
+
+                //if (odds > 0.5)
+                //{
+                //    odds -= 0.5;
+                //    odds *= 2;
+                //    BaseOdds = (odds * accuracy) / 2 + 0.5;
+                //}
+                //else
+                //{
+                //    odds *= 2;
+                //    odds = 1 - odds;
+                //    BaseOdds = (1 - (odds * odds)) / 2;
+                //}
+
+                Base.Text = "Base Odds: " + BaseOdds.ToString("P");
+
+
+                for (int i = 0; i < network.factors.Count; i++)
+                {
+                    if ((network.factors[i] == "Syndication" || network.factors[i] == "Post-Syndication"))
+                    {
+                        if (!SyndicationFinished)
+                        {
+                            bool Syndication = false;
+                            bool PostSyndication = false;
+                            for (int x = 0; x < network.factors.Count; x++)
+                            {
+                                if (network.factors[x] == "Syndication")
+                                    Syndication = s.factorValues[x];
+                                else if (network.factors[x] == "Post-Syndication")
+                                    PostSyndication = s.factorValues[x];
                             }
-                        case "Not Original":
+
+                            ObservableCollection<bool> factors1 = new ObservableCollection<bool>(), factors2 = new ObservableCollection<bool>();
+
+                            if (Syndication)
+                            {
+                                detailName = "Will be syndicated next season";
+
+                                for (int x = 0; x < network.factors.Count; x++)
+                                {
+                                    if (network.factors[x] == "Syndication")
+                                    {
+                                        factors1.Add(false);
+                                        factors2.Add(false);
+                                    }
+                                    else if (network.factors[x] == "Post-Syndication")
+                                    {
+                                        factors1.Add(false);
+                                        factors2.Add(true);
+                                    }
+                                    else
+                                    {
+                                        factors1.Add(s.factorValues[x]);
+                                        factors2.Add(s.factorValues[x]);
+                                    }
+                                }
+                            }
+                            else if (PostSyndication)
+                            {
+                                detailName = "Has already been syndicated";
+
+                                for (int x = 0; x < network.factors.Count; x++)
+                                {
+                                    if (network.factors[x] == "Syndication")
+                                    {
+                                        factors1.Add(false);
+                                        factors2.Add(true);
+                                    }
+                                    else if (network.factors[x] == "Post-Syndication")
+                                    {
+                                        factors1.Add(false);
+                                        factors2.Add(false);
+                                    }
+                                    else
+                                    {
+                                        factors1.Add(s.factorValues[x]);
+                                        factors2.Add(s.factorValues[x]);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                detailName = "Not syndicated yet";
+
+                                for (int x = 0; x < network.factors.Count; x++)
+                                {
+                                    if (network.factors[x] == "Syndication")
+                                    {
+                                        factors1.Add(true);
+                                        factors2.Add(false);
+                                    }
+                                    else if (network.factors[x] == "Post-Syndication")
+                                    {
+                                        factors1.Add(false);
+                                        factors2.Add(true);
+                                    }
+                                    else
+                                    {
+                                        factors1.Add(s.factorValues[x]);
+                                        factors2.Add(s.factorValues[x]);
+                                    }
+                                }
+                            }
+
+                            int index = -1, index2 = -1;
+                            if (s.factorNames.Contains("Syndication"))
+                            {
+                                index = s.factorNames.IndexOf("Syndication");
+                                if (s.factorNames.Contains("Post-Syndication"))
+                                    index2 = s.factorNames.IndexOf("Post-Syndication");
+                            }
+                            else
+                            {
+                                index = s.factorNames.IndexOf("Post-Syndication");
+                            }
+
+                            NewOdds = network.model.GetOdds(s, false, true, index, index2);
+
+                            detailValue = CurrentOdds - NewOdds;
+
+                            details.Add(new DetailsContainer(detailName, detailValue));
+
+                            SyndicationFinished = true;
+                        }
+                    }
+                    else if ((network.factors[i] == "Spring" || network.factors[i] == "Summer"))
+                    {
+                        bool Spring = false;
+                        bool Summer = false;
+
+                        for (int x = 0; x < network.factors.Count; x++)
+                        {
+                            if (network.factors[x] == "Spring")
+                                Spring = s.factorValues[x];
+                            else if (network.factors[x] == "Summer")
+                                Summer = s.factorValues[x];
+                        }
+
+                        if (network.factors[i] == "Spring")
+                        {
+                            if (Spring)
+                                detailName = "Premiered in the Spring";
+                            else if (Summer)
+                                detailName = "Did not premiere in the Spring";
+                            else
+                                detailName = "Premiered in the Fall";
+                        }
+                        else
+                        {
+                            if (Summer)
+                                detailName = "Aired in the Summer";
+                            else
+                                detailName = "Did not air in the Summer";
+                        }
+
+                        NewOdds = network.model.GetOdds(s, false, true, i);
+
+                        detailValue = CurrentOdds - NewOdds;
+
+                        details.Add(new DetailsContainer(detailName, detailValue));
+                    }
+                    else if ((network.factors[i] == "Not Original" || network.factors[i] == "CBS Show"))
+                    {
+                        if (!OwnedFinished)
+                        {
+                            if (s.factorNames.Contains("CBS Show") && s.factorNames.Contains("Not Original"))
+                            {
+                                int index = s.factorNames.IndexOf("Not Original"), index2 = s.factorNames.IndexOf("CBS Show");
+                                bool NotOriginal = s.factorValues[index], CBSShow = s.factorValues[index2];
+
+                                if (NotOriginal)
+                                    detailName = "Show is not owned by the network";
+                                else if (CBSShow)
+                                    detailName = "Show is owned by CBS";
+                                else
+                                    detailName = "Show is owned by WB";
+
+                                NewOdds = network.model.GetOdds(s, false, true, index, index2);
+                            }
+                            else
                             {
                                 if (s.factorValues[i])
                                     detailName = "Show is not owned by the network";
                                 else
                                     detailName = "Show is owned by the network";
 
-                                break;
+                                NewOdds = network.model.GetOdds(s, false, true, i);
                             }
-                        case "10pm":
-                            {
-                                if (s.factorValues[i])
-                                    detailName = "Airs at 10pm";
-                                else
-                                    detailName = "Airs before 10pm";
 
-                                break;
-                            }
-                        case "Animated":
-                            {
-                                if (s.factorValues[i])
-                                    detailName = "Animated show";
-                                else
-                                    detailName = "Non-animated show";
-
-                                break;
-                            }
-                        case "CBS Show":
-                            {
-                                if (s.factorValues[i])
-                                    detailName = "Show is owned by CBS";
-                                else
-                                    detailName = "Show is not owned by CBS";
-
-                                break;
-                            }
-                        default:
-                            {
-                                if (s.factorValues[i])
-                                    detailName = "'" + s.factorNames[i] + "' is True";
-                                else
-                                    detailName = "'" + s.factorNames[i] + "' is False";
-
-                                break;
-                            }
+                            detailValue = CurrentOdds - NewOdds;
+                            details.Add(new DetailsContainer(detailName, detailValue));
+                            OwnedFinished = true;
+                        }
                     }
-
-                    var factors = new ObservableCollection<bool>();
-                    for (int x = 0; x < s.factorValues.Count; x++)
+                    else
                     {
-                        if (x == i)
-                            factors.Add(!s.factorValues[i]);
-                        else
-                            factors.Add(s.factorValues[i]);
-                    }
+                        switch (network.factors[i])
+                        {
+                            case "Friday":
+                                {
+                                    if (s.factorValues[i])
+                                        detailName = "Airs on Friday (or Saturday)";
+                                    else
+                                        detailName = "Does not air on Friday (or Saturday)";
 
-                    tempShow = new Show(s.Name, network, factors, s.Episodes, s.Halfhour, s.factorNames)
+                                    break;
+                                }
+                            case "10pm":
+                                {
+                                    if (s.factorValues[i])
+                                        detailName = "Airs at 10pm";
+                                    else
+                                        detailName = "Airs before 10pm";
+
+                                    break;
+                                }
+                            case "Animated":
+                                {
+                                    if (s.factorValues[i])
+                                        detailName = "Animated show";
+                                    else
+                                        detailName = "Non-animated show";
+
+                                    break;
+                                }
+                            default:
+                                {
+                                    if (s.factorValues[i])
+                                        detailName = "'" + s.factorNames[i] + "' is True";
+                                    else
+                                        detailName = "'" + s.factorNames[i] + "' is False";
+
+                                    break;
+                                }
+                        }
+
+                        NewOdds = network.model.GetOdds(s, false, true, i);
+
+                        detailValue = CurrentOdds - NewOdds;
+
+                        details.Add(new DetailsContainer(detailName, detailValue));
+                    }
+                }
+
+                if (s.Halfhour)
+                    detailName = "Half hour show";
+                else
+                    detailName = "Hour long show";
+
+                NewOdds = network.model.GetOdds(s, false, true, s.factorNames.Count);
+                detailValue = CurrentOdds - NewOdds;
+                details.Add(new DetailsContainer(detailName, detailValue));
+                double max = 0;
+                int peak = 0;
+
+                
+
+
+                var OddsByEpisode = new double[26];
+                Parallel.For(LowestEpisode - 1, HighestEpisode - 1, i =>
+                {
+                    var tShow = new Show(s.Name, network, s.factorValues, i, s.Halfhour, s.factorNames)
                     {
                         ShowIndex = s.ShowIndex
                     };
 
-                    NewOdds = network.model.GetOdds(tempShow);
+                    OddsByEpisode[i] = network.model.GetOdds(tShow);
 
-                    detailValue = CurrentOdds - NewOdds;
+                    if (OddsByEpisode[i] > max)
+                    {
+                        max = OddsByEpisode[i];
+                        peak = i + 1;
+                    }
+                });
 
-                    details.Add(new DetailsContainer(detailName, detailValue));
+                int low = s.Episodes, high = s.Episodes;
+                bool foundLow = false, foundHigh = false;
+
+
+                for (int i = s.Episodes - 1; i < HighestEpisode && !foundHigh; i++)
+                {
+
+                    if (OddsByEpisode[i] == OddsByEpisode[s.Episodes - 1])
+                        high = i + 1;
+                    else
+                        foundHigh = true;
                 }
-            }
-
-            if (s.Halfhour)
-                detailName = "Half hour show";
-            else
-                detailName = "Hour long show";
-
-            tempShow = new Show(s.Name, network, s.factorValues, s.Episodes, !s.Halfhour, s.factorNames)
-            {
-                ShowIndex = s.ShowIndex
-            };
-
-            NewOdds = network.model.GetOdds(tempShow);
-            detailValue = CurrentOdds - NewOdds;
-            details.Add(new DetailsContainer(detailName, detailValue));
-
-            var OddsByEpisode = new double[26];
-            Parallel.For(0, 26, i =>
-            {
-                var tShow = new Show(s.Name, network, s.factorValues, i, s.Halfhour, s.factorNames)
+                for (int i = s.Episodes - 1; i >= LowestEpisode - 1 && !foundLow; i--)
                 {
-                    ShowIndex = s.ShowIndex
-                };
 
-                OddsByEpisode[i] = network.model.GetOdds(tShow);
-            });
-
-            int low = s.Episodes, high = s.Episodes;
-            bool foundLow = false, foundHigh = false;
-
-            for (int i = s.Episodes - 1; i < 26 && !foundHigh; i++)
-            {
-                if (OddsByEpisode[i] == OddsByEpisode[s.Episodes - 1])
-                    high = i + 1;
-                else
-                    foundHigh = true;
-            }
-            for (int i = s.Episodes - 1; i > -1 && !foundLow; i--)
-            {
-                if (OddsByEpisode[i] == OddsByEpisode[s.Episodes - 1])
-                    low = i + 1;
-                else
-                    foundLow = true;
-            }
-
-            double total = 0;
-            int count = 0;
-            for (int i = 0; i < 26; i++)
-                if (i < low - 1 || i >= high)
-                {
-                    total += OddsByEpisode[i];
-                    count++;
+                    if (OddsByEpisode[i] == OddsByEpisode[s.Episodes - 1])
+                        low = i + 1;
+                    else
+                        foundLow = true;
                 }
 
-            NewOdds = (count > 0) ? total / count : CurrentOdds;
+                double total = 0;
+                int count = 0;
+                for (int i = 0; i < 26; i++)
+                    if (i < low - 1 || i >= high)
+                    {
+                        total += OddsByEpisode[i];
+                        count++;
+                    }
 
-            if ((low == 1 && high == 26) || (low == high) || (NewOdds == CurrentOdds))
-                detailName = s.Episodes + " episodes ordered";
-            else if (low == 1)
-                detailName = "Less than " + (high + 1) + " episodes ordered";
-            else if (high == 26)
-                detailName = "More than " + (low - 1) + " episodes ordered";
-            else
-                detailName = s.Episodes + " episodes ordered (betwwen " + low + " and " + high + " episodes)";
+                NewOdds = (count > 0) ? total / count : CurrentOdds;
 
-            
-            detailValue = CurrentOdds - NewOdds;
-            details.Add(new DetailsContainer(detailName, detailValue));
-
-            ShowName.Text = s.Name;
-            Odds.Text = "Predicted Odds: " + s.PredictedOdds.ToString("P");
-
-            if (s.Renewed || s.Canceled)
-            {
-                if ((s.Renewed && CurrentOdds > 0.5) || (s.Canceled && CurrentOdds < 0.5))
-                    Odds.Text += " ✔";
+                if ((low == 1 && high == 26) || (low == high) || (NewOdds == CurrentOdds))
+                    detailName = s.Episodes + " episodes ordered";
+                else if (low == 1)
+                    detailName = "Less than " + (high + 1) + " episodes ordered";
+                else if (high == 26)
+                    detailName = "More than " + (low - 1) + " episodes ordered";
                 else
-                    Odds.Text += " ❌";
-            } 
+                    detailName = s.Episodes + " episodes ordered (betwwen " + low + " and " + high + " episodes)";
+
+                
+                Optimal.Text = "Optimal # of episodes for " + s.Name + ": " + peak;
+
+
+                detailValue = CurrentOdds - NewOdds;
+
+                details.Add(new DetailsContainer(detailName, detailValue));
+
+                double change = 0;
+                foreach (DetailsContainer d in details)
+                    change += d.Value;
+
+                var multiplier = (CurrentOdds - BaseOdds) / change;
+
+                if (multiplier < 0)
+                {
+                    multiplier *= -1;
+
+                    BaseOdds = CurrentOdds - change * multiplier;
+
+                    Base.Text = "Base Odds: " + BaseOdds.ToString("P");
+                }
+                    
+
+                foreach (DetailsContainer d in details)
+                    d.Value *= multiplier;
+
+                ShowName.Text = s.Name;
+                Odds.Text = "Predicted Odds: " + s.PredictedOdds.ToString("P");
+
+                if (s.Renewed || s.Canceled)
+                {
+                    if ((s.Renewed && CurrentOdds > 0.5) || (s.Canceled && CurrentOdds < 0.5))
+                        Odds.Text += " ✔";
+                    else
+                        Odds.Text += " ❌";
+                }
+            }            
 
         }
 
@@ -402,15 +464,28 @@ namespace TV_Ratings_Predictions
         }
     }
 
-    public class DetailsContainer
+    public class DetailsContainer : INotifyPropertyChanged
     {
         public String Name;
         double _value;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
         public double Value
         {
             get
             {
                 return Math.Round(_value, 4);
+            }
+            set
+            {
+                _value = value;
+                OnPropertyChanged("Value");
+                OnPropertyChanged("FormattedValue");
             }
         }
         public string FormattedValue

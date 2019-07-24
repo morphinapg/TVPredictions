@@ -1054,6 +1054,48 @@ namespace TV_Ratings_Predictions
             return s._calculatedThreshold;
         }
 
+        public double GetModifiedThreshold(Show s, int index, int index2 = -1)
+        {
+            var inputs = new double[InputCount];
+            double[]
+                FirstLayerOutputs = new double[NeuronCount],
+                SecondLayerOutputs = new double[NeuronCount];
+
+            if (index > -1)
+            {
+                for (int i = 0; i < InputCount - 2; i++)
+                    inputs[i] = s.factorValues[i] ? 1 : -1;
+
+                inputs[index] = 0;
+                if (index2 > -1)
+                    inputs[index2] = 0;
+                
+                inputs[InputCount - 1] = s.Halfhour ? 1 : -1;
+
+            }
+            else
+            {
+                for (int i = 0; i < InputCount - 2; i++)
+                    inputs[i] = 0;
+
+                inputs[InputCount - 1] = 0;
+            }                
+
+            inputs[InputCount - 2] = s.Episodes / 26.0 * 2 - 1;
+
+
+
+            for (int i = 0; i < NeuronCount; i++)
+                FirstLayerOutputs[i] = FirstLayer[i].GetOutput(inputs);
+
+            for (int i = 0; i < NeuronCount; i++)
+                SecondLayerOutputs[i] = SecondLayer[i].GetOutput(FirstLayerOutputs);
+
+            s._calculatedThreshold = (Output.GetOutput(SecondLayerOutputs, true) + 1) / 2;
+
+            return s._calculatedThreshold;
+        }
+
         public double GetAverageThreshold(bool parallel = false)
         {
             double total = 0;
@@ -1088,9 +1130,9 @@ namespace TV_Ratings_Predictions
             return total / count;
         }
 
-        public double GetOdds(Show s, bool raw = false)
+        public double GetOdds(Show s, bool raw = false, bool modified = false, int index = -1, int index2 = -1)
         {
-            var threshold = GetThreshold(s);
+            var threshold = modified ? GetModifiedThreshold(s, index, index2) : GetThreshold(s);
             var exponent = Math.Log(0.5) / Math.Log(threshold);
             var baseOdds = Math.Pow(s.ShowIndex, exponent);
 

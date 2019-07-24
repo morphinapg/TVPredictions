@@ -40,11 +40,14 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <TextBlock x:Name="ShowName" FontSize="36" Margin="10" TextAlignment="Center" Visibility="Collapsed"/>
 
-                    <controls:DataGrid Grid.Row="1" x:Name="ShowDetails" Margin="15" ItemsSource="{x:Bind details}" HeadersVisibility="None" AutoGenerateColumns="False" HorizontalAlignment="Center" IsHitTestVisible="False">
+                    <TextBlock Grid.Row="1" x:Name="Base" FontSize="24" Margin="10" TextAlignment="Center"/>
+                    <controls:DataGrid Grid.Row="2" x:Name="ShowDetails" Margin="15" ItemsSource="{x:Bind details}" HeadersVisibility="None" AutoGenerateColumns="False" HorizontalAlignment="Center" IsHitTestVisible="False">
                         <controls:DataGrid.Columns>
                             <controls:DataGridTemplateColumn>
                                 <controls:DataGridTemplateColumn.CellTemplate>
@@ -57,16 +60,17 @@
                             <controls:DataGridTemplateColumn >
                                 <controls:DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate x:DataType="local:DetailsContainer">
-                                        <TextBlock Text="{x:Bind FormattedValue}" Foreground="{x:Bind Value, Converter={StaticResource StatusColor}}" Margin="5"/>
+                                        <TextBlock Text="{x:Bind FormattedValue, Mode=OneWay}" Foreground="{x:Bind Value, Converter={StaticResource StatusColor}, Mode=OneWay}" Margin="5"/>
                                     </DataTemplate>
                                 </controls:DataGridTemplateColumn.CellTemplate>
                             </controls:DataGridTemplateColumn>
                         </controls:DataGrid.Columns>
                     </controls:DataGrid>
 
-                    <TextBlock x:Name="Disclaimer" Grid.Row="2" Margin="15,5,15,5" Opacity="0.655" Text="The prediction model uses a neural network to generate a renewal threshold. It does not add each factor individually, but considers them all at the same time. This allows each factor to react differently to each unique set of circumstances for each show, rather than always applying the same effect every time. Due to the nature of the neural network, you can't simply add these values together. The numbers represent the difference between the current odds, and what would happen if only that one factor was changed while the other factors remained the same." HorizontalAlignment="Center" TextWrapping="Wrap" Visibility="Collapsed" TextAlignment="Justify"/>
+                    <TextBlock x:Name="Disclaimer" Grid.Row="3" Margin="15,5,15,5" Opacity="0.655" Text="The prediction model uses a neural network to generate a renewal threshold. It does not add each factor individually, but considers them all at the same time. This allows each factor to react differently to each unique set of circumstances for each show, rather than always applying the same effect every time. The values listed here are the approximate contribution of each factor in the neural network computation for this specific show, but changing one or more of the other factors can significantly alter how each factor contributes to the final odds. Even to the point that some factors may have the opposite effect under different circumstances." HorizontalAlignment="Center" TextWrapping="Wrap" Visibility="Collapsed" TextAlignment="Justify"/>
 
-                    <TextBlock Grid.Row="3" x:Name="Odds" FontSize="36" Margin="10" TextAlignment="Center"/>
+                    <TextBlock Grid.Row="4" x:Name="Odds" FontSize="36" Margin="10" TextAlignment="Center"/>
+                    <TextBlock Grid.Row="5" x:Name="Optimal" Margin="5,5,5,15" TextAlignment="Center"/>
                 </Grid>
             </ScrollViewer>
         </Grid>
