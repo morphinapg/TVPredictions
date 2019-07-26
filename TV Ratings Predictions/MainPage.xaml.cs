@@ -40,18 +40,7 @@ namespace TV_Ratings_Predictions
             var coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = true;
 
-            var year = DateTime.Today.Month < 9 ? DateTime.Today.Year - 1 : DateTime.Today.Year;
-            NetworkDatabase.CurrentYear = year;
-            NetworkDatabase.MaxYear = year;
-            TVSeason.Date = new DateTime(year, 9, 1);
-            TVSeason.MaxYear = TVSeason.Date;
-
-            ReadSettingsAsync();
-
-            timer = new DispatcherTimer();
-            timer.Interval = new TimeSpan(0, 0, 1);
-            timer.Tick += Timer_Tick;
-            timer.Start();
+            ReadSettingsAsync();    
         }
 
         private void Timer_Tick(object sender, object e)
@@ -83,6 +72,27 @@ namespace TV_Ratings_Predictions
             await NetworkDatabase.ReadSettings();
 
             NetworkCollection = NetworkDatabase.NetworkList;
+
+            var year = DateTime.Today.Month < 9 ? DateTime.Today.Year - 1 : DateTime.Today.Year;
+            NetworkDatabase.MaxYear = year;
+            TVSeason.MaxYear = TVSeason.Date;
+
+            int count = 0;
+            foreach (Network n in NetworkCollection)
+                count += n.shows.Where(x => x.year == year).ToList().Count;
+
+            if (count == 0)
+                year--;
+
+            NetworkDatabase.CurrentYear = year;
+            
+            TVSeason.Date = new DateTime(year, 9, 1);
+            
+
+            timer = new DispatcherTimer();
+            timer.Interval = new TimeSpan(0, 0, 1);
+            timer.Tick += Timer_Tick;
+            timer.Start();
 
             MainFrame.Navigate(typeof(HomePage));
         }
