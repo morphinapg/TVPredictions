@@ -1,11 +1,11 @@
-This week CW premiered Pandora, to underwhelming ratings. It starts out leaning towards cancellation. 
+This week, CBS canceled The Code. Unfortunately, we had this one as a likely renewal, so that's a miss.
 
-Also this week were minor changes to previous announcements. Agents of SHIELD was previously renewed for Season 7 before Season 6 even aired, which was particularly surprising given it was low enough to be canceled last year. Well, this week ABC announced that Season 7 will be the final season. In terms of the prediction model, this will count partially towards cancellation, just as any other "renewed for final season" news would normally.
+Also, you may notice some differences on the charts for NBC and ABC. Will & Grace, and Agents of SHIELD were both already renewed for next season before the current seasons started. However, recently, both shows announced that the next season would be the last. Because these predictions are based on a statistical model, we need to consider how to factor these shows in. If those shows had announced that the next season would be the final season before they premiered, then those shows would simply not be counted towards the statistics for that network, and that's because that their future was set, no matter what their ratings were. However, these networks decided to make the next season the final season, AFTER seeing their ratings. That means the ratings were viewed negatively, and therefore, it makes the most sense to count these shows internally as cancellations. That's why you will see them colored red.
 
-Also, FOX previously announced that The Orville was renewed, but it turns out that while a third season will be produced, it will no longer air on FOX. Instead, it will move to Hulu.
+The InBetween and What Just Happened with Fred Savage both drop from likely canceled to certain cancellations.
 
-On NBC, AP Bio was previously canceled, but it turns out they've changed their mind as well, and will produce the next season exclusively for their streaming service. 
+Grad Hotel upgrades all the way from a likely cancellation to a likely renewal.
 
-This week, Ransom drops from likely renewed to leaning towards cancellation.
+Reef Break upgrades from a certain cancellation to just likely canceled.
 
-The InBetween upgrades from a certain cancellation to just likely canceled.
+Sometimes you'll see major shifts in a prediction like that of Grand Hotel even when the ratings haven't changed much. In this case, the ratings actually got worse! The reason for that is that I'm constantly training my neural network all week long, and it will occasionally hook into something that makes it significantly more accurate, but that can end up significantly changing the model in the process. So if you see something like that happen, it's just because my predictions for that network have become more accurate. For ABC, this may have in part been because of the reclassification of Agents of SHIELD as described above.
