@@ -341,11 +341,8 @@ namespace TV_Ratings_Predictions
                 double max = 0;
                 int peak = 0;
 
-                
-
-
                 var OddsByEpisode = new double[26];
-                Parallel.For(LowestEpisode - 1, HighestEpisode - 1, i =>
+                for (int i = LowestEpisode - 1; i < HighestEpisode - 1; i++)
                 {
                     var tShow = new Show(s.Name, network, s.factorValues, i, s.Halfhour, s.factorNames)
                     {
@@ -354,12 +351,12 @@ namespace TV_Ratings_Predictions
 
                     OddsByEpisode[i] = network.model.GetOdds(tShow);
 
-                    if (OddsByEpisode[i] > max)
+                    if (OddsByEpisode[i] >= max)
                     {
                         max = OddsByEpisode[i];
                         peak = i + 1;
                     }
-                });
+                }
 
                 int low = s.Episodes, high = s.Episodes;
                 bool foundLow = false, foundHigh = false;
@@ -400,7 +397,7 @@ namespace TV_Ratings_Predictions
                 else if (high == 26)
                     detailName = "More than " + (low - 1) + " episodes ordered";
                 else
-                    detailName = s.Episodes + " episodes ordered (betwwen " + low + " and " + high + " episodes)";
+                    detailName = s.Episodes + " episodes ordered (between " + low + " and " + high + " episodes)";
 
                 
                 Optimal.Text = "Optimal # of episodes for " + s.Name + ": " + peak;

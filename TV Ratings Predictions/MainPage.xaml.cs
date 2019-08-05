@@ -75,7 +75,7 @@ namespace TV_Ratings_Predictions
 
             var year = DateTime.Today.Month < 9 ? DateTime.Today.Year - 1 : DateTime.Today.Year;
             NetworkDatabase.MaxYear = year;
-            TVSeason.MaxYear = TVSeason.Date;
+            
 
             int count = 0;
             foreach (Network n in NetworkCollection)
@@ -85,9 +85,11 @@ namespace TV_Ratings_Predictions
                 year--;
 
             NetworkDatabase.CurrentYear = year;
+
             
             TVSeason.Date = new DateTime(year, 9, 1);
-            
+            TVSeason.MaxYear = new DateTime(NetworkDatabase.MaxYear, 9, 1);
+
 
             timer = new DispatcherTimer();
             timer.Interval = new TimeSpan(0, 0, 1);
