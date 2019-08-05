@@ -111,7 +111,33 @@ namespace TV_Ratings_Predictions
 
         }
 
-        private async void SaveState_ClickAsync(object sender, RoutedEventArgs e)
+        //private async void SaveState_ClickAsync(object sender, RoutedEventArgs e)
+        //{
+        //    ContentDialog dialog = new ContentDialog
+        //    {
+        //        PrimaryButtonText = "Yes",
+        //        CloseButtonText = "No",
+        //        Content = "This will replace the previously saved prediction state. Continue?"
+        //    };
+        //    ContentDialogResult result;
+
+        //    result = await dialog.ShowAsync();
+        //    if (result == ContentDialogResult.Primary)
+        //    {
+        //        Parallel.ForEach(NetworkList, n =>
+        //        {
+        //            Parallel.ForEach(n.shows, s =>
+        //            {
+        //                s.OldRating = s.AverageRating;
+        //                s.OldOdds = s.PredictedOdds;
+        //            });
+        //        });
+
+        //        NetworkDatabase.pendingSave = true;
+        //    }
+        //}
+
+        private async void Export_Click(object sender, RoutedEventArgs e)
         {
             ContentDialog dialog = new ContentDialog
             {
@@ -124,6 +150,8 @@ namespace TV_Ratings_Predictions
             result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
+                await NetworkDatabase.WritePredictionsAsync();
+
                 Parallel.ForEach(NetworkList, n =>
                 {
                     Parallel.ForEach(n.shows, s =>
@@ -135,11 +163,6 @@ namespace TV_Ratings_Predictions
 
                 NetworkDatabase.pendingSave = true;
             }
-        }
-
-        private async void Export_Click(object sender, RoutedEventArgs e)
-        {
-            await NetworkDatabase.WritePredictionsAsync();
         }
     }
 }
