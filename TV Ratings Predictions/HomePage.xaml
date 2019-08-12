@@ -67,7 +67,7 @@
             <Button x:Name="StartEvolution" Content="▶ Start Evolution" Click="StartEvolution_Click" Margin="15"/>
             <Button x:Name="StopEvolution" Content="🛑 Stop Evolution" Visibility="Collapsed" Click="StopEvolution_Click" Margin="15"/>            
             <!--<Button x:Name="SaveState" Content="💾 Save Prediction State" Click="SaveState_ClickAsync" Margin="15"/>-->
-            <Button x:Name="Export" Content="📝 Export Predictions" Click="Export_Click" Margin="15"/>
+            <Button x:Name="Export" Content="💾 Export and Save Predictions" Click="Export_Click" Margin="15"/>
         </StackPanel>
         
     </Grid>
