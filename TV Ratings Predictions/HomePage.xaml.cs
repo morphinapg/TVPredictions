@@ -164,5 +164,10 @@ namespace TV_Ratings_Predictions
                 NetworkDatabase.pendingSave = true;
             }
         }
+
+        private void AllShows_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(AllShowsByRating));
+        }
     }
 }

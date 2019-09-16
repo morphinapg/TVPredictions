@@ -1422,16 +1422,6 @@ namespace TV_Ratings_Predictions
             return d;
         }
 
-        double Activation(double d)
-        {
-            return (2 / (1 + Math.Exp(-1 * d))) - 1;
-        }
-
-        double ReverseActivation(double d)
-        {
-            return Math.Log((-d - 1) / (d - 1));
-        }
-
         public void MutateModel()
         {
             var r = new Random();
@@ -1572,48 +1562,6 @@ namespace TV_Ratings_Predictions
                     return false;
             }
         }
-
-        //public double GetAverageExponent(int i, bool isTrue)
-        //{
-        //    double trueExponent = GetExponent(trueIndex[i]), falseExponent = GetExponent(falseIndex[i]);
-
-        //    double total = 0;
-        //    int count = 0;
-
-        //    if (i == trueIndex.Length - 2)
-        //    {
-        //        foreach (Show s in shows)
-        //            if (s.ratings.Count > 0)
-        //            {
-        //                total += (s.Episodes > EpisodeThreshold) ? trueExponent : falseExponent;
-        //                count++;
-        //            }
-        //    }
-        //    else if (i == trueIndex.Length - 1)
-        //    {
-        //        foreach (Show s in shows)
-        //            if (s.ratings.Count > 0)
-        //            {
-        //                total += s.Halfhour ? trueExponent : falseExponent;
-        //                count++;
-        //            }
-        //    }
-        //    else
-        //    {
-        //        foreach (Show s in shows)
-        //            if (s.ratings.Count > 0)
-        //            {
-        //                total += s.factorValues[i] ? trueExponent : falseExponent;
-        //                count++;
-        //            }
-        //    }
-
-        //    double average = total / count;
-        //    average = isTrue ? trueExponent / average : falseExponent / average;
-        //    average = average * weight[i] + 1 - weight[i];
-
-        //    return average;
-        //}
     }
 
     [Serializable]

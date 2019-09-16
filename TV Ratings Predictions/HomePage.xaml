@@ -69,6 +69,7 @@
             <!--<Button x:Name="SaveState" Content="💾 Save Prediction State" Click="SaveState_ClickAsync" Margin="15"/>-->
             <Button x:Name="Export" Content="💾 Export and Save Predictions" Click="Export_Click" Margin="15"/>
         </StackPanel>
-        
+
+        <HyperlinkButton x:Name="AllShows" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10,10,25,10" Click="AllShows_Click">All Shows by Rating</HyperlinkButton>
     </Grid>
 </Page>
