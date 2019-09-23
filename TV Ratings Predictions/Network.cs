@@ -1056,7 +1056,7 @@ namespace TV_Ratings_Predictions
             return s._calculatedThreshold;
         }
 
-        public double GetModifiedThreshold(Show s, int index, int index2 = -1)
+        public double GetModifiedThreshold(Show s, int index, int index2 = -1, int index3 = -1)
         {
             var inputs = new double[InputCount];
             double[]
@@ -1072,8 +1072,10 @@ namespace TV_Ratings_Predictions
 
                 inputs[index] = 0;
                 if (index2 > -1)
+                {
                     inputs[index2] = 0;
-
+                    if (index3 > -1) inputs[index3] = 0;
+                }
             }
             else
             {
@@ -1132,9 +1134,9 @@ namespace TV_Ratings_Predictions
             return total / count;
         }
 
-        public double GetOdds(Show s, bool raw = false, bool modified = false, int index = -1, int index2 = -1)
+        public double GetOdds(Show s, bool raw = false, bool modified = false, int index = -1, int index2 = -1, int index3 = -1)
         {
-            var threshold = modified ? GetModifiedThreshold(s, index, index2) : GetThreshold(s);
+            var threshold = modified ? GetModifiedThreshold(s, index, index2, index3) : GetThreshold(s);
             var exponent = Math.Log(0.5) / Math.Log(threshold);
             var baseOdds = Math.Pow(s.ShowIndex, exponent);
 

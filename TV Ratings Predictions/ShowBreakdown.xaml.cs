@@ -59,7 +59,7 @@ namespace TV_Ratings_Predictions
             {
                 details.Clear();
 
-                bool SyndicationFinished = false, OwnedFinished = false;
+                bool SyndicationFinished = false, OwnedFinished = false, PremiereFinished = false, SummerFinished = false;
                 string detailName;
                 double CurrentOdds = network.model.GetOdds(s), NewOdds, detailValue;
 
@@ -79,25 +79,6 @@ namespace TV_Ratings_Predictions
                 }
 
                 var BaseOdds = AllOdds.Sum() / AllOdds.Count;
-
-                //var averageIndex = network.model.GetAverageThreshold(true);
-                //var exponent = Math.Log(0.5) / Math.Log(averageIndex);
-                //var odds = Math.Pow(s.ShowIndex, exponent);
-
-                //var accuracy = network.model.TestAccuracy(true);
-
-                //if (odds > 0.5)
-                //{
-                //    odds -= 0.5;
-                //    odds *= 2;
-                //    BaseOdds = (odds * accuracy) / 2 + 0.5;
-                //}
-                //else
-                //{
-                //    odds *= 2;
-                //    odds = 1 - odds;
-                //    BaseOdds = (1 - (odds * odds)) / 2;
-                //}
 
                 Base.Text = "Base Odds: " + BaseOdds.ToString("P");
 
@@ -211,41 +192,86 @@ namespace TV_Ratings_Predictions
                             SyndicationFinished = true;
                         }
                     }
-                    else if ((network.factors[i] == "Spring" || network.factors[i] == "Summer"))
+                    else if ((network.factors[i] == "Spring" || network.factors[i] == "Summer" || network.factors[i] == "Fall"))
                     {
-                        bool Spring = false;
-                        bool Summer = false;
-
-                        for (int x = 0; x < network.factors.Count; x++)
+                        if (!PremiereFinished)
                         {
-                            if (network.factors[x] == "Spring")
-                                Spring = s.factorValues[x];
-                            else if (network.factors[x] == "Summer")
-                                Summer = s.factorValues[x];
-                        }
+                            bool Spring = false, Summer = false, Fall = false;
+                            int FallIndex = -1, SpringIndex = -1, SummerIndex = -1;
 
-                        if (network.factors[i] == "Spring")
-                        {
-                            if (Spring)
+                            for (int x = 0; x < network.factors.Count; x++)
+                            {
+                                if (network.factors[x] == "Spring")
+                                {
+                                    Spring = s.factorValues[x];
+                                    SpringIndex = x;
+                                }
+                                else if (network.factors[x] == "Summer")
+                                {
+                                    Summer = s.factorValues[x];
+                                    SummerIndex = x;
+                                }
+                                else if (network.factors[x] == "Fall")
+                                {
+                                    Fall = s.factorValues[x];
+                                    FallIndex = x;
+                                }
+                            }
+
+                            int index1 = -1, index2 = -1, index3 = -1;
+
+                            if (FallIndex > -1)
+                            {
+                                index1 = FallIndex;
+                                index2 = SpringIndex;
+                            }
+                            else if (SpringIndex > -1)
+                                index1 = SpringIndex;
+                            else
+                                index1 = SummerIndex;
+
+                            if (Fall)
+                                detailName = !Spring ? "Premiered in the Fall" : "Premiered late in the Fall";
+                            else if (Spring)
                                 detailName = "Premiered in the Spring";
                             else if (Summer)
-                                detailName = "Did not premiere in the Spring";
+                            {
+                                detailName = "Premiered in the Summer";
+                                SummerFinished = true;
+                                if (index1 > -1 && index2 > -1)
+                                    index3 = SummerIndex;
+                                else if (index1 > -1)
+                                    index2 = SummerIndex;
+                                else
+                                    index1 = SummerIndex;
+                            }
                             else
-                                detailName = "Premiered in the Fall";
+                                detailName = (FallIndex > -1) ? "Unknown Premiere Date" : "Premiered in the Fall";
+
+
+                            PremiereFinished = true;
+
+                            NewOdds = network.model.GetOdds(s, false, true, index1, index2, index3);
+
+                            detailValue = CurrentOdds - NewOdds;
+
+                            details.Add(new DetailsContainer(detailName, detailValue));
                         }
-                        else
+
+                        if (network.factors[i] == "Summer" && !SummerFinished)
                         {
-                            if (Summer)
+                            if (s.factorValues[i])
                                 detailName = "Aired in the Summer";
                             else
                                 detailName = "Did not air in the Summer";
+                            NewOdds = network.model.GetOdds(s, false, true, i);
+
+                            detailValue = CurrentOdds - NewOdds;
+
+                            details.Add(new DetailsContainer(detailName, detailValue));
+
+                            SummerFinished = true;
                         }
-
-                        NewOdds = network.model.GetOdds(s, false, true, i);
-
-                        detailValue = CurrentOdds - NewOdds;
-
-                        details.Add(new DetailsContainer(detailName, detailValue));
                     }
                     else if ((network.factors[i] == "Not Original" || network.factors[i] == "CBS Show"))
                     {
@@ -308,6 +334,15 @@ namespace TV_Ratings_Predictions
                                         detailName = "Animated show";
                                     else
                                         detailName = "Non-animated show";
+
+                                    break;
+                                }
+                            case "Limited Series":
+                                {
+                                    if (s.factorValues[i])
+                                        detailName = "Is a Limited Series";
+                                    else
+                                        detailName = "Is not a Limited Series";
 
                                     break;
                                 }
