@@ -1,5 +1,3 @@
-As we're getting close to the new TV season, I went through and checked to make sure all of my ratings data and renewals/cancellations were all up to date, so you'll see a few adjustments for the rating number for shows that have been off the air for a while, and I also noticed that I had missed the cancellation news for two shows: Ransom on CBS, and I Ship It on CW. We had Ransom as leaning towards renewal, so that's a miss, but we had I Ship It as likely canceled.
+This week, Pandora upgrades from leaning towards renewal to likely renewed.
 
-This week, it appears the prediction model for FOX has changed substantially, because the prediction for BH90210 has dropped all the way from a likely renewal, to a certain cancellation, despite that show's rating actually increasing slightly.
-
-The Outpost upgrades from leaning towards cancellation to leaning towards renewal.
+These will be the final predictions for NBC, FOX, CBS, and ABC for the 2018-2019 TV season. Next week, I will be able to start providing predictions for the 2019-2020 TV season for those networks. I will however, keep providing predictions for the 2018-2019 season for CW shows for two more weeks, as they begin their TV season later than the other networks.
