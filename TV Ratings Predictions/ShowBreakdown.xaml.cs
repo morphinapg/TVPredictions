@@ -80,7 +80,7 @@ namespace TV_Ratings_Predictions
 
                 var BaseOdds = AllOdds.Sum() / AllOdds.Count;
 
-                Base.Text = "Base Odds: " + BaseOdds.ToString("P");
+                
 
 
                 for (int i = 0; i < network.factors.Count; i++)
@@ -231,7 +231,7 @@ namespace TV_Ratings_Predictions
                                 index1 = SummerIndex;
 
                             if (Fall)
-                                detailName = !Spring ? "Premiered in the Fall" : "Premiered late in the Fall";
+                                detailName = !Spring ? "Premiered in the Fall" : "Fall Preview with a Premiere in the Spring";
                             else if (Spring)
                                 detailName = "Premiered in the Spring";
                             else if (Summer)
@@ -340,9 +340,9 @@ namespace TV_Ratings_Predictions
                             case "Limited Series":
                                 {
                                     if (s.factorValues[i])
-                                        detailName = "Is a Limited Series";
+                                        detailName = "Limited Series";
                                     else
-                                        detailName = "Is not a Limited Series";
+                                        detailName = "Not a Limited Series";
 
                                     break;
                                 }
@@ -364,6 +364,9 @@ namespace TV_Ratings_Predictions
                         details.Add(new DetailsContainer(detailName, detailValue));
                     }
                 }
+
+                
+
 
                 if (s.Halfhour)
                     detailName = "Half hour show";
@@ -453,16 +456,34 @@ namespace TV_Ratings_Predictions
                     multiplier = (CurrentOdds - BaseOdds) / change;
 
                     if (multiplier < 0)
-                        foreach (DetailsContainer d in details)
-                            d.Value *= -1;
-                }                    
+                    {
+                        double ex = Math.Log(CurrentOdds) / Math.Log(BaseOdds);
+                        BaseOdds = Math.Pow(CurrentOdds, ex);
+                    }
+                        //foreach (DetailsContainer d in details)
+                        //    d.Value *= -1;
+                }
 
-                double oldEx = 0, newEx = 0, exponent = 1;
+                Base.Text = "Base Odds: " + BaseOdds.ToString("P");
 
-                while (oldEx == newEx)
+                double oldEx = 0.01, exponent = 0.01;
+                double oldChange = 0;
+                foreach (DetailsContainer d in details)
                 {
-                    oldEx = newEx;
+                    if (d.Value > 0)
+                        oldChange += Math.Pow(d.Value, 0.01);
+                    else
+                        oldChange -= Math.Pow(-d.Value, 0.01);
+                }
+
+                bool found = false;
+
+                while (!found)
+                {
+                    //oldEx = newEx;
                     change = 0;
+                    oldEx = exponent;
+                    exponent += 0.01;
                     foreach (DetailsContainer d in details)
                     {
                         if (d.Value > 0)
@@ -471,22 +492,31 @@ namespace TV_Ratings_Predictions
                             change -= Math.Pow(-d.Value, exponent);
                     }
 
+
                     if (change != 0 && change != (CurrentOdds - BaseOdds))
                         multiplier = (CurrentOdds - BaseOdds) / change;
                     else
                         multiplier = 1;
 
-                    if (multiplier > 1)
-                        newEx = -0.01;
-                    else if (multiplier < 1)
-                        newEx = 0.01;
+                    if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
+                    {
+                        found = true;
+                        exponent = oldEx;
+                    }
                     else
-                        newEx = 0;
+                        oldChange = change;
 
-                    if (oldEx == 0)
-                        oldEx = newEx;
+                    //if (multiplier > 1)
+                    //    newEx = -0.01;
+                    //else if (multiplier < 1)
+                    //    newEx = 0.01;
+                    //else
+                    //    newEx = 0;
 
-                    exponent += newEx;
+                    //if (oldEx == 0)
+                    //    oldEx = newEx;
+
+                    //exponent += 0.01;
                 }
 
                 foreach (DetailsContainer d in details)
@@ -497,17 +527,17 @@ namespace TV_Ratings_Predictions
                         d.Value = -Math.Pow(-d.Value, exponent);
                 }                    
 
-                change = 0;
-                foreach (DetailsContainer d in details)
-                    change += d.Value;
+                //change = 0;
+                //foreach (DetailsContainer d in details)
+                //    change += d.Value;
 
-                if (change != 0 && change != (CurrentOdds - BaseOdds))
-                {
-                    multiplier = (CurrentOdds - BaseOdds) / change;
+                //if (change != 0 && change != (CurrentOdds - BaseOdds))
+                //{
+                //    multiplier = (CurrentOdds - BaseOdds) / change;
 
-                    foreach (DetailsContainer d in details)
-                        d.Value *= multiplier;
-                }
+                //    foreach (DetailsContainer d in details)
+                //        d.Value *= multiplier;
+                //}
 
                 ShowName.Text = s.Name;
                 Odds.Text = "Predicted Odds: " + s.PredictedOdds.ToString("P");
