@@ -380,7 +380,7 @@ namespace TV_Ratings_Predictions
                 int peak = 0;
 
                 var OddsByEpisode = new double[26];
-                for (int i = LowestEpisode - 1; i < HighestEpisode - 1; i++)
+                for (int i = LowestEpisode - 1; i < HighestEpisode; i++)
                 {
                     var tShow = new Show(s.Name, network, s.factorValues, i, s.Halfhour, s.factorNames)
                     {
@@ -420,7 +420,7 @@ namespace TV_Ratings_Predictions
                 double total = 0;
                 int count = 0;
                 for (int i = 0; i < 26; i++)
-                    if (i < low - 1 || i >= high)
+                    if ((i < low - 1 && i >= LowestEpisode) || (i >= high && i < HighestEpisode))
                     {
                         total += OddsByEpisode[i];
                         count++;
@@ -449,12 +449,10 @@ namespace TV_Ratings_Predictions
                 foreach (DetailsContainer d in details)
                     change += d.Value;
 
-                double multiplier;
+                double multiplier = (CurrentOdds - BaseOdds) / change; ;
 
                 if (change != 0 && change != (CurrentOdds - BaseOdds))
                 {
-                    multiplier = (CurrentOdds - BaseOdds) / change;
-
                     if (multiplier < 0)
                     {
                         double ex = Math.Log(CurrentOdds) / Math.Log(BaseOdds);
@@ -466,15 +464,16 @@ namespace TV_Ratings_Predictions
 
                 Base.Text = "Base Odds: " + BaseOdds.ToString("P");
 
-                double oldEx = 0.01, exponent = 0.01;
-                double oldChange = 0;
-                foreach (DetailsContainer d in details)
-                {
-                    if (d.Value > 0)
-                        oldChange += Math.Pow(d.Value, 0.01);
-                    else
-                        oldChange -= Math.Pow(-d.Value, 0.01);
-                }
+                double oldEx = 1, exponent = 1, increment = (multiplier < 1) ? 0.01 : -0.01;
+
+                double oldChange = change;
+                //foreach (DetailsContainer d in details)
+                //{
+                //    if (d.Value > 0)
+                //        oldChange += Math.Pow(d.Value, oldEx);
+                //    else
+                //        oldChange -= Math.Pow(-d.Value, oldEx);
+                //}
 
                 bool found = false;
 
@@ -483,7 +482,7 @@ namespace TV_Ratings_Predictions
                     //oldEx = newEx;
                     change = 0;
                     oldEx = exponent;
-                    exponent += 0.01;
+                    exponent += increment;
                     foreach (DetailsContainer d in details)
                     {
                         if (d.Value > 0)
@@ -506,17 +505,7 @@ namespace TV_Ratings_Predictions
                     else
                         oldChange = change;
 
-                    //if (multiplier > 1)
-                    //    newEx = -0.01;
-                    //else if (multiplier < 1)
-                    //    newEx = 0.01;
-                    //else
-                    //    newEx = 0;
-
-                    //if (oldEx == 0)
-                    //    oldEx = newEx;
-
-                    //exponent += 0.01;
+                    if (exponent == 0.01) found = true;
                 }
 
                 foreach (DetailsContainer d in details)
