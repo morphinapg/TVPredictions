@@ -449,7 +449,7 @@ namespace TV_Ratings_Predictions
                 foreach (DetailsContainer d in details)
                     change += d.Value;
 
-                double multiplier = (CurrentOdds - BaseOdds) / change; ;
+                double multiplier = (CurrentOdds - BaseOdds) / change;
 
                 if (change != 0 && change != (CurrentOdds - BaseOdds))
                 {
@@ -457,6 +457,7 @@ namespace TV_Ratings_Predictions
                     {
                         double ex = Math.Log(CurrentOdds) / Math.Log(BaseOdds);
                         BaseOdds = Math.Pow(CurrentOdds, ex);
+                        multiplier = (CurrentOdds - BaseOdds) / change;
                     }
                         //foreach (DetailsContainer d in details)
                         //    d.Value *= -1;
@@ -467,13 +468,17 @@ namespace TV_Ratings_Predictions
                 double oldEx = 1, exponent = 1, increment = (multiplier < 1) ? 0.01 : -0.01;
 
                 double oldChange = change;
-                //foreach (DetailsContainer d in details)
-                //{
-                //    if (d.Value > 0)
-                //        oldChange += Math.Pow(d.Value, oldEx);
-                //    else
-                //        oldChange -= Math.Pow(-d.Value, oldEx);
-                //}
+
+                change = 0;
+                foreach (DetailsContainer d in details)
+                {
+                    if (d.Value > 0)
+                        change += Math.Pow(d.Value, oldEx+increment);
+                    else
+                        change -= Math.Pow(-d.Value, oldEx+increment);
+                }
+                if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
+                    increment *= -1;
 
                 bool found = false;
 
@@ -490,12 +495,6 @@ namespace TV_Ratings_Predictions
                         else
                             change -= Math.Pow(-d.Value, exponent);
                     }
-
-
-                    if (change != 0 && change != (CurrentOdds - BaseOdds))
-                        multiplier = (CurrentOdds - BaseOdds) / change;
-                    else
-                        multiplier = 1;
 
                     if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
                     {
@@ -514,19 +513,19 @@ namespace TV_Ratings_Predictions
                         d.Value = Math.Pow(d.Value, exponent);
                     else
                         d.Value = -Math.Pow(-d.Value, exponent);
-                }                    
+                }
 
-                //change = 0;
-                //foreach (DetailsContainer d in details)
-                //    change += d.Value;
+                change = 0;
+                foreach (DetailsContainer d in details)
+                    change += d.Value;
 
-                //if (change != 0 && change != (CurrentOdds - BaseOdds))
-                //{
-                //    multiplier = (CurrentOdds - BaseOdds) / change;
+                if (change != 0 && change != (CurrentOdds - BaseOdds))
+                {
+                    multiplier = (CurrentOdds - BaseOdds) / change;
 
-                //    foreach (DetailsContainer d in details)
-                //        d.Value *= multiplier;
-                //}
+                    foreach (DetailsContainer d in details)
+                        d.Value *= multiplier;
+                }
 
                 ShowName.Text = s.Name;
                 Odds.Text = "Predicted Odds: " + s.PredictedOdds.ToString("P");
