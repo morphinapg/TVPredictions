@@ -77,7 +77,7 @@
                                     <DataTemplate x:DataType="local:PredictionContainer">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{x:Bind Rating}" Margin="5"/>
-                                            <TextBlock Text="{x:Bind RatingDifference}" Margin="5" Foreground="{x:Bind _ratingsDiff, Converter={StaticResource NumberColor}}"/>
+                                            <TextBlock Text="{x:Bind RatingDifference}" Margin="5" Foreground="{x:Bind RatingsDiff, Converter={StaticResource NumberColor}}"/>
                                         </StackPanel>
 
                                     </DataTemplate>
@@ -95,7 +95,7 @@
                             <controls:DataGridTemplateColumn Header="Status">
                                 <controls:DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate x:DataType="local:PredictionContainer">
-                                        <TextBlock Text="{x:Bind Status}" Margin="5" Foreground="{x:Bind _StatusIndex, Converter={StaticResource StatusColor}}"/>
+                                        <TextBlock Text="{x:Bind Status}" Margin="5" Foreground="{x:Bind StatusIndex, Converter={StaticResource StatusColor}}"/>
                                     </DataTemplate>
                                 </controls:DataGridTemplateColumn.CellTemplate>
                             </controls:DataGridTemplateColumn>
@@ -105,7 +105,7 @@
                                     <DataTemplate x:DataType="local:PredictionContainer">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{x:Bind Prediction, Mode=OneWay}" Margin="5"/>
-                                            <TextBlock Text="{x:Bind PredictionDifference, Mode=OneWay}" Foreground="{x:Bind _predictionDiff, Converter={StaticResource NumberColor}}" Margin="5"/>
+                                            <TextBlock Text="{x:Bind PredictionDifference, Mode=OneWay}" Foreground="{x:Bind PredictionDiff, Converter={StaticResource NumberColor}}" Margin="5"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </controls:DataGridTemplateColumn.CellTemplate>

@@ -61,7 +61,8 @@ namespace TV_Ratings_Predictions
 
                 bool SyndicationFinished = false, OwnedFinished = false, PremiereFinished = false, SummerFinished = false;
                 string detailName;
-                double CurrentOdds = network.model.GetOdds(s), NewOdds, detailValue;
+                var Adjustments = network.model.GetAdjustments(true);
+                double CurrentOdds = network.model.GetOdds(s, Adjustments[s.year]), NewOdds, detailValue;
 
                 var tempList = network.shows.OrderBy(x => x.Episodes).ToList();
                 int LowestEpisode = tempList.First().Episodes, HighestEpisode = tempList.Last().Episodes;
@@ -75,7 +76,7 @@ namespace TV_Ratings_Predictions
                         ShowIndex = s.ShowIndex
                     };
 
-                    AllOdds.Add(network.model.GetOdds(tShow, false, true, -1));
+                    AllOdds.Add(network.model.GetOdds(tShow, Adjustments[tShow.year], false, true, -1));
                 }
 
                 var BaseOdds = AllOdds.Sum() / AllOdds.Count;
@@ -183,7 +184,7 @@ namespace TV_Ratings_Predictions
                                 index = s.factorNames.IndexOf("Post-Syndication");
                             }
 
-                            NewOdds = network.model.GetOdds(s, false, true, index, index2);
+                            NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, index, index2);
 
                             detailValue = CurrentOdds - NewOdds;
 
@@ -251,7 +252,7 @@ namespace TV_Ratings_Predictions
 
                             PremiereFinished = true;
 
-                            NewOdds = network.model.GetOdds(s, false, true, index1, index2, index3);
+                            NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, index1, index2, index3);
 
                             detailValue = CurrentOdds - NewOdds;
 
@@ -264,7 +265,7 @@ namespace TV_Ratings_Predictions
                                 detailName = "Aired in the Summer";
                             else
                                 detailName = "Did not air in the Summer";
-                            NewOdds = network.model.GetOdds(s, false, true, i);
+                            NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, i);
 
                             detailValue = CurrentOdds - NewOdds;
 
@@ -289,7 +290,7 @@ namespace TV_Ratings_Predictions
                                 else
                                     detailName = "Show is owned by WB";
 
-                                NewOdds = network.model.GetOdds(s, false, true, index, index2);
+                                NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, index, index2);
                             }
                             else
                             {
@@ -298,7 +299,7 @@ namespace TV_Ratings_Predictions
                                 else
                                     detailName = "Show is owned by the network";
 
-                                NewOdds = network.model.GetOdds(s, false, true, i);
+                                NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, i);
                             }
 
                             detailValue = CurrentOdds - NewOdds;
@@ -357,7 +358,7 @@ namespace TV_Ratings_Predictions
                                 }
                         }
 
-                        NewOdds = network.model.GetOdds(s, false, true, i);
+                        NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, i);
 
                         detailValue = CurrentOdds - NewOdds;
 
@@ -373,7 +374,7 @@ namespace TV_Ratings_Predictions
                 else
                     detailName = "Hour long show";
 
-                NewOdds = network.model.GetOdds(s, false, true, s.factorNames.Count + 1);
+                NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, s.factorNames.Count + 1);
                 detailValue = CurrentOdds - NewOdds;
                 details.Add(new DetailsContainer(detailName, detailValue));
                 double max = 0;
@@ -387,7 +388,7 @@ namespace TV_Ratings_Predictions
                         ShowIndex = s.ShowIndex
                     };
 
-                    OddsByEpisode[i] = network.model.GetOdds(tShow);
+                    OddsByEpisode[i] = network.model.GetOdds(tShow, Adjustments[tShow.year]);
 
                     if (OddsByEpisode[i] >= max)
                     {
@@ -543,10 +544,8 @@ namespace TV_Ratings_Predictions
 
         private async void SaveImage_Click(object sender, RoutedEventArgs e)
         {
-            var picker = new FileSavePicker();
-            picker.SuggestedStartLocation = PickerLocationId.Desktop;
+            var picker = new FileSavePicker { SuggestedStartLocation = PickerLocationId.Desktop, SuggestedFileName = ((Show)ShowSelector.SelectedItem).Name };
             picker.FileTypeChoices.Add("PNG Image", new List<string>() { ".png" });
-            picker.SuggestedFileName = ((Show)ShowSelector.SelectedItem).Name;
 
             StorageFile file = await picker.PickSaveFileAsync();
             if (file != null)

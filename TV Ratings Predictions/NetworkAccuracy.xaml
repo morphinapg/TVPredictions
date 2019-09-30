@@ -39,7 +39,7 @@
                     <controls:DataGridTemplateColumn Header="Status" >
                         <controls:DataGridTemplateColumn.CellTemplate>
                             <DataTemplate x:DataType="local:PredictionContainer">
-                                <TextBlock Text="{x:Bind Status}" Margin="5" Foreground="{x:Bind _StatusIndex, Converter={StaticResource StatusColor}}"/>
+                                <TextBlock Text="{x:Bind Status}" Margin="5" Foreground="{x:Bind StatusIndex, Converter={StaticResource StatusColor}}"/>
                             </DataTemplate>
                         </controls:DataGridTemplateColumn.CellTemplate>
                     </controls:DataGridTemplateColumn>

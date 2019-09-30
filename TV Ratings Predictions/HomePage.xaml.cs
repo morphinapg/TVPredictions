@@ -68,9 +68,11 @@ namespace TV_Ratings_Predictions
 
             for (int i = 0; i < NetworkList.Count; i++)
             {
-                EvolutionWork[i] = new Thread(new ParameterizedThreadStart(Background_EvolutionAsync));
-                EvolutionWork[i].IsBackground = true;
-                EvolutionWork[i].Priority = ThreadPriority.Lowest;
+                EvolutionWork[i] = new Thread(new ParameterizedThreadStart(Background_EvolutionAsync))
+                {
+                    IsBackground = true,
+                    Priority = ThreadPriority.Lowest
+                };
                 EvolutionWork[i].Start(NetworkList[i]);
             }
 
@@ -85,15 +87,13 @@ namespace TV_Ratings_Predictions
             Network n = (Network)param;
 
             ExtendedExecutionForegroundSession newSession;
-            ExtendedExecutionForegroundResult result;
-
             while (!NetworkDatabase.cancelEvolution)
             {
-                newSession = new ExtendedExecutionForegroundSession();
-                newSession.Reason = ExtendedExecutionForegroundReason.Unconstrained;
-                result = await newSession.RequestExtensionAsync();
+                newSession = new ExtendedExecutionForegroundSession { Reason = ExtendedExecutionForegroundReason.Unconstrained };
+                await newSession.RequestExtensionAsync();
                
                 n.evolution.NextGeneration();
+                newSession.Dispose();
             }
         }
 
@@ -158,6 +158,9 @@ namespace TV_Ratings_Predictions
                     {
                         s.OldRating = s.AverageRating;
                         s.OldOdds = s.PredictedOdds;
+
+                        if (s.RenewalStatus == "")
+                            s.FinalPrediction = s.OldOdds;
                     });
                 });
 

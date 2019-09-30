@@ -69,12 +69,12 @@ namespace TV_Ratings_Predictions
 
         async void ReadSettingsAsync()
         {
-            await NetworkDatabase.ReadSettings();
-
-            NetworkCollection = NetworkDatabase.NetworkList;
-
             var year = DateTime.Today.Month < 9 ? DateTime.Today.Year - 1 : DateTime.Today.Year;
             NetworkDatabase.MaxYear = year;
+
+            await NetworkDatabase.ReadSettings();
+
+            NetworkCollection = NetworkDatabase.NetworkList;           
             
 
             int count = 0;
