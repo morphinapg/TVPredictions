@@ -367,10 +367,6 @@ namespace TV_Ratings_Predictions
                 foreach (Show s in tempList)                                
                     if (s.ratings.Count > 0)
                     {
-                        int x = 0;
-                        if (s.Name == "Bull" && s.year == 2019)
-                            x = 1;
-
                         var newindex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;    
                         s.ShowIndex = (s.ShowIndex + newindex) / 2;
                         cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);                                
@@ -380,12 +376,15 @@ namespace TV_Ratings_Predictions
 
         public void UpdateIndexes(int year)                             //Update Indexes for a custom year
         {
-            var tempList = shows.Where(x => x.year == year).OrderBy(x => x.AverageRating).ToList();
+            var tempList = shows.Where(x => x.year == year).OrderBy(x => x.AverageRating).ThenBy(x => x.Name).ToList();
 
             double total = 0;
             double[] totals = new double[tempList.Count];
+            bool duplicate = false;
             Parallel.For(0, tempList.Count, i =>
             {
+                if (i > 0 && tempList[i - 1].AverageRating == tempList[i].AverageRating)
+                    duplicate = true;
                 totals[i] = tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1);   
             });                                                                             
             total = totals.Sum();
@@ -398,6 +397,22 @@ namespace TV_Ratings_Predictions
                     s.ShowIndex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;    
                     cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);                                
                 }
+
+            if (duplicate)  //If there are duplicate rating scores, then perform the process again with the duplicates reverssed, then average the indexes
+            {
+                cumulativeTotal = 0;
+                tempList = tempList.OrderBy(x => x.AverageRating).ThenByDescending(x => x.Name).ToList();
+
+                foreach (Show s in tempList)
+                    if (s.ratings.Count > 0)
+                    {
+                        
+
+                        var newindex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;
+                        s.ShowIndex = (s.ShowIndex + newindex) / 2;
+                        cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);
+                    }
+            }
         }
 
         public void UpdateAverages()                                //This method updates the ratings falloff values
@@ -1203,7 +1218,6 @@ namespace TV_Ratings_Predictions
 
             if (raw)
                 return baseOdds;
-
 
             var accuracy = _accuracy;
 

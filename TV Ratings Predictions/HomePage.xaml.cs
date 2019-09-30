@@ -156,6 +156,7 @@ namespace TV_Ratings_Predictions
                 {
                     Parallel.ForEach(n.shows, s =>
                     {
+
                         s.OldRating = s.AverageRating;
                         s.OldOdds = s.PredictedOdds;
 
