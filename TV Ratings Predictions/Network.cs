@@ -328,15 +328,19 @@ namespace TV_Ratings_Predictions
 
         public void UpdateIndexes(bool parallel = false)                //The ShowIndex value represents a value between 0 to 1 for every show in a particular year
         {                                                               //This is a cumulative weighted percentile of rating, exclusive of 0 and 1
-            var tempList = FilteredShows.ToList();
+            var tempList = FilteredShows.ToList().OrderBy(x => x.AverageRating).ThenBy(x => x.Name).ToList();
 
             double total = 0;
+            bool duplicate = false;
 
             if (parallel)                                               //First calculate the total of all average ratings, this can be done in parallel or not
             {
                 double[] totals = new double[tempList.Count];
                 Parallel.For(0, tempList.Count, i =>
                 {
+                    if (i > 0 && tempList[i - 1].AverageRating == tempList[i].AverageRating)
+                        duplicate = true;
+
                     totals[i] = tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1);   //half hour shows are weighted half as much
                 });                                                                             //as the same ratings contribute half as much money to the network
                 total = totals.Sum();
@@ -354,6 +358,24 @@ namespace TV_Ratings_Predictions
                     s.ShowIndex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;    //The ShowIndex is the cumulative total of the previous shows, plus half of the current show's weighted rating
                     cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);                                //This allows ShowIndex to be representative of midpoints, rather that beginning/endpoints, resulting in a more balanced prediction
                 }
+
+            if (duplicate)  //If there are duplicate rating scores, then perform the process again with the duplicates reverssed, then average the indexes
+            {
+                cumulativeTotal = 0;
+                tempList = tempList.OrderBy(x => x.AverageRating).ThenByDescending(x => x.Name).ToList();
+
+                foreach (Show s in tempList)                                
+                    if (s.ratings.Count > 0)
+                    {
+                        int x = 0;
+                        if (s.Name == "Bull" && s.year == 2019)
+                            x = 1;
+
+                        var newindex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;    
+                        s.ShowIndex = (s.ShowIndex + newindex) / 2;
+                        cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);                                
+                    }
+            }
         }
 
         public void UpdateIndexes(int year)                             //Update Indexes for a custom year
@@ -1182,6 +1204,7 @@ namespace TV_Ratings_Predictions
             if (raw)
                 return baseOdds;
 
+
             var accuracy = _accuracy;
 
             if (baseOdds > 0.5)
@@ -1411,20 +1434,71 @@ namespace TV_Ratings_Predictions
                     maxRating = tempShows[upper].AverageRating;
                     minIndex = tempShows[lower].ShowIndex;
                     minRating = tempShows[lower].AverageRating;
+
+                    while (maxRating == minRating)
+                    {
+                        lower++;
+
+                        if (lower < tempShows.Count)
+                        {
+                            minIndex = tempShows[lower].ShowIndex;
+                            minRating = tempShows[lower].AverageRating;
+                        }
+                        else
+                        {
+                            minIndex = 0;
+                            minRating = 0;
+                        }                        
+                    }
                 }
                 else if (lower == 0 && tempShows.Count > 1) //match is at the beginning of a multiple item list
                 {
+                    lower = 1;
                     maxIndex = tempShows[0].ShowIndex;
                     maxRating = tempShows[0].AverageRating;
                     minIndex = tempShows[1].ShowIndex;
                     minRating = tempShows[1].AverageRating;
+
+                    while (maxRating == minRating)
+                    {
+                        lower++;
+
+                        if (lower < tempShows.Count)
+                        {
+                            minIndex = tempShows[lower].ShowIndex;
+                            minRating = tempShows[lower].AverageRating;
+                        }
+                        else
+                        {
+                            minIndex = 0;
+                            minRating = 0;
+                        }
+                    }
                 }
                 else if (upper > 0) //match is at the end of a multiple item list
                 {
+                    lower = upper - 1;
+
                     maxIndex = tempShows[upper].ShowIndex;
                     maxRating = tempShows[upper].AverageRating;
                     minIndex = tempShows[upper - 1].ShowIndex;
                     minRating = tempShows[upper - 1].AverageRating;
+
+                    while (maxRating == minRating)
+                    {
+                        lower--;
+
+                        if (lower >= 0)
+                        {
+                            minIndex = tempShows[lower].ShowIndex;
+                            minRating = tempShows[lower].AverageRating;
+                        }
+                        else
+                        {
+                            minIndex = 0;
+                            minRating = 0;
+                        }
+                    }
                 }
                 else //one item in list
                 {
