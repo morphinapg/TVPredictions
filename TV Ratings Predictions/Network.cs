@@ -272,7 +272,7 @@ namespace TV_Ratings_Predictions
 
         public void ModelUpdate(NeuralPredictionModel m)    //Update the Prediction Model with the new model, and let the UI know changes have happened
         {
-            model = m;                                          
+            model = new NeuralPredictionModel(m);                                          
             PredictionAccuracy = model.TestAccuracy() * 100;    
             OnPropertyChangedAsync("PredictionAccuracy");
             _lastupdate = DateTime.Now;                         
@@ -1066,6 +1066,30 @@ namespace TV_Ratings_Predictions
             neuralintensity = Breed(x.neuralintensity, y.neuralintensity);
         }
 
+        public NeuralPredictionModel(NeuralPredictionModel n)
+        {
+            shows = n.shows;
+            isMutated = false;
+
+            InputCount = n.InputCount;
+            NeuronCount = n.NeuronCount;
+
+            FirstLayer = new Neuron[NeuronCount];
+            SecondLayer = new Neuron[NeuronCount];
+
+            for (int i = 0; i < NeuronCount; i++)
+            {
+                FirstLayer[i] = new Neuron(n.FirstLayer[i]);
+                SecondLayer[i] = new Neuron(n.SecondLayer[i]);
+            }
+
+            Output = new Neuron(n.Output);
+            mutationrate = n.mutationrate;
+            mutationintensity = n.mutationintensity;
+            neuralintensity = n.neuralintensity;
+
+        }
+
         public void SetElite()
         {
             _accuracy = 0;
@@ -1533,9 +1557,11 @@ namespace TV_Ratings_Predictions
         {
             var r = new Random();
 
-            var p = r.NextDouble();
+            //var p = r.NextDouble();
 
-            double low = d * (1 - mutationintensity * p), high = 1 - (1 - d) * (1 - mutationintensity * p);
+            //double low = d * (1 - mutationintensity * p), high = 1 - (1 - d) * (1 - mutationintensity * p);
+
+            double low = Math.Max(d - 0.01, 0), high = Math.Min(d + 0.01, 1);
 
             if (increase) low = d;
 
@@ -1796,21 +1822,21 @@ namespace TV_Ratings_Predictions
 
                     if (Randomized[i] > Primary[0])
                     {
-                        Primary.Insert(0, Randomized[i]);
+                        Primary.Insert(0, new NeuralPredictionModel(Randomized[i]));
                         randomUpdate = true;
                     }
                     else if (Randomized[i] > Primary[1])
                     {
-                        Primary.Insert(1, Randomized[i]);
+                        Primary.Insert(1, new NeuralPredictionModel(Randomized[i]));
                         randomUpdate = true;
                     }
                     else if (Randomized[i] > Primary[2])
                     {
-                        Primary.Insert(2, Randomized[i]);
+                        Primary.Insert(2, new NeuralPredictionModel(Randomized[i]));
                     }
                     else
                     {
-                        Primary.Insert(3, Randomized[i]);
+                        Primary.Insert(3, new NeuralPredictionModel(Randomized[i]));
                     }
                     Primary.RemoveAt(30);
                 }
@@ -1841,7 +1867,7 @@ namespace TV_Ratings_Predictions
             Mutations = false;
             //CleanMutations = false;
             RandomMutations = false;
-
+            var r = new Random();
 
             //If models were chosen from Randomized, then reset that branch based on the above rules
             //If not, perform normal evolution rules            
@@ -1854,24 +1880,24 @@ namespace TV_Ratings_Predictions
             }
             else
             {
-                while (!RandomMutations)
-                {
-                    Random r = new Random();
+                //while (!RandomMutations)
+                //{
+                    //Random r = new Random();
 
                     for (int i = 4; i < 30; i++)
                     {
                         int Parent1 = r.Next(4), Parent2 = r.Next(4);
-                        while (Parent1 == Parent2)
-                            Parent2 = r.Next(4);
+                        //while (Parent1 == Parent2)
+                            //Parent2 = r.Next(4);
 
                         Randomized[i] = Randomized[Parent1] + Randomized[Parent2];
 
                         if (Randomized[i].isMutated) RandomMutations = true;
                     }
 
-                    if (!RandomMutations)
-                        Randomized[r.Next(4)].IncreaseMutationRate();
-                }
+                    //if (!RandomMutations)
+                        //Randomized[r.Next(4)].IncreaseMutationRate();
+                //}
 
 
                 RandomGenerations++;
@@ -1879,25 +1905,25 @@ namespace TV_Ratings_Predictions
 
             //Evolve Primary Branch
 
-            while (!Mutations)
-            {
-                Random r = new Random();
+            //while (!Mutations)
+            //{
+                //Random r = new Random();
 
                 for (int i = 4; i < 30; i++)
                 {
 
                     int Parent1 = r.Next(4), Parent2 = r.Next(4);
-                    while (Parent1 == Parent2)
-                        Parent2 = r.Next(4);
+                    //while (Parent1 == Parent2)
+                        //Parent2 = r.Next(4);
 
                     Primary[i] = Primary[Parent1] + Primary[Parent2];
 
                     if (Primary[i].isMutated) Mutations = true;
                 }
 
-                if (!Mutations)
-                    Primary[r.Next(4)].IncreaseMutationRate();
-            }
+                //if (!Mutations)
+                    //Primary[r.Next(4)].IncreaseMutationRate();
+            //}
 
             Generations++;
         }
@@ -2031,6 +2057,19 @@ namespace TV_Ratings_Predictions
             inputSize = inputs;
         }
 
+        public Neuron (Neuron n)
+        {
+            isMutated = false;
+
+            bias = n.bias;
+            outputbias = n.outputbias;
+            inputSize = n.inputSize;
+
+            weights = new double[inputSize];
+
+            Parallel.For(0, inputSize, i => weights[i] = n.weights[i]);
+        }
+
         private double Breed(double x, double y)
         {
             var r = new Random();
@@ -2110,9 +2149,9 @@ namespace TV_Ratings_Predictions
 
                 double p = r.NextDouble();
 
-                double low = d * (1 - mutationintensity * p), high = 1 - (1 - d) * (1 - mutationintensity * p);
+                double low = d * (1 - mutationintensity), high = 1 - (1 - d) * (1 - mutationintensity);
 
-                var tempBias = r.NextDouble() * (high - low) + low;
+                var tempBias = p * (high - low) + low;
                 outputbias = tempBias * 2 - 1;
                 isMutated = true;
             }
