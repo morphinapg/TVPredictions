@@ -1002,7 +1002,7 @@ namespace TV_Ratings_Predictions
         public double mutationrate, mutationintensity, neuralintensity;
 
         [NonSerialized]
-        public double _accuracy, _ratingstheshold, _score, Error, SecondaryError;
+        public double _accuracy, _ratingstheshold, _score;
 
         [NonSerialized]
         public bool isMutated;
@@ -1093,7 +1093,6 @@ namespace TV_Ratings_Predictions
         public void SetElite()
         {
             _accuracy = 0;
-            Error = 1;
         }
 
         public double GetThreshold(Show s, double adjustment)
@@ -1239,11 +1238,7 @@ namespace TV_Ratings_Predictions
         {
             var threshold = modified ? GetModifiedThreshold(s, adjustment, index, index2, index3) : GetThreshold(s, adjustment);
             var exponent = Math.Log(0.5) / Math.Log(threshold);
-            var baseOdds = (threshold < 1) ? Math.Pow(s.ShowIndex, exponent) : 0;
-
-            int x = 0;
-            if (baseOdds > 1)
-                x = 1;
+            var baseOdds = Math.Pow(s.ShowIndex, exponent);
 
             if (raw)
                 return baseOdds;
@@ -1273,14 +1268,12 @@ namespace TV_Ratings_Predictions
             double scores = 0;
             double totals = 0;
             double weights = 0;
-            double errors = 0, seconderrors = 0;
             int year = NetworkDatabase.MaxYear;
             var Adjustments = GetAdjustments(parallel);
 
             if (parallel)
             {
                 double[] t = new double[shows.Count], w = new double[shows.Count], score = new double[shows.Count];
-                double[] e = new double[shows.Count], se = new double[shows.Count];
                 var tempList = shows.ToList();
                 Parallel.For(0, tempList.Count, i =>
                 {
@@ -1289,83 +1282,66 @@ namespace TV_Ratings_Predictions
                     if (s.Renewed || s.Canceled)
                     {
                         double threshold = GetThreshold(s, Adjustments[s.year]);
-                        double odds = GetOdds(s, Adjustments[s.year], true);
                         int prediction = (s.ShowIndex > threshold) ? 1 : 0;
-                        //double distance = Math.Abs(s.ShowIndex - threshold);
-                        double distance;
+                        double distance = Math.Abs(s.ShowIndex - threshold);
 
                         if (s.Renewed)
                         {
                             int accuracy = (prediction == 1) ? 1 : 0;
                             double weight;
 
-                            //if (accuracy == 1)
+                            if (accuracy == 1)
                                 weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
-                            //else
-                                //weight = (distance + weightAverage) / weightAverage;
+                            else
+                                weight = (distance + weightAverage) / weightAverage;
 
                             weight /= year - s.year + 1;
 
                             if (s.Canceled)
                             {
+                                double odds = GetOdds(s, Adjustments[s.year], true);
+
                                 score[i] = (1 - Math.Abs(odds - 0.55)) * 4 / 3;
-                                distance = Math.Abs(odds - 0.55);
 
                                 if (odds < 0.6 && odds > 0.4)
                                 {
                                     accuracy = 1;
-                                    //distance = 0;
-                                    //weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
 
-                                    //weight *= score[i];
+                                    weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
 
-                                    //if (prediction == 0)
-                                    //weight /= 2;
+                                    weight *= score[i];
+
+                                    if (prediction == 0)
+                                        weight /= 2;
                                 }
                                 else
-                                {
-                                    //weight /= 2;
-                                    //distance = (odds > 0.6) ? 0 : (0.4 - odds) / 2;
-                                }
-
-                                se[i] = Math.Pow(Math.Abs(odds - 0.55), 2) * weight;
+                                    weight /= 2;
                             }
-                            else
-                                //distance = (accuracy == 1) ? 0 : 0.5 - odds;
-                                distance = 1 - odds;
 
                             t[i] = accuracy * weight;
                             w[i] = weight;
-                            e[i] = distance * distance * weight;
                         }
                         else if (s.Canceled)
                         {
                             int accuracy = (prediction == 0) ? 1 : 0;
                             double weight;
-                            //distance = (accuracy == 1) ? 0 : odds - 0.5;
-                            distance = odds;
 
-                           //if (accuracy == 1)
+                            if (accuracy == 1)
                                 weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
-                            //else
-                                //weight = (distance + weightAverage) / weightAverage;
+                            else
+                                weight = (distance + weightAverage) / weightAverage;
 
                             weight /= year - s.year + 1;
 
                             t[i] = accuracy * weight;
                             w[i] = weight;
-                            e[i] = distance * distance * weight;
                         }
-
-                        
                     }
                 });
 
                 scores = score.Sum();
                 totals = t.Sum();
                 weights = w.Sum();
-                errors = e.Sum();
-                seconderrors = se.Sum();
             }
             else
             {
@@ -1375,70 +1351,56 @@ namespace TV_Ratings_Predictions
                     {
                         double threshold = GetThreshold(s, Adjustments[s.year]);
                         int prediction = (s.ShowIndex > threshold) ? 1 : 0;
-                        double odds = GetOdds(s, Adjustments[s.year], true);
-                        //double distance = Math.Abs(s.ShowIndex - threshold);
-                        double distance;
+                        double distance = Math.Abs(s.ShowIndex - threshold);
 
                         if (s.Renewed)
                         {
                             int accuracy = (prediction == 1) ? 1 : 0;
                             double weight;
 
-                            //if (accuracy == 1)
+                            if (accuracy == 1)
                                 weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
-                            //else
-                                //weight = (distance + weightAverage) / weightAverage;
+                            else
+                                weight = (distance + weightAverage) / weightAverage;
 
                             weight /= year - s.year + 1;
 
                             if (s.Canceled)
                             {
-                                seconderrors += Math.Pow(Math.Abs(odds - 0.55), 2) * weight;
+                                double odds = GetOdds(s, Adjustments[s.year], true);
                                 scores += (1 - Math.Abs(odds - 0.55)) * 4 / 3;
-                                distance = Math.Abs(odds - 0.55);
 
                                 if (odds < 0.6 && odds > 0.4)
                                 {
-                                    //distance = 0;
                                     accuracy = 1;
-                                    //weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
-                                    //weight *= (1 - Math.Abs(odds - 0.55)) * 4 / 3;
+                                    weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
+                                    weight *= (1 - Math.Abs(odds - 0.55)) * 4 / 3;
 
-                                    //if (prediction == 0)
-                                    //weight /= 2;
+                                    if (prediction == 0)
+                                        weight /= 2;
                                 }
                                 else
-                                {
-                                    //weight /= 2;
-                                    //distance = (odds > 0.6) ? 0 : (0.4 - odds) / 2;
-                                }
+                                    weight /= 2;
 
                             }
-                            else
-                                //distance = (accuracy == 1) ? 0 : 0.5 - odds;
-                                distance = 1 - odds;
 
                             totals += accuracy * weight;
                             weights += weight;
-                            errors += distance * distance * weight;
                         }
                         else if (s.Canceled)
                         {
                             int accuracy = (prediction == 0) ? 1 : 0;
                             double weight;
-                            //distance = (accuracy == 1) ? 0 : odds - 0.5;
-                            distance = odds;
 
-                            //if (accuracy == 1)
-                            weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
-                            //else
-                                //weight = (distance + weightAverage) / weightAverage;
+                            if (accuracy == 1)
+                                weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
+                            else
+                                weight = (distance + weightAverage) / weightAverage;
 
                             weight /= year - s.year + 1;
 
                             totals += accuracy * weight;
                             weights += weight;
-                            errors += distance * distance * weight;
                         }
                     }
                 }
@@ -1446,8 +1408,6 @@ namespace TV_Ratings_Predictions
 
             _accuracy = (weights == 0) ? 0.0 : (totals / weights);
             _score = scores;
-            Error = Math.Sqrt(errors / weights);
-            SecondaryError = Math.Sqrt(seconderrors / weights);
 
             return _accuracy;
         }
@@ -1654,20 +1614,15 @@ namespace TV_Ratings_Predictions
 
         public int CompareTo(NeuralPredictionModel other)
         {
-            //double otherAcc = other._accuracy;
-            //double thisAcc = _accuracy;
-            //double thisWeight = _score;
-            //double otherWeight = other._score;
+            double otherAcc = other._accuracy;
+            double thisAcc = _accuracy;
+            double thisWeight = _score;
+            double otherWeight = other._score;
 
-            //if (thisAcc != otherAcc)
-            //    return otherAcc.CompareTo(thisAcc);
-            //else
-            //    return otherWeight.CompareTo(thisWeight);
-
-            if (Error == other.Error)
-                return SecondaryError.CompareTo(other.SecondaryError);
-
-            return Error.CompareTo(other.Error);
+            if (thisAcc != otherAcc)
+                return otherAcc.CompareTo(thisAcc);
+            else
+                return otherWeight.CompareTo(thisWeight);
         }
 
         public static NeuralPredictionModel operator +(NeuralPredictionModel x, NeuralPredictionModel y)
@@ -1682,113 +1637,82 @@ namespace TV_Ratings_Predictions
         {
             var other = (NeuralPredictionModel)obj;
 
-            //if (other._accuracy == _accuracy)
-            //{
-            //    if (other._score == _score)
-            //        return true;
-            //    else
-            //        return false;
-            //}
+            if (other._accuracy == _accuracy)
+            {
+                if (other._score == _score)
+                    return true;
+                else
+                    return false;
+            }
 
-            //return false;
-
-            if (Error == other.Error)
-                return SecondaryError == other.SecondaryError;
-
-            return Error == other.Error;
+            return false;
         }
 
         public override int GetHashCode()
         {
-            var hash = new
-            {
-                err = Error,
-                se = SecondaryError
-            };
-
-            return hash.GetHashCode();
+            return base.GetHashCode();
         }
 
         public static bool operator ==(NeuralPredictionModel x, NeuralPredictionModel y)
         {
-            //if (x._accuracy == y._accuracy)
-            //{
-            //    if (x._score == y._score)
-            //        return true;
-            //    else
-            //        return false;
-            //}
+            if (x._accuracy == y._accuracy)
+            {
+                if (x._score == y._score)
+                    return true;
+                else
+                    return false;
+            }
 
-            //return false;
-
-            if (x.Error == y.Error)
-                return x.SecondaryError == y.SecondaryError;
-
-            return x.Error == y.Error;
+            return false;
         }
 
         public static bool operator !=(NeuralPredictionModel x, NeuralPredictionModel y)
         {
-            //if (x._accuracy == y._accuracy)
-            //{
-            //    if (x._score == y._score)
-            //        return false;
-            //    else
-            //        return true;
-            //}
+            if (x._accuracy == y._accuracy)
+            {
+                if (x._score == y._score)
+                    return false;
+                else
+                    return true;
+            }
 
-            //return true;
-
-            if (x.Error == y.Error)
-                return x.SecondaryError != y.SecondaryError;
-
-            return x.Error != y.Error;
+            return true;
         }
 
         public static bool operator >(NeuralPredictionModel x, NeuralPredictionModel y)
         {
-            //if (x._accuracy > y._accuracy)
-            //    return true;
-            //else
-            //{
-            //    if (x._accuracy == y._accuracy)
-            //    {
-            //        if (x._score > y._score)
-            //            return true;
-            //        else
-            //            return false;
-            //    }
-            //    else
-            //        return false;
-            //}
-
-            if (x.Error == y.Error)
-                return x.SecondaryError < y.SecondaryError;
-
-            return x.Error < y.Error;
+            if (x._accuracy > y._accuracy)
+                return true;
+            else
+            {
+                if (x._accuracy == y._accuracy)
+                {
+                    if (x._score > y._score)
+                        return true;
+                    else
+                        return false;
+                }
+                else
+                    return false;
+            }
         }
 
         public static bool operator <(NeuralPredictionModel x, NeuralPredictionModel y)
         {
-            //if (x._accuracy < y._accuracy)
-            //    return true;
-            //else
-            //{
-            //    if (x._accuracy == y._accuracy)
-            //    {
-            //        if (x._score < y._score)
-            //            return true;
-            //        else
-            //            return false;
-            //    }
-            //    else
-            //        return false;
-            //}
-
-            if (x.Error == y.Error)
-                return x.SecondaryError > y.SecondaryError;
-
-            return x.Error > y.Error;
+            if (x._accuracy < y._accuracy)
+                return true;
+            else
+            {
+                if (x._accuracy == y._accuracy)
+                {
+                    if (x._score < y._score)
+                        return true;
+                    else
+                        return false;
+                }
+                else
+                    return false;
+            }
         }
     }
 
