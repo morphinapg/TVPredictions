@@ -553,6 +553,24 @@ namespace TV_Ratings_Predictions
             }
         }
 
+        public int FactorHash
+        {
+            get
+            {
+                int hash = 0;
+                hash += Episodes;
+                hash += Halfhour ? 32 : 0;
+                int level = 64;
+                foreach (bool b in factorValues)
+                {
+                    hash += b ? level : 0;
+                    level *= 2;
+                }
+
+                return hash;
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name)
         {
@@ -1133,22 +1151,32 @@ namespace TV_Ratings_Predictions
                 
                 inputs[InputCount - 1] = s.Halfhour ? 1 : -1;
 
-                inputs[index] = 0;
+                double score;
+                if (index <= s.factorNames.Count)
+                    score = (shows.Where(x => x.factorValues[index]).Count() * 1.0 + shows.Where(x => !x.factorValues[index]).Count() * -1.0) / shows.Count;
+                else
+                    score = (shows.Where(x => x.Halfhour).Count() * 1.0 + shows.Where(x => !x.Halfhour).Count() * -1.0) / shows.Count;
+
+                inputs[index] = score;
                 if (index2 > -1)
                 {
-                    inputs[index2] = 0;
-                    if (index3 > -1) inputs[index3] = 0;
+                    inputs[index2] = (shows.Where(x => x.factorValues[index2]).Count() * 1.0 + shows.Where(x => !x.factorValues[index2]).Count() * -1.0) / shows.Count; ;
+                    if (index3 > -1) inputs[index3] = (shows.Where(x => x.factorValues[index3]).Count() * 1.0 + shows.Where(x => !x.factorValues[index3]).Count() * -1.0) / shows.Count;
                 }
+
+                inputs[InputCount - 2] = s.Episodes / 26.0 * 2 - 1;
             }
             else
             {
                 for (int i = 0; i < InputCount - 2; i++)
-                    inputs[i] = 0;
+                    inputs[i] = (shows.Where(x => x.factorValues[i]).Count() * 1.0 + shows.Where(x => !x.factorValues[i]).Count() * -1.0) / shows.Count;
 
                 inputs[InputCount - 1] = 0;
+
+                inputs[InputCount - 2] = shows.Select(x => s.Episodes).Average() / 26 * 2 - 1;
             }                
 
-            inputs[InputCount - 2] = s.Episodes / 26.0 * 2 - 1;
+            
 
 
 
@@ -1725,8 +1753,8 @@ namespace TV_Ratings_Predictions
         [NonSerialized]
         public Network network;
 
-        [NonSerialized]
-        bool Mutations, RandomMutations;
+        //[NonSerialized]
+        //bool Mutations, RandomMutations;
 
         //Primary:
         //First 4 entries will be the top 4 best performing models out of all 3 branches
@@ -1864,9 +1892,9 @@ namespace TV_Ratings_Predictions
                 }
             }
 
-            Mutations = false;
+            //Mutations = false;
             //CleanMutations = false;
-            RandomMutations = false;
+            //RandomMutations = false;
             var r = new Random();
 
             //If models were chosen from Randomized, then reset that branch based on the above rules
@@ -1892,7 +1920,7 @@ namespace TV_Ratings_Predictions
 
                         Randomized[i] = Randomized[Parent1] + Randomized[Parent2];
 
-                        if (Randomized[i].isMutated) RandomMutations = true;
+                        //if (Randomized[i].isMutated) RandomMutations = true;
                     }
 
                     //if (!RandomMutations)
@@ -1918,7 +1946,7 @@ namespace TV_Ratings_Predictions
 
                     Primary[i] = Primary[Parent1] + Primary[Parent2];
 
-                    if (Primary[i].isMutated) Mutations = true;
+                    //if (Primary[i].isMutated) Mutations = true;
                 }
 
                 //if (!Mutations)
