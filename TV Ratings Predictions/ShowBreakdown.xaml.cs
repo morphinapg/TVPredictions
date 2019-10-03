@@ -68,24 +68,7 @@ namespace TV_Ratings_Predictions
                 var tempList = network.shows.OrderBy(x => x.Episodes).ToList();
                 int LowestEpisode = tempList.First().Episodes, HighestEpisode = tempList.Last().Episodes;
 
-                //var AllOdds = new List<double>();
-
-                //for (int i = LowestEpisode - 1; i < HighestEpisode; i++)
-                //{
-                //    var tShow = new Show(s.Name, network, s.factorValues, i, s.Halfhour, s.factorNames)
-                //    {
-                //        ShowIndex = s.ShowIndex
-                //    };
-
-                //    AllOdds.Add(network.model.GetOdds(tShow, Adjustments[tShow.year], false, true, -1));
-                //}
-
-                //var BaseOdds = AllOdds.Sum() / AllOdds.Count;
-
                 var BaseOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, -1);
-
-                double AverageTotal = 0;
-                int AverageCount = 0;
 
 
                 for (int i = 0; i < network.factors.Count; i++)
@@ -111,77 +94,12 @@ namespace TV_Ratings_Predictions
                                 }                                    
                             }
 
-                            ObservableCollection<bool> factors1 = new ObservableCollection<bool>(), factors2 = new ObservableCollection<bool>();
-
                             if (Syndication)
-                            {
                                 detailName = "Will be syndicated next season";
-
-                                for (int x = 0; x < network.factors.Count; x++)
-                                {
-                                    if (network.factors[x] == "Syndication")
-                                    {
-                                        factors1.Add(false);
-                                        factors2.Add(false);
-                                    }
-                                    else if (network.factors[x] == "Post-Syndication")
-                                    {
-                                        factors1.Add(false);
-                                        factors2.Add(true);
-                                    }
-                                    else
-                                    {
-                                        factors1.Add(s.factorValues[x]);
-                                        factors2.Add(s.factorValues[x]);
-                                    }
-                                }
-                            }
                             else if (PostSyndication)
-                            {
                                 detailName = "Has already been syndicated";
-
-                                for (int x = 0; x < network.factors.Count; x++)
-                                {
-                                    if (network.factors[x] == "Syndication")
-                                    {
-                                        factors1.Add(false);
-                                        factors2.Add(true);
-                                    }
-                                    else if (network.factors[x] == "Post-Syndication")
-                                    {
-                                        factors1.Add(false);
-                                        factors2.Add(false);
-                                    }
-                                    else
-                                    {
-                                        factors1.Add(s.factorValues[x]);
-                                        factors2.Add(s.factorValues[x]);
-                                    }
-                                }
-                            }
                             else
-                            {
                                 detailName = "Not syndicated yet";
-
-                                for (int x = 0; x < network.factors.Count; x++)
-                                {
-                                    if (network.factors[x] == "Syndication")
-                                    {
-                                        factors1.Add(true);
-                                        factors2.Add(false);
-                                    }
-                                    else if (network.factors[x] == "Post-Syndication")
-                                    {
-                                        factors1.Add(false);
-                                        factors2.Add(true);
-                                    }
-                                    else
-                                    {
-                                        factors1.Add(s.factorValues[x]);
-                                        factors2.Add(s.factorValues[x]);
-                                    }
-                                }
-                            }
 
                             int index = -1, index2 = -1;
                             if (s.factorNames.Contains("Syndication"))
@@ -191,26 +109,9 @@ namespace TV_Ratings_Predictions
                                     index2 = s.factorNames.IndexOf("Post-Syndication");
                             }
                             else
-                            {
                                 index = s.factorNames.IndexOf("Post-Syndication");
-                            }
 
-                            var Show1 = new Show(s.Name, s.network, factors1, s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex };
-
-                            var Show2 = new Show(s.Name, s.network, factors2, s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex };
-
-
-                            double odds1 = network.model.GetOdds(Show1, Adjustments[s.year]),
-                                odds2 = network.model.GetOdds(Show2, Adjustments[s.year]);
-
-                            int count1 = network.shows.Where(x => x.factorValues[SyndicationIndex] == factors1[SyndicationIndex] && x.factorValues[PostIndex] == factors1[PostIndex]).Count(),
-                                count2 = network.shows.Where(x => x.factorValues[SyndicationIndex] == factors2[SyndicationIndex] && x.factorValues[PostIndex] == factors2[PostIndex]).Count(),
-                                count3 = network.shows.Where(x => x.factorValues[SyndicationIndex] == s.factorValues[SyndicationIndex] && x.factorValues[PostIndex] == s.factorValues[PostIndex]).Count();
-
-                            NewOdds = (odds1 * count1 + odds2 * count2 + CurrentOdds * count3) / (count1 + count2 + count3);
-                            //NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, index, index2);
-                            AverageTotal += NewOdds;
-                            AverageCount++;
+                            NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, index, index2);
 
                             detailValue = CurrentOdds - NewOdds;
 
@@ -257,95 +158,10 @@ namespace TV_Ratings_Predictions
                             else
                                 index1 = SummerIndex;
 
-                            int count1, count2, count3, count4;
-                            double odds1, odds2, odds3;
-
-                            //Define all Factor lists
-                            var c = s.factorValues.Count;
-                            bool[] factors1 = new bool[c], factors2 = new bool[c], factors3 = new bool[c];
-
-                            for (int x = 0; x < c; x++)
-                            {
-                                factors1[x] = s.factorValues[x];
-                                factors2[x] = s.factorValues[x];
-                                factors3[x] = s.factorValues[x];
-                            }
-
                             if (Fall)
-                            {
-                                if (Spring)
-                                {
-                                    detailName = "Fall Preview with a Premiere in the Spring";
-
-                                    //Premiered in the summer
-                                    factors1[FallIndex] = false;
-                                    factors1[SpringIndex] = false;
-                                    factors1[SummerIndex] = true;
-                                    count1 = network.shows.Where(x => x.factorValues[FallIndex] == true && x.factorValues[SpringIndex] == false && x.factorValues[SummerIndex] == true).Count();
-                                    odds1 = network.model.GetOdds(new Show(s.Name, s.network, new ObservableCollection<bool>(factors1), s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-
-                                    //Premiered in the Fall (no spring)
-                                    factors2[FallIndex] = true;
-                                    factors2[SpringIndex] = false;
-                                    count2 = network.shows.Where(x => x.factorValues[FallIndex] == true && x.factorValues[SpringIndex] == false).Count();
-                                    odds2 = network.model.GetOdds(new Show(s.Name, s.network, new ObservableCollection<bool>(factors2), s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-
-                                    //Premiered in the Spring
-                                    factors3[FallIndex] = false;
-                                    factors3[SpringIndex] = true;
-                                    count3 = network.shows.Where(x => x.factorValues[FallIndex] == false && x.factorValues[SpringIndex] == true).Count();
-                                    odds3 = network.model.GetOdds(new Show(s.Name, s.network, new ObservableCollection<bool>(factors3), s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-
-                                    count4 = network.shows.Where(x => x.factorValues[FallIndex] == true && x.factorValues[SpringIndex] == true).Count();
-                                }
-                                else
-                                {
-                                    detailName = "Premiered in the Fall";
-
-                                    //Premiered in the summer
-                                    factors1[FallIndex] = false;
-                                    factors1[SpringIndex] = false;
-                                    factors1[SummerIndex] = true;
-                                    count1 = network.shows.Where(x => x.factorValues[FallIndex] == false && x.factorValues[SpringIndex] == false && x.factorValues[SummerIndex] == true).Count();
-                                    odds1 = network.model.GetOdds(new Show(s.Name, s.network, new ObservableCollection<bool>(factors1), s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-
-                                    //Premiered in the Spring
-                                    factors2[FallIndex] = false;
-                                    factors2[SpringIndex] = true;
-                                    count2 = network.shows.Where(x => x.factorValues[FallIndex] == false && x.factorValues[SpringIndex] == true).Count();
-                                    odds2 = network.model.GetOdds(new Show(s.Name, s.network, new ObservableCollection<bool>(factors2), s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-
-                                    count3 = 0;
-                                    odds3 = 0;
-
-                                    count4 = network.shows.Where(x => x.factorValues[FallIndex] == true && x.factorValues[SpringIndex] == false).Count();
-                                }
-                            }                                
+                                detailName = Spring ? "Fall Preview with a Premiere in the Spring" : "Premiered in the Fall";
                             else if (Spring)
-                            {
                                 detailName = "Premiered in the Spring";
-
-                                //Premiered in the summer
-                                factors1[FallIndex] = false;
-                                factors1[SpringIndex] = false;
-                                factors1[SummerIndex] = true;
-                                count1 = network.shows.Where(x => x.factorValues[FallIndex] == false && x.factorValues[SpringIndex] == false && x.factorValues[SummerIndex] == true).Count();
-                                odds1 = network.model.GetOdds(new Show(s.Name, s.network, new ObservableCollection<bool>(factors1), s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-
-                                //Fall preview for Spring Premiere
-                                factors2[FallIndex] = true;
-                                factors2[SpringIndex] = true;
-                                count2 = network.shows.Where(x => x.factorValues[FallIndex] == true && x.factorValues[SpringIndex] == true).Count();
-                                odds2 = network.model.GetOdds(new Show(s.Name, s.network, new ObservableCollection<bool>(factors2), s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-
-                                //Premiered in the fall (no spring)
-                                factors3[FallIndex] = true;
-                                factors3[SpringIndex] = false;
-                                count3 = network.shows.Where(x => x.factorValues[FallIndex] == true && x.factorValues[SpringIndex] == false).Count();
-                                odds3 = network.model.GetOdds(new Show(s.Name, s.network, new ObservableCollection<bool>(factors3), s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-
-                                count4 = network.shows.Where(x => x.factorValues[FallIndex] == false && x.factorValues[SpringIndex] == true).Count();
-                            }
                             else
                             {
                                 detailName = "Premiered in the Summer";
@@ -356,34 +172,11 @@ namespace TV_Ratings_Predictions
                                     index2 = SummerIndex;
                                 else
                                     index1 = SummerIndex;
-
-                                //Premiered in the Fall (no spring)
-                                factors1[FallIndex] = true;
-                                factors1[SpringIndex] = false;
-                                count1 = network.shows.Where(x => x.factorValues[FallIndex] == true && x.factorValues[SpringIndex] == false).Count();
-                                odds1 = network.model.GetOdds(new Show(s.Name, s.network, new ObservableCollection<bool>(factors1), s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-
-                                //Fall preview for Spring Premiere
-                                factors2[FallIndex] = true;
-                                factors2[SpringIndex] = true;
-                                count2 = network.shows.Where(x => x.factorValues[FallIndex] == true && x.factorValues[SpringIndex] == true).Count();
-                                odds2 = network.model.GetOdds(new Show(s.Name, s.network, new ObservableCollection<bool>(factors2), s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-                                
-                                //Premiered in the Spring
-                                factors3[FallIndex] = false;
-                                factors3[SpringIndex] = true;
-                                count3 = network.shows.Where(x => x.factorValues[FallIndex] == false && x.factorValues[SpringIndex] == true).Count();
-                                odds3 = network.model.GetOdds(new Show(s.Name, s.network, new ObservableCollection<bool>(factors3), s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-
-                                count4 = network.shows.Where(x => x.factorValues[FallIndex] == false && x.factorValues[SpringIndex] == false && x.factorValues[SummerIndex] == true).Count();
                             }                 
 
                             PremiereFinished = true;
 
-                            //NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, index1, index2, index3);
-                            NewOdds = (odds1 * count1 + odds2 * count2 + odds3 * count3 + CurrentOdds * count4) / (count1 + count2 + count3 + count4);
-                            AverageTotal += NewOdds;
-                            AverageCount++;
+                            NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, index1, index2, index3);
 
                             detailValue = CurrentOdds - NewOdds;
 
@@ -398,21 +191,7 @@ namespace TV_Ratings_Predictions
                             else
                                 detailName = "Did not air in the Summer";
 
-                            ObservableCollection<bool> factors = new ObservableCollection<bool>();
-                            foreach (bool b in s.factorValues)
-                                factors.Add(b);
-
-                            factors[i] = !factors[i];
-
-                            var odds1 = network.model.GetOdds(new Show(s.Name, s.network, factors, s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-                            int count1 = network.shows.Where(x => x.factorValues[i] == factors[i]).Count(),
-                                count2 = network.shows.Where(x => x.factorValues[i] == s.factorValues[i]).Count();
-
-                            //NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, i);
-                            NewOdds = (odds1 * count1 + CurrentOdds * count2) / (count1 + count2);
-                            AverageTotal += NewOdds;
-                            AverageCount++;
-                            
+                            NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, i);                        
 
                             detailValue = CurrentOdds - NewOdds;
 
@@ -430,66 +209,14 @@ namespace TV_Ratings_Predictions
                                 int index = s.factorNames.IndexOf("Not Original"), index2 = s.factorNames.IndexOf("CBS Show");
                                 bool NotOriginal = s.factorValues[index], CBSShow = s.factorValues[index2];
 
-                                //Define all Factor lists
-                                var c = s.factorValues.Count;
-                                bool[] factors1 = new bool[c], factors2 = new bool[c];
-
-                                for (int x = 0; x < c; x++)
-                                {
-                                    factors1[x] = s.factorValues[x];
-                                    factors2[x] = s.factorValues[x];
-                                }
-
                                 if (NotOriginal)
-                                {
                                     detailName = "Show is not owned by the network";
-
-                                    //Show is owned by CBS
-                                    factors1[index] = false;
-                                    factors1[index2] = true;
-
-                                    //Show is owned by WB
-                                    factors2[index] = false;
-                                    factors2[index2] = false;
-                                }                                    
                                 else if (CBSShow)
-                                {
-                                    detailName = "Show is owned by CBS";
-
-                                    //Show is not owned
-                                    factors1[index] = true;
-                                    factors1[index2] = false;
-
-                                    //Show is owned by WB
-                                    factors2[index] = false;
-                                    factors2[index2] = false;
-                                }                                    
+                                    detailName = "Show is owned by CBS";    
                                 else
-                                {
                                     detailName = "Show is owned by WB";
 
-                                    //Show is not owned
-                                    factors1[index] = true;
-                                    factors1[index2] = false;
-
-                                    //Show is owned by CBS
-                                    factors2[index] = false;
-                                    factors2[index2] = true;
-                                }
-
-                                double odds1 = network.model.GetOdds(new Show(s.Name, s.network, new ObservableCollection<bool>(factors1), s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]),
-                                    odds2 = network.model.GetOdds(new Show(s.Name, s.network, new ObservableCollection<bool>(factors2), s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-
-                                int count1 = network.shows.Where(x => x.factorValues[index] == factors1[index] && x.factorValues[index2] == factors1[index2]).Count(),
-                                    count2 = network.shows.Where(x => x.factorValues[index] == factors2[index] && x.factorValues[index2] == factors2[index2]).Count(),
-                                    count3 = network.shows.Where(x => x.factorValues[index] == NotOriginal && x.factorValues[index2] == CBSShow).Count();
-
-
-
-                                //NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, index, index2);
-                                NewOdds = (odds1 * count1 + odds2 * count2 + CurrentOdds * count3) / (count1 + count2 + count3);
-                                AverageTotal += NewOdds;
-                                AverageCount++;
+                                NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, index, index2);
                             }
                             else
                             {
@@ -498,21 +225,7 @@ namespace TV_Ratings_Predictions
                                 else
                                     detailName = "Show is owned by the network";
 
-                                //NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, i);
-
-                                ObservableCollection<bool> factors = new ObservableCollection<bool>();
-                                foreach (bool b in s.factorValues)
-                                    factors.Add(b);
-
-                                factors[i] = !factors[i];
-
-                                var odds1 = network.model.GetOdds(new Show(s.Name, s.network, factors, s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-                                int count1 = network.shows.Where(x => x.factorValues[i] == factors[i]).Count(),
-                                    count2 = network.shows.Where(x => x.factorValues[i] == s.factorValues[i]).Count();
-
-                                NewOdds = (odds1 * count1 + CurrentOdds * count2) / (count1 + count2);
-                                AverageTotal += NewOdds;
-                                AverageCount++;
+                                NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, i);
                             }
 
                             detailValue = CurrentOdds - NewOdds;
@@ -571,22 +284,7 @@ namespace TV_Ratings_Predictions
                                 }
                         }
 
-                        ObservableCollection<bool> factors = new ObservableCollection<bool>();
-                        foreach (bool b in s.factorValues)
-                            factors.Add(b);
-
-                        factors[i] = !factors[i];
-
-                        var odds1 = network.model.GetOdds(new Show(s.Name, s.network, factors, s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
-                        int count1 = network.shows.Where(x => x.factorValues[i] == factors[i]).Count(),
-                            count2 = network.shows.Where(x => x.factorValues[i] == s.factorValues[i]).Count();
-
-                        NewOdds = (odds1 * count1 + CurrentOdds * count2) / (count1 + count2);
-                        //NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, i);
-                        AverageTotal += NewOdds;
-                        AverageCount++;
-
-                        
+                        NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, i);                        
 
                         detailValue = CurrentOdds - NewOdds;
 
@@ -606,10 +304,8 @@ namespace TV_Ratings_Predictions
                 int CurrentCount = network.shows.Where(x => x.Halfhour == s.Halfhour).Count(),
                     NewCount = network.shows.Where(x => x.Halfhour == !s.Halfhour).Count();
 
-                NewOdds = (tempodds * NewCount + CurrentOdds * CurrentCount) / (NewCount + CurrentCount);
-                //NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, s.factorNames.Count + 1);
-                AverageTotal += NewOdds;
-                AverageCount++;
+                //NewOdds = (tempodds * NewCount + CurrentOdds * CurrentCount) / (NewCount + CurrentCount);
+                NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, s.factorNames.Count + 1);
 
                 
                 detailValue = CurrentOdds - NewOdds;
@@ -640,9 +336,8 @@ namespace TV_Ratings_Predictions
                     }
                 }
 
-                NewOdds = (count > 0) ? total / count : CurrentOdds;
-                AverageTotal += NewOdds;
-                AverageCount++;
+                NewOdds = network.model.GetOdds(s, Adjustments[s.year], false, true, s.factorNames.Count);
+                
 
                 int low = s.Episodes, high = s.Episodes;
                 bool foundLow = false, foundHigh = false;
@@ -664,16 +359,6 @@ namespace TV_Ratings_Predictions
                     else
                         foundLow = true;
                 }
-
-                //double total = 0;
-                //int count = 0;
-                //for (int i = 0; i < 26; i++)
-                //    if ((i < low - 1 && i >= LowestEpisode) || (i >= high && i < HighestEpisode))
-                //    {
-                //        total += OddsByEpisode[i];
-                //        count++;
-                //    }
-
                 
 
                 if ((low == 1 && high == 26) || (low == high) || (NewOdds == CurrentOdds))
@@ -693,13 +378,9 @@ namespace TV_Ratings_Predictions
 
                 details.Add(new DetailsContainer(detailName, detailValue));
 
-                //BaseOdds = AverageTotal / AverageCount;
-
                 double change = 0;
                 foreach (DetailsContainer d in details)
                     change += d.Value;
-
-                
 
                 double multiplier = (CurrentOdds - BaseOdds) / change;
                 bool BaseReverse = false;
@@ -713,18 +394,37 @@ namespace TV_Ratings_Predictions
                         multiplier = (CurrentOdds - BaseOdds) / change;
                         BaseReverse = true;
                     }
-                        //foreach (DetailsContainer d in details)
-                        //    d.Value *= -1;
                 }
 
                 if (BaseReverse)
                 {
-                    var o = CurrentOdds - change;
-                    if (o > 0 && o < 1)
+                    var hashes = network.shows.Select(x => x.FactorHash).Distinct().ToList();
+                    var totalOdds = new ConcurrentBag<double>();
+                    var counts = new ConcurrentBag<int>();
+                    Parallel.For(0, hashes.Count, x =>
                     {
-                        BaseOdds = o;
+                        var list = network.shows.Where(y => y.FactorHash == hashes[x]);
+                        var show = list.First();
+                        var c = list.Count();
+                        counts.Add(c);
+                        totalOdds.Add(network.model.GetOdds(new Show(s.Name, s.network, show.factorValues, show.Episodes, show.Halfhour, show.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]));
+                    });
+
+                    var bo = totalOdds.Sum() / counts.Sum();
+                    if ((CurrentOdds - bo)/change > 0)
+                    {
+                        BaseOdds = bo;
                         BaseReverse = false;
-                    }   
+                    }
+                    else
+                    {
+                        var o = CurrentOdds - change;
+                        if (o > 0 && o < 1)
+                        {
+                            BaseOdds = o;
+                            BaseReverse = false;
+                        }
+                    }                    
                 }
                     
 

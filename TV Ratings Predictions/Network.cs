@@ -1150,12 +1150,15 @@ namespace TV_Ratings_Predictions
                     inputs[i] = s.factorValues[i] ? 1 : -1;                
                 
                 inputs[InputCount - 1] = s.Halfhour ? 1 : -1;
+                inputs[InputCount - 2] = s.Episodes / 26.0 * 2 - 1;
 
                 double score;
-                if (index <= s.factorNames.Count)
+                if (index < s.factorNames.Count)
                     score = (shows.Where(x => x.factorValues[index]).Count() * 1.0 + shows.Where(x => !x.factorValues[index]).Count() * -1.0) / shows.Count;
-                else
+                else if (index == s.factorNames.Count + 1)
                     score = (shows.Where(x => x.Halfhour).Count() * 1.0 + shows.Where(x => !x.Halfhour).Count() * -1.0) / shows.Count;
+                else
+                    score = shows.Select(x => x.Episodes).Average() / 26 * 2 - 1;
 
                 inputs[index] = score;
                 if (index2 > -1)
@@ -1163,17 +1166,15 @@ namespace TV_Ratings_Predictions
                     inputs[index2] = (shows.Where(x => x.factorValues[index2]).Count() * 1.0 + shows.Where(x => !x.factorValues[index2]).Count() * -1.0) / shows.Count; ;
                     if (index3 > -1) inputs[index3] = (shows.Where(x => x.factorValues[index3]).Count() * 1.0 + shows.Where(x => !x.factorValues[index3]).Count() * -1.0) / shows.Count;
                 }
-
-                inputs[InputCount - 2] = s.Episodes / 26.0 * 2 - 1;
             }
             else
             {
                 for (int i = 0; i < InputCount - 2; i++)
                     inputs[i] = (shows.Where(x => x.factorValues[i]).Count() * 1.0 + shows.Where(x => !x.factorValues[i]).Count() * -1.0) / shows.Count;
 
-                inputs[InputCount - 1] = 0;
+                inputs[InputCount - 1] = (shows.Where(x => x.Halfhour).Count() * 1.0 + shows.Where(x => !x.Halfhour).Count() * -1.0) / shows.Count;
 
-                inputs[InputCount - 2] = shows.Select(x => s.Episodes).Average() / 26 * 2 - 1;
+                inputs[InputCount - 2] = shows.Select(x => x.Episodes).Average() / 26 * 2 - 1;
             }                
 
             
