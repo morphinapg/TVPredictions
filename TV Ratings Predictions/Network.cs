@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Windows.Storage.Pickers;
 using System.Xml.Serialization;
+using System.Collections.Concurrent;
 
 namespace TV_Ratings_Predictions 
 {
@@ -319,7 +320,7 @@ namespace TV_Ratings_Predictions
 
         public List<Show> CustomFilter(int year)            //Returns a filtered list representing every show for a custom chosen year, sorted by rating
         {
-            var tempList = shows.Where(x => x.year == year).ToList();
+            var tempList = shows.AsParallel().Where(x => x.year == year).ToList();
             Parallel.ForEach(tempList, s => s.UpdateAverage());
             tempList.Sort();
 
@@ -335,13 +336,13 @@ namespace TV_Ratings_Predictions
 
             if (parallel)                                               //First calculate the total of all average ratings, this can be done in parallel or not
             {
-                double[] totals = new double[tempList.Count];
+                var totals = new ConcurrentBag<double>();
                 Parallel.For(0, tempList.Count, i =>
                 {
                     if (i > 0 && tempList[i - 1].AverageRating == tempList[i].AverageRating)
                         duplicate = true;
 
-                    totals[i] = tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1);   //half hour shows are weighted half as much
+                    totals.Add(tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1));   //half hour shows are weighted half as much
                 });                                                                             //as the same ratings contribute half as much money to the network
                 total = totals.Sum();
             }
@@ -376,16 +377,16 @@ namespace TV_Ratings_Predictions
 
         public void UpdateIndexes(int year)                             //Update Indexes for a custom year
         {
-            var tempList = shows.Where(x => x.year == year).OrderBy(x => x.AverageRating).ThenBy(x => x.Name).ToList();
+            var tempList = shows.AsParallel().Where(x => x.year == year).OrderBy(x => x.AverageRating).ThenBy(x => x.Name).ToList();
 
             double total = 0;
-            double[] totals = new double[tempList.Count];
+            var totals = new ConcurrentBag<double>();
             bool duplicate = false;
             Parallel.For(0, tempList.Count, i =>
             {
                 if (i > 0 && tempList[i - 1].AverageRating == tempList[i].AverageRating)
                     duplicate = true;
-                totals[i] = tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1);   
+                totals.Add(tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1));
             });                                                                             
             total = totals.Sum();
 
@@ -423,16 +424,18 @@ namespace TV_Ratings_Predictions
             {
                 double total = 0, start = 0;
                 int weight = 0;
-                double[] totals = new double[shows.Count], starts = new double[shows.Count];          
-                int[] weights = new int[shows.Count];               
+                ConcurrentBag<double>
+                    totals = new ConcurrentBag<double>(), 
+                    starts = new ConcurrentBag<double>();          
+                var weights = new ConcurrentBag<int>();               
 
                 Parallel.For(0, shows.Count, x =>                        //Because there can be a lot of shows, we're going to iterate through each show in parallel and then sum the values
                 {
                     if (shows[x].ratings.Count > 0)                      //We are averaging the ratings falloff for every show on the network, for every year
                     {
-                        starts[x] = shows[x].ratingsAverages[0];
-                        totals[x] = shows[x].ratingsAverages[i];
-                        weights[x] = 1;
+                        starts.Add(shows[x].ratingsAverages[0]);
+                        totals.Add(shows[x].ratingsAverages[i]);
+                        weights.Add(1);
                     }
                 });
 
@@ -1152,33 +1155,18 @@ namespace TV_Ratings_Predictions
                 inputs[InputCount - 1] = s.Halfhour ? 1 : -1;
                 inputs[InputCount - 2] = s.Episodes / 26.0 * 2 - 1;
 
-                double score;
-                if (index < s.factorNames.Count)
-                    score = (shows.Where(x => x.factorValues[index]).Count() * 1.0 + shows.Where(x => !x.factorValues[index]).Count() * -1.0) / shows.Count;
-                else if (index == s.factorNames.Count + 1)
-                    score = (shows.Where(x => x.Halfhour).Count() * 1.0 + shows.Where(x => !x.Halfhour).Count() * -1.0) / shows.Count;
-                else
-                    score = shows.Select(x => x.Episodes).Average() / 26 * 2 - 1;
-
-                inputs[index] = score;
+                inputs[index] = GetScaledAverage(s, index);
                 if (index2 > -1)
                 {
-                    inputs[index2] = (shows.Where(x => x.factorValues[index2]).Count() * 1.0 + shows.Where(x => !x.factorValues[index2]).Count() * -1.0) / shows.Count; ;
-                    if (index3 > -1) inputs[index3] = (shows.Where(x => x.factorValues[index3]).Count() * 1.0 + shows.Where(x => !x.factorValues[index3]).Count() * -1.0) / shows.Count;
+                    inputs[index2] = GetScaledAverage(s, index2);
+                    if (index3 > -1) inputs[index3] = GetScaledAverage(s, index3);
                 }
             }
             else
             {
-                for (int i = 0; i < InputCount - 2; i++)
-                    inputs[i] = (shows.Where(x => x.factorValues[i]).Count() * 1.0 + shows.Where(x => !x.factorValues[i]).Count() * -1.0) / shows.Count;
-
-                inputs[InputCount - 1] = (shows.Where(x => x.Halfhour).Count() * 1.0 + shows.Where(x => !x.Halfhour).Count() * -1.0) / shows.Count;
-
-                inputs[InputCount - 2] = shows.Select(x => x.Episodes).Average() / 26 * 2 - 1;
-            }                
-
-            
-
+                for (int i = 0; i < InputCount; i++)
+                    inputs[i] = GetScaledAverage(s, i);
+            }          
 
 
             for (int i = 0; i < NeuronCount; i++)
@@ -1192,6 +1180,29 @@ namespace TV_Ratings_Predictions
             return s._calculatedThreshold;
         }
 
+        double GetScaledAverage(Show s, int index)
+        {
+            double weight = 0, total = 0;
+            var yearlist = shows.AsParallel().Select(x => x.year).Distinct().ToList();
+
+            foreach (int year in yearlist)
+            {
+                var w = 1.0 / (NetworkDatabase.MaxYear - year + 1);
+                double score;
+                var count = shows.AsParallel().Where(x => x.year == year).Count();
+                weight += w * count;
+                if (index < s.factorNames.Count)
+                    score = (shows.AsParallel().Where(x => x.year == year && x.factorValues[index]).Count() * 1.0 + shows.AsParallel().Where(x => x.year == year && !x.factorValues[index]).Count() * -1.0);
+                else if (index == s.factorNames.Count)
+                    score = shows.AsParallel().Where(x => x.year == year).Select(x => x.Episodes).Average() / 26 * 2 - 1;
+                else
+                    score = shows.AsParallel().Where(x => x.year == year && x.Halfhour).Count() * 1.0 + shows.AsParallel().Where(x => x.year == year && !x.Halfhour).Count() * -1.0;
+                total += score * w;
+            }
+
+            return total / weight;
+        }
+
         public double GetAverageThreshold(bool parallel = false)
         {
             double total = 0;
@@ -1200,22 +1211,23 @@ namespace TV_Ratings_Predictions
 
             if (parallel)
             {
-                var tempList = shows.Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList();
-                double[] totals = new double[tempList.Count];
-                double[] counts = new double[tempList.Count];
+                var tempList = shows.AsParallel().Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList();
+                ConcurrentBag<double>
+                    totals = new ConcurrentBag<double>(),
+                    counts = new ConcurrentBag<double>();
 
                 Parallel.For(0, tempList.Count, i =>
                 {
                     double weight = 1.0 / (year - tempList[i].year + 1);
-                    totals[i] = GetThreshold(tempList[i], 1) * weight;
-                    counts[i] = weight;
+                    totals.Add(GetThreshold(tempList[i], 1) * weight);
+                    counts.Add(weight);
                 });
 
                 total = totals.Sum();
                 count = counts.Sum();
             }
             else
-                foreach (Show s in shows.Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList())
+                foreach (Show s in shows.AsParallel().Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList())
                 {
                     double weight = 1.0 / (year - s.year + 1);
                     total += GetThreshold(s, 1) * weight;
@@ -1231,14 +1243,14 @@ namespace TV_Ratings_Predictions
             int count = 0;
             int maxyear = NetworkDatabase.MaxYear;
 
-            var tempList = shows.Where(x => x.year == year && x.ratings.Count > 0).ToList();
-            double[] totals = new double[tempList.Count];
-            int[] counts = new int[tempList.Count];
+            var tempList = shows.AsParallel().Where(x => x.year == year && x.ratings.Count > 0).ToList();
+            var totals = new ConcurrentBag<double>();
+            var counts = new ConcurrentBag<int>();
 
             Parallel.For(0, tempList.Count, i =>
             {
-                totals[i] = GetThreshold(tempList[i], 1);
-                counts[i] = 1;
+                totals.Add(GetThreshold(tempList[i], 1));
+                counts.Add(1);
             });
 
             total = totals.Sum();
@@ -1256,7 +1268,7 @@ namespace TV_Ratings_Predictions
         {
             double average = GetAverageThreshold(parallel);
             var Adjustments = new Dictionary<int, double>();
-            var years = shows.Select(x => x.year).ToList().Distinct();
+            var years = shows.AsParallel().Select(x => x.year).ToList().Distinct();
             foreach (int y in years)
                 Adjustments[y] = GetAdjustment(average, GetSeasonAverageThreshold(y));
 
@@ -1302,7 +1314,11 @@ namespace TV_Ratings_Predictions
 
             if (parallel)
             {
-                double[] t = new double[shows.Count], w = new double[shows.Count], score = new double[shows.Count];
+                ConcurrentBag<double> 
+                    t = new ConcurrentBag<double>(), 
+                    w = new ConcurrentBag<double>(), 
+                    score = new ConcurrentBag<double>();
+
                 var tempList = shows.ToList();
                 Parallel.For(0, tempList.Count, i =>
                 {
@@ -1329,8 +1345,9 @@ namespace TV_Ratings_Predictions
                             if (s.Canceled)
                             {
                                 double odds = GetOdds(s, Adjustments[s.year], true);
+                                var tempScore = (1 - Math.Abs(odds - 0.55)) * 4 / 3;
 
-                                score[i] = (1 - Math.Abs(odds - 0.55)) * 4 / 3;
+                                score.Add(tempScore);
 
                                 if (odds < 0.6 && odds > 0.4)
                                 {
@@ -1338,7 +1355,7 @@ namespace TV_Ratings_Predictions
 
                                     weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
 
-                                    weight *= score[i];
+                                    weight *= tempScore;
 
                                     if (prediction == 0)
                                         weight /= 2;
@@ -1347,8 +1364,8 @@ namespace TV_Ratings_Predictions
                                     weight /= 2;
                             }
 
-                            t[i] = accuracy * weight;
-                            w[i] = weight;
+                            t.Add(accuracy * weight);
+                            w.Add(weight);
                         }
                         else if (s.Canceled)
                         {
@@ -1362,8 +1379,8 @@ namespace TV_Ratings_Predictions
 
                             weight /= year - s.year + 1;
 
-                            t[i] = accuracy * weight;
-                            w[i] = weight;
+                            t.Add(accuracy * weight);
+                            w.Add(weight);
                         }
                     }
                 });

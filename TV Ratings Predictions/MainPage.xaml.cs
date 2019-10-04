@@ -79,7 +79,7 @@ namespace TV_Ratings_Predictions
 
             int count = 0;
             foreach (Network n in NetworkCollection)
-                count += n.shows.Where(x => x.year == year).ToList().Count;
+                count += n.shows.AsParallel().Where(x => x.year == year).Count();
 
             if (count == 0)
                 year--;
@@ -91,8 +91,7 @@ namespace TV_Ratings_Predictions
             TVSeason.MaxYear = new DateTime(NetworkDatabase.MaxYear, 9, 1);
 
 
-            timer = new DispatcherTimer();
-            timer.Interval = new TimeSpan(0, 0, 1);
+            timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 1) };
             timer.Tick += Timer_Tick;
             timer.Start();
 
