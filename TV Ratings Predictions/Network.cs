@@ -424,7 +424,7 @@ namespace TV_Ratings_Predictions
             {
                 double total = 0, start = 0;
                 int weight = 0;
-                var tempList = shows.AsParallel().Where(x => x.ratings.Count > 0).ToList();
+                var tempList = shows.Where(x => x.ratings.Count > 0).ToList();
 
                 double[]
                     totals = new double[tempList.Count], 
@@ -1182,7 +1182,7 @@ namespace TV_Ratings_Predictions
         double GetScaledAverage(Show s, int index)
         {
             double weight = 0, total = 0;
-            var yearlist = shows.AsParallel().Select(x => x.year).Distinct().ToList();
+            var yearlist = shows.Select(x => x.year).Distinct().ToList();
 
             foreach (int year in yearlist)
             {
@@ -1193,7 +1193,7 @@ namespace TV_Ratings_Predictions
                 if (index < s.factorNames.Count)
                     score = (shows.AsParallel().Where(x => x.year == year && x.factorValues[index]).Count() * 1.0 + shows.AsParallel().Where(x => x.year == year && !x.factorValues[index]).Count() * -1.0);
                 else if (index == s.factorNames.Count)
-                    score = shows.AsParallel().Where(x => x.year == year).Select(x => x.Episodes).Average() / 26 * 2 - 1;
+                    score = shows.Where(x => x.year == year).Select(x => x.Episodes).Average() / 26 * 2 - 1;
                 else
                     score = shows.AsParallel().Where(x => x.year == year && x.Halfhour).Count() * 1.0 + shows.AsParallel().Where(x => x.year == year && !x.Halfhour).Count() * -1.0;
                 total += score * w;
@@ -1210,7 +1210,7 @@ namespace TV_Ratings_Predictions
 
             if (parallel)
             {
-                var tempList = shows.AsParallel().Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList();
+                var tempList = shows.Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList();
                 double[]
                     totals = new double[tempList.Count],
                     counts = new double[tempList.Count];
@@ -1226,7 +1226,7 @@ namespace TV_Ratings_Predictions
                 count = counts.Sum();
             }
             else
-                foreach (Show s in shows.AsParallel().Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList())
+                foreach (Show s in shows.Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList())
                 {
                     double weight = 1.0 / (year - s.year + 1);
                     total += GetThreshold(s, 1) * weight;
@@ -1242,7 +1242,7 @@ namespace TV_Ratings_Predictions
             int count = 0;
             int maxyear = NetworkDatabase.MaxYear;
 
-            var tempList = shows.AsParallel().Where(x => x.year == year && x.ratings.Count > 0).ToList();
+            var tempList = shows.Where(x => x.year == year && x.ratings.Count > 0).ToList();
             var totals = new double[tempList.Count];
 
             Parallel.For(0, tempList.Count, i => totals[i] = GetThreshold(tempList[i], 1));
@@ -1308,7 +1308,7 @@ namespace TV_Ratings_Predictions
 
             if (parallel)
             {
-                var tempList = shows.AsParallel().Where(x => x.Renewed || x.Canceled).ToList();
+                var tempList = shows.Where(x => x.Renewed || x.Canceled).ToList();
 
                 double[]
                     t = new double[tempList.Count], 
