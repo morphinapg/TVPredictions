@@ -273,7 +273,7 @@ namespace TV_Ratings_Predictions
 
         public void ModelUpdate(NeuralPredictionModel m)    //Update the Prediction Model with the new model, and let the UI know changes have happened
         {
-            model = new NeuralPredictionModel(m);                                          
+            model = m;                          
             PredictionAccuracy = model.TestAccuracy() * 100;    
             OnPropertyChangedAsync("PredictionAccuracy");
             _lastupdate = DateTime.Now;                         
@@ -336,13 +336,13 @@ namespace TV_Ratings_Predictions
 
             if (parallel)                                               //First calculate the total of all average ratings, this can be done in parallel or not
             {
-                var totals = new ConcurrentBag<double>();
+                var totals = new double[tempList.Count];
                 Parallel.For(0, tempList.Count, i =>
                 {
                     if (i > 0 && tempList[i - 1].AverageRating == tempList[i].AverageRating)
                         duplicate = true;
 
-                    totals.Add(tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1));   //half hour shows are weighted half as much
+                    totals[i] = tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1);   //half hour shows are weighted half as much
                 });                                                                             //as the same ratings contribute half as much money to the network
                 total = totals.Sum();
             }
@@ -380,13 +380,13 @@ namespace TV_Ratings_Predictions
             var tempList = shows.AsParallel().Where(x => x.year == year).OrderBy(x => x.AverageRating).ThenBy(x => x.Name).ToList();
 
             double total = 0;
-            var totals = new ConcurrentBag<double>();
+            var totals = new double[tempList.Count];
             bool duplicate = false;
             Parallel.For(0, tempList.Count, i =>
             {
                 if (i > 0 && tempList[i - 1].AverageRating == tempList[i].AverageRating)
                     duplicate = true;
-                totals.Add(tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1));
+                totals[i] =tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1);
             });                                                                             
             total = totals.Sum();
 
@@ -424,19 +424,18 @@ namespace TV_Ratings_Predictions
             {
                 double total = 0, start = 0;
                 int weight = 0;
-                ConcurrentBag<double>
-                    totals = new ConcurrentBag<double>(), 
-                    starts = new ConcurrentBag<double>();          
-                var weights = new ConcurrentBag<int>();               
+                var tempList = shows.AsParallel().Where(x => x.ratings.Count > 0).ToList();
+
+                double[]
+                    totals = new double[tempList.Count], 
+                    starts = new double[tempList.Count];          
+                var weights = new int[tempList.Count];               
 
                 Parallel.For(0, shows.Count, x =>                        //Because there can be a lot of shows, we're going to iterate through each show in parallel and then sum the values
                 {
-                    if (shows[x].ratings.Count > 0)                      //We are averaging the ratings falloff for every show on the network, for every year
-                    {
-                        starts.Add(shows[x].ratingsAverages[0]);
-                        totals.Add(shows[x].ratingsAverages[i]);
-                        weights.Add(1);
-                    }
+                    starts[x] = shows[x].ratingsAverages[0];
+                    totals[x] = shows[x].ratingsAverages[i];
+                    weights[x] = 1;
                 });
 
                 total = totals.Sum();
@@ -1212,15 +1211,15 @@ namespace TV_Ratings_Predictions
             if (parallel)
             {
                 var tempList = shows.AsParallel().Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList();
-                ConcurrentBag<double>
-                    totals = new ConcurrentBag<double>(),
-                    counts = new ConcurrentBag<double>();
+                double[]
+                    totals = new double[tempList.Count],
+                    counts = new double[tempList.Count];
 
                 Parallel.For(0, tempList.Count, i =>
                 {
                     double weight = 1.0 / (year - tempList[i].year + 1);
-                    totals.Add(GetThreshold(tempList[i], 1) * weight);
-                    counts.Add(weight);
+                    totals[i] = GetThreshold(tempList[i], 1) * weight;
+                    counts[i] = weight;
                 });
 
                 total = totals.Sum();
@@ -1244,17 +1243,12 @@ namespace TV_Ratings_Predictions
             int maxyear = NetworkDatabase.MaxYear;
 
             var tempList = shows.AsParallel().Where(x => x.year == year && x.ratings.Count > 0).ToList();
-            var totals = new ConcurrentBag<double>();
-            var counts = new ConcurrentBag<int>();
+            var totals = new double[tempList.Count];
 
-            Parallel.For(0, tempList.Count, i =>
-            {
-                totals.Add(GetThreshold(tempList[i], 1));
-                counts.Add(1);
-            });
+            Parallel.For(0, tempList.Count, i => totals[i] = GetThreshold(tempList[i], 1));
 
             total = totals.Sum();
-            count = counts.Sum();
+            count = tempList.Count;
 
             return total / count;
         }
@@ -1314,74 +1308,71 @@ namespace TV_Ratings_Predictions
 
             if (parallel)
             {
-                ConcurrentBag<double> 
-                    t = new ConcurrentBag<double>(), 
-                    w = new ConcurrentBag<double>(), 
-                    score = new ConcurrentBag<double>();
+                var tempList = shows.AsParallel().Where(x => x.Renewed || x.Canceled).ToList();
 
-                var tempList = shows.ToList();
+                double[]
+                    t = new double[tempList.Count], 
+                    w = new double[tempList.Count], 
+                    score = new double[tempList.Count];
+
                 Parallel.For(0, tempList.Count, i =>
                 {
                     Show s = tempList[i];
+                    double threshold = GetThreshold(s, Adjustments[s.year]);
+                    int prediction = (s.ShowIndex > threshold) ? 1 : 0;
+                    double distance = Math.Abs(s.ShowIndex - threshold);
 
-                    if (s.Renewed || s.Canceled)
+                    if (s.Renewed)
                     {
-                        double threshold = GetThreshold(s, Adjustments[s.year]);
-                        int prediction = (s.ShowIndex > threshold) ? 1 : 0;
-                        double distance = Math.Abs(s.ShowIndex - threshold);
+                        int accuracy = (prediction == 1) ? 1 : 0;
+                        double weight;
 
-                        if (s.Renewed)
+                        if (accuracy == 1)
+                            weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
+                        else
+                            weight = (distance + weightAverage) / weightAverage;
+
+                        weight /= year - s.year + 1;
+
+                        if (s.Canceled)
                         {
-                            int accuracy = (prediction == 1) ? 1 : 0;
-                            double weight;
+                            double odds = GetOdds(s, Adjustments[s.year], true);
+                            var tempScore = (1 - Math.Abs(odds - 0.55)) * 4 / 3;
 
-                            if (accuracy == 1)
-                                weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
-                            else
-                                weight = (distance + weightAverage) / weightAverage;
+                            score[i] = tempScore;
 
-                            weight /= year - s.year + 1;
-
-                            if (s.Canceled)
+                            if (odds < 0.6 && odds > 0.4)
                             {
-                                double odds = GetOdds(s, Adjustments[s.year], true);
-                                var tempScore = (1 - Math.Abs(odds - 0.55)) * 4 / 3;
+                                accuracy = 1;
 
-                                score.Add(tempScore);
+                                weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
 
-                                if (odds < 0.6 && odds > 0.4)
-                                {
-                                    accuracy = 1;
+                                weight *= tempScore;
 
-                                    weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
-
-                                    weight *= tempScore;
-
-                                    if (prediction == 0)
-                                        weight /= 2;
-                                }
-                                else
+                                if (prediction == 0)
                                     weight /= 2;
                             }
-
-                            t.Add(accuracy * weight);
-                            w.Add(weight);
-                        }
-                        else if (s.Canceled)
-                        {
-                            int accuracy = (prediction == 0) ? 1 : 0;
-                            double weight;
-
-                            if (accuracy == 1)
-                                weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
                             else
-                                weight = (distance + weightAverage) / weightAverage;
-
-                            weight /= year - s.year + 1;
-
-                            t.Add(accuracy * weight);
-                            w.Add(weight);
+                                weight /= 2;
                         }
+
+                        t[i] = accuracy * weight;
+                        w[i] = weight;
+                    }
+                    else if (s.Canceled)
+                    {
+                        int accuracy = (prediction == 0) ? 1 : 0;
+                        double weight;
+
+                        if (accuracy == 1)
+                            weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
+                        else
+                            weight = (distance + weightAverage) / weightAverage;
+
+                        weight /= year - s.year + 1;
+
+                        t[i] = accuracy * weight;
+                        w[i] = weight;
                     }
                 });
 
@@ -1393,61 +1384,58 @@ namespace TV_Ratings_Predictions
             {
                 foreach (Show s in shows.ToList())
                 {
-                    if (s.Renewed || s.Canceled)
+                    double threshold = GetThreshold(s, Adjustments[s.year]);
+                    int prediction = (s.ShowIndex > threshold) ? 1 : 0;
+                    double distance = Math.Abs(s.ShowIndex - threshold);
+
+                    if (s.Renewed)
                     {
-                        double threshold = GetThreshold(s, Adjustments[s.year]);
-                        int prediction = (s.ShowIndex > threshold) ? 1 : 0;
-                        double distance = Math.Abs(s.ShowIndex - threshold);
+                        int accuracy = (prediction == 1) ? 1 : 0;
+                        double weight;
 
-                        if (s.Renewed)
+                        if (accuracy == 1)
+                            weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
+                        else
+                            weight = (distance + weightAverage) / weightAverage;
+
+                        weight /= year - s.year + 1;
+
+                        if (s.Canceled)
                         {
-                            int accuracy = (prediction == 1) ? 1 : 0;
-                            double weight;
+                            double odds = GetOdds(s, Adjustments[s.year], true);
+                            scores += (1 - Math.Abs(odds - 0.55)) * 4 / 3;
 
-                            if (accuracy == 1)
-                                weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
-                            else
-                                weight = (distance + weightAverage) / weightAverage;
-
-                            weight /= year - s.year + 1;
-
-                            if (s.Canceled)
+                            if (odds < 0.6 && odds > 0.4)
                             {
-                                double odds = GetOdds(s, Adjustments[s.year], true);
-                                scores += (1 - Math.Abs(odds - 0.55)) * 4 / 3;
-
-                                if (odds < 0.6 && odds > 0.4)
-                                {
-                                    accuracy = 1;
-                                    weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
-                                    weight *= (1 - Math.Abs(odds - 0.55)) * 4 / 3;
-
-                                    if (prediction == 0)
-                                        weight /= 2;
-                                }
-                                else
-                                    weight /= 2;
-
-                            }
-
-                            totals += accuracy * weight;
-                            weights += weight;
-                        }
-                        else if (s.Canceled)
-                        {
-                            int accuracy = (prediction == 0) ? 1 : 0;
-                            double weight;
-
-                            if (accuracy == 1)
+                                accuracy = 1;
                                 weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
+                                weight *= (1 - Math.Abs(odds - 0.55)) * 4 / 3;
+
+                                if (prediction == 0)
+                                    weight /= 2;
+                            }
                             else
-                                weight = (distance + weightAverage) / weightAverage;
+                                weight /= 2;
 
-                            weight /= year - s.year + 1;
-
-                            totals += accuracy * weight;
-                            weights += weight;
                         }
+
+                        totals += accuracy * weight;
+                        weights += weight;
+                    }
+                    else if (s.Canceled)
+                    {
+                        int accuracy = (prediction == 0) ? 1 : 0;
+                        double weight;
+
+                        if (accuracy == 1)
+                            weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
+                        else
+                            weight = (distance + weightAverage) / weightAverage;
+
+                        weight /= year - s.year + 1;
+
+                        totals += accuracy * weight;
+                        weights += weight;
                     }
                 }
             }

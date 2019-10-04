@@ -399,15 +399,15 @@ namespace TV_Ratings_Predictions
                 if (BaseReverse)
                 {
                     var hashes = network.shows.Select(x => x.FactorHash).Distinct().ToList();
-                    var totalOdds = new ConcurrentBag<double>();
-                    var counts = new ConcurrentBag<int>();
+                    var totalOdds = new double[hashes.Count];
+                    var counts = new int[hashes.Count];
                     Parallel.For(0, hashes.Count, x =>
                     {
                         var list = network.shows.Where(y => y.FactorHash == hashes[x]);
                         var show = list.First();
                         var c = list.Count();
-                        counts.Add(c);
-                        totalOdds.Add(network.model.GetOdds(new Show(s.Name, s.network, show.factorValues, show.Episodes, show.Halfhour, show.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]));
+                        counts[x] = c;
+                        totalOdds[x] = network.model.GetOdds(new Show(s.Name, s.network, show.factorValues, show.Episodes, show.Halfhour, show.factorNames) { ShowIndex = s.ShowIndex }, Adjustments[s.year]);
                     });
 
                     var bo = totalOdds.Sum() / counts.Sum();
