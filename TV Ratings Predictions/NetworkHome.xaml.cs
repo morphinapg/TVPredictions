@@ -54,7 +54,7 @@ namespace TV_Ratings_Predictions
             //network.RefreshPredictions();
             //network.SortPredictions();
             NetworkName.Text = network.name;
-            HeaderThreshold.Text = "Average Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear), 2);
+            HeaderThreshold.Text = "Average Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear, true), 2);
             Predictions = network.Predictions;
             ShowsList.ItemsSource = Predictions;
             Predictions.CollectionChanged += Predictions_CollectionChanged;
@@ -70,7 +70,7 @@ namespace TV_Ratings_Predictions
 
         private void Predictions_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            HeaderThreshold.Text = "Average Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear), 2); 
+            HeaderThreshold.Text = "Average Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear, true), 2);
         }
 
         private void AddShow_Click(object sender, RoutedEventArgs e)
@@ -144,7 +144,7 @@ namespace TV_Ratings_Predictions
             {
 
                 ChartTitle.Text = network.name;
-                RenewalThreshold.Text = "Average Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear), 2);
+                RenewalThreshold.Text = "Average Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear, true), 2);
                 ChartTitle.Visibility = Visibility.Visible;
                 RenewalThreshold.Visibility = Visibility.Visible;
 

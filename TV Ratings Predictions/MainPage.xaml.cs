@@ -78,8 +78,9 @@ namespace TV_Ratings_Predictions
             
 
             int count = 0;
+
             foreach (Network n in NetworkCollection)
-                count += n.shows.AsParallel().Where(x => x.year == year).Count();
+                count += n.shows.Where(x => x.year == year).Count();
 
             if (count == 0)
                 year--;

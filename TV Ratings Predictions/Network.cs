@@ -60,7 +60,7 @@ namespace TV_Ratings_Predictions
 
         public static void SortNetworks()               //This sorts the networks according to their Average Renewal Threshold rating value
         {        
-            Parallel.ForEach(NetworkList, n => n.model.GetNetworkRatingsThreshold(CurrentYear));    //Get the Average Renewal Threshold rating value for each network
+            Parallel.ForEach(NetworkList, n => n.model.GetNetworkRatingsThreshold(CurrentYear, false));    //Get the Average Renewal Threshold rating value for each network
 
             //Because this is an ObservableCollection, we can't use Linq to sort, as that would break bindings, so we have to sort manually.
             bool sorted = false;
@@ -135,15 +135,16 @@ namespace TV_Ratings_Predictions
                 //n.evolution = new EvolutionTree(n);                                   //changes to the predictions with a fresh model
 
                 n.model.shows = n.shows;
-                n.PredictionAccuracy = n.model.TestAccuracy() * 100;
-
-                n.evolution.network = n;
-
                 Parallel.ForEach(n.shows, s =>
                 {
                     s.factorNames = n.factors;
                     s.network = n;
                 });
+                n.PredictionAccuracy = n.model.TestAccuracy() * 100;
+
+                n.evolution.network = n;
+
+                
 
                 n.Filter(NetworkDatabase.CurrentYear);                                  //Once the Network is fully restored, perform a filter based on the current TV Season
             }
@@ -304,8 +305,9 @@ namespace TV_Ratings_Predictions
             AlphabeticalShows.Clear();
             
             foreach (Show s in CustomFilter(year))          //Filter shows by year and sort by Average Rating
-                FilteredShows.Add(s);            
+                FilteredShows.Add(s);
 
+            
             UpdateIndexes(true);                            //Update ratings indexes, and then populate the various collections used to display the data across the app
             RefreshPredictions(true);
             RefreshAverages();
@@ -320,8 +322,10 @@ namespace TV_Ratings_Predictions
 
         public List<Show> CustomFilter(int year)            //Returns a filtered list representing every show for a custom chosen year, sorted by rating
         {
-            var tempList = shows.AsParallel().Where(x => x.year == year).ToList();
-            Parallel.ForEach(tempList, s => s.UpdateAverage());
+            var tempList = shows.Where(x => x.year == year).ToList();
+
+            foreach (Show s in tempList)
+                s.UpdateAverage();
             tempList.Sort();
 
             return tempList;
@@ -377,7 +381,7 @@ namespace TV_Ratings_Predictions
 
         public void UpdateIndexes(int year)                             //Update Indexes for a custom year
         {
-            var tempList = shows.AsParallel().Where(x => x.year == year).OrderBy(x => x.AverageRating).ThenBy(x => x.Name).ToList();
+            var tempList = shows.AsParallel().Where(x => x.year == year && x.ratings.Count > 0).OrderBy(x => x.AverageRating).ThenBy(x => x.Name).ToList();
 
             double total = 0;
             var totals = new double[tempList.Count];
@@ -391,56 +395,42 @@ namespace TV_Ratings_Predictions
             total = totals.Sum();
 
             double cumulativeTotal = 0;
-
-            foreach (Show s in tempList)                                
-                if (s.ratings.Count > 0)
-                {
-                    s.ShowIndex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;    
-                    cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);                                
-                }
+            foreach (Show s in tempList)
+            {
+                s.ShowIndex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;
+                cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);
+            }                    
 
             if (duplicate)  //If there are duplicate rating scores, then perform the process again with the duplicates reverssed, then average the indexes
             {
                 cumulativeTotal = 0;
-                tempList = tempList.OrderBy(x => x.AverageRating).ThenByDescending(x => x.Name).ToList();
+                tempList = tempList.AsParallel().OrderBy(x => x.AverageRating).ThenByDescending(x => x.Name).ToList();
 
                 foreach (Show s in tempList)
-                    if (s.ratings.Count > 0)
-                    {
-                        
-
-                        var newindex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;
-                        s.ShowIndex = (s.ShowIndex + newindex) / 2;
-                        cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);
-                    }
+                {
+                    var newindex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;
+                    s.ShowIndex = (s.ShowIndex + newindex) / 2;
+                    cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);
+                }
             }
         }
 
         public void UpdateAverages()                                //This method updates the ratings falloff values
         {                                                           //This is run whenever ratings numbers are changed
             ratingsAverages = new double[26];                       //The more shows there are, the longer this can take
-                                                                    
+            var tempList = shows.Where(x => x.ratings.Count > 0).ToList();
+
             for (int i = 0; i < 26; i++)
             {
                 double total = 0, start = 0;
                 int weight = 0;
-                var tempList = shows.Where(x => x.ratings.Count > 0).ToList();
 
-                double[]
-                    totals = new double[tempList.Count], 
-                    starts = new double[tempList.Count];          
-                var weights = new int[tempList.Count];               
-
-                Parallel.For(0, shows.Count, x =>                        //Because there can be a lot of shows, we're going to iterate through each show in parallel and then sum the values
+                for (int x = 0; x < tempList.Count; x++)
                 {
-                    starts[x] = shows[x].ratingsAverages[0];
-                    totals[x] = shows[x].ratingsAverages[i];
-                    weights[x] = 1;
-                });
-
-                total = totals.Sum();
-                start = starts.Sum();
-                weight = weights.Sum();
+                    start+= shows[x].ratingsAverages[0];
+                    total+= shows[x].ratingsAverages[i];
+                    weight++;
+                }
 
                 if (weight > 0)
                     ratingsAverages[i] = total / start;
@@ -464,9 +454,7 @@ namespace TV_Ratings_Predictions
 
             Predictions.Clear();
 
-            var tempList = new List<PredictionContainer>();
-            foreach (Show s in FilteredShows)
-                tempList.Add(new PredictionContainer(s, this));
+            var tempList = FilteredShows.Select(x => new PredictionContainer(x, this)).ToList();
 
             tempList.Sort();
 
@@ -1188,14 +1176,14 @@ namespace TV_Ratings_Predictions
             {
                 var w = 1.0 / (NetworkDatabase.MaxYear - year + 1);
                 double score;
-                var count = shows.AsParallel().Where(x => x.year == year).Count();
+                var count = shows.Where(x => x.year == year).Count();
                 weight += w * count;
                 if (index < s.factorNames.Count)
-                    score = (shows.AsParallel().Where(x => x.year == year && x.factorValues[index]).Count() * 1.0 + shows.AsParallel().Where(x => x.year == year && !x.factorValues[index]).Count() * -1.0);
+                    score = (shows.Where(x => x.year == year && x.factorValues[index]).Count() * 1.0 + shows.Where(x => x.year == year && !x.factorValues[index]).Count() * -1.0);
                 else if (index == s.factorNames.Count)
                     score = shows.Where(x => x.year == year).Select(x => x.Episodes).Average() / 26 * 2 - 1;
                 else
-                    score = shows.AsParallel().Where(x => x.year == year && x.Halfhour).Count() * 1.0 + shows.AsParallel().Where(x => x.year == year && !x.Halfhour).Count() * -1.0;
+                    score = shows.Where(x => x.year == year && x.Halfhour).Count() * 1.0 + shows.Where(x => x.year == year && !x.Halfhour).Count() * -1.0;
                 total += score * w;
             }
 
@@ -1207,10 +1195,10 @@ namespace TV_Ratings_Predictions
             double total = 0;
             double count = 0;
             int year = NetworkDatabase.MaxYear;
+            var tempList = shows.Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList();
 
             if (parallel)
             {
-                var tempList = shows.Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList();
                 double[]
                     totals = new double[tempList.Count],
                     counts = new double[tempList.Count];
@@ -1226,7 +1214,7 @@ namespace TV_Ratings_Predictions
                 count = counts.Sum();
             }
             else
-                foreach (Show s in shows.Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList())
+                foreach (Show s in tempList)
                 {
                     double weight = 1.0 / (year - s.year + 1);
                     total += GetThreshold(s, 1) * weight;
@@ -1306,9 +1294,15 @@ namespace TV_Ratings_Predictions
             int year = NetworkDatabase.MaxYear;
             var Adjustments = GetAdjustments(parallel);
 
+            int y = 0;
+            if (shows[0].network.name == "NBC")
+                y = 1;
+
+            var tempList = shows.Where(x => x.Renewed || x.Canceled).ToList();
+
             if (parallel)
             {
-                var tempList = shows.Where(x => x.Renewed || x.Canceled).ToList();
+                
 
                 double[]
                     t = new double[tempList.Count], 
@@ -1382,7 +1376,7 @@ namespace TV_Ratings_Predictions
             }
             else
             {
-                foreach (Show s in shows.ToList())
+                foreach (Show s in tempList)
                 {
                     double threshold = GetThreshold(s, Adjustments[s.year]);
                     int prediction = (s.ShowIndex > threshold) ? 1 : 0;
@@ -1443,12 +1437,14 @@ namespace TV_Ratings_Predictions
             _accuracy = (weights == 0) ? 0.0 : (totals / weights);
             _score = scores;
 
+            
+
             return _accuracy;
         }
 
-        public double GetNetworkRatingsThreshold(int year)
+        public double GetNetworkRatingsThreshold(int year, bool parallel)
         {
-            _ratingstheshold = GetTargetRating(year, GetAverageThreshold());
+            _ratingstheshold = GetTargetRating(year, GetAverageThreshold(parallel));
             return _ratingstheshold;
         }
 
@@ -1621,7 +1617,7 @@ namespace TV_Ratings_Predictions
             if (r.NextDouble() > 0.5)
                 neuralintensity = Math.Abs(neuralintensity + (r.NextDouble() * 2 - 1));
 
-            Parallel.For(0, NeuronCount, i =>
+            for (int i = 0; i < NeuronCount; i++)
             {
                 FirstLayer[i].isMutated = false;
                 FirstLayer[i].Mutate(mutationrate, neuralintensity, mutationintensity);
@@ -1632,7 +1628,7 @@ namespace TV_Ratings_Predictions
 
                 if (FirstLayer[i].isMutated || SecondLayer[i].isMutated)
                     isMutated = true;
-            });
+            }
 
             Output.isMutated = false;
             Output.Mutate(mutationrate, neuralintensity, mutationintensity);
@@ -1808,13 +1804,18 @@ namespace TV_Ratings_Predictions
 
         public void NextGeneration()
         {
+            var a = network.model.TestAccuracy(false);
+            var b = network.model.TestAccuracy(false);
+            if (b != a)
+                b = 0;
+
             //Update shows list
             for (int i = 0; i < 30; i++)
             {
                 Primary[i].shows = network.shows;
                 //CleanSlate[i].shows = network.shows;
                 Randomized[i].shows = network.shows;
-            }
+            }            
 
             //Sort all 3 Branches from Highest to lowest
 
@@ -1823,8 +1824,8 @@ namespace TV_Ratings_Predictions
                 if (i == 2 || i == 3)
                     Primary[i].SetElite();
                 else
-                    Primary[i].TestAccuracy(true);
-                Randomized[i].TestAccuracy(true);
+                    Primary[i].TestAccuracy(false);
+                Randomized[i].TestAccuracy(false);
             }
 
             Primary.Sort();
@@ -1836,17 +1837,18 @@ namespace TV_Ratings_Predictions
                     Primary[i].SetElite();
                 if (Randomized[i] == Randomized[i - 1])
                     Randomized[i].SetElite();
-            }
+            }            
 
             Primary.Sort();
             Randomized.Sort();
-
 
             //CHeck if any models in CleanSlate or Randomized beat any of the top 4 in Primary
             //If so, add them to Primary
             bool randomUpdate = false;
 
             bool finished = false;
+
+            
 
             //Randomized
             for (int i = 0; i < 4 && !finished; i++)
@@ -1878,7 +1880,11 @@ namespace TV_Ratings_Predictions
                 {
                     finished = true;
                 }
+
+                
             }
+
+            
 
             //If model has improved, replace model in network with current best model
             if (Primary[0] > network.model)
@@ -1907,32 +1913,19 @@ namespace TV_Ratings_Predictions
             //If not, perform normal evolution rules            
             if (randomUpdate)
             {
-                for (int i = 0; i < 30; i++)
-                    Randomized[i] = new NeuralPredictionModel(network);
+                //for (int i = 0; i < 30; i++)
+                Parallel.For(0, 30, i => Randomized[i] = new NeuralPredictionModel(network));
 
                 RandomGenerations = 1;
             }
             else
             {
-                //while (!RandomMutations)
-                //{
-                    //Random r = new Random();
+                Parallel.For(4, 30, i =>
+                {
+                    int Parent1 = r.Next(4), Parent2 = r.Next(4);
 
-                    for (int i = 4; i < 30; i++)
-                    {
-                        int Parent1 = r.Next(4), Parent2 = r.Next(4);
-                        //while (Parent1 == Parent2)
-                            //Parent2 = r.Next(4);
-
-                        Randomized[i] = Randomized[Parent1] + Randomized[Parent2];
-
-                        //if (Randomized[i].isMutated) RandomMutations = true;
-                    }
-
-                    //if (!RandomMutations)
-                        //Randomized[r.Next(4)].IncreaseMutationRate();
-                //}
-
+                    Randomized[i] = Randomized[Parent1] + Randomized[Parent2];
+                });
 
                 RandomGenerations++;
             }
@@ -1941,22 +1934,21 @@ namespace TV_Ratings_Predictions
 
             //while (!Mutations)
             //{
-                //Random r = new Random();
+            //Random r = new Random();
 
-                for (int i = 4; i < 30; i++)
-                {
+            Parallel.For(4, 30, i =>
+            {
+                int Parent1 = r.Next(4), Parent2 = r.Next(4);
+                //while (Parent1 == Parent2)
+                //Parent2 = r.Next(4);
 
-                    int Parent1 = r.Next(4), Parent2 = r.Next(4);
-                    //while (Parent1 == Parent2)
-                        //Parent2 = r.Next(4);
+                Primary[i] = Primary[Parent1] + Primary[Parent2];
 
-                    Primary[i] = Primary[Parent1] + Primary[Parent2];
+                //if (Primary[i].isMutated) Mutations = true;
+            });
 
-                    //if (Primary[i].isMutated) Mutations = true;
-                }
-
-                //if (!Mutations)
-                    //Primary[r.Next(4)].IncreaseMutationRate();
+            //if (!Mutations)
+            //Primary[r.Next(4)].IncreaseMutationRate();
             //}
 
             Generations++;
@@ -2086,7 +2078,8 @@ namespace TV_Ratings_Predictions
 
             weights = new double[inputs];
 
-            Parallel.For(0, inputs, i => weights[i] = r.NextDouble() * 2 - 1);  
+            for (int i = 0; i < inputs; i++)
+                weights[i] = r.NextDouble() * 2 - 1;
 
             inputSize = inputs;
         }
@@ -2101,7 +2094,8 @@ namespace TV_Ratings_Predictions
 
             weights = new double[inputSize];
 
-            Parallel.For(0, inputSize, i => weights[i] = n.weights[i]);
+            for (int i = 0; i < inputSize; i++)
+                weights[i] = n.weights[i];
         }
 
         private double Breed(double x, double y)
@@ -2161,7 +2155,6 @@ namespace TV_Ratings_Predictions
             Random r = new Random();
 
             for (int i = 0; i < inputSize; i++)
-            //Parallel.For(0, inputSize, i =>
             {
                 if (r.NextDouble() < mutationrate)
                 {
@@ -2225,44 +2218,18 @@ namespace TV_Ratings_Predictions
             falseIndex = new double[n.factors.Count+2];
             weight = new double[n.factors.Count+2];
 
-            //for (int i = 0; i < n.factors.Count+2; i++)
-            Parallel.For(0, n.factors.Count + 2, i =>
+            for (int i = 0; i < n.factors.Count+2; i++)
             {
                 trueIndex[i] = r.NextDouble();
                 falseIndex[i] = r.NextDouble();
                 weight[i] = r.NextDouble();
-            });
+            }
 
             shows = n.shows;
 
             mutationrate = r.NextDouble();
             mutationintensity = r.NextDouble();
         }
-
-        //public PredictionModel(PredictionModel m, Network n)
-        //{
-        //    isMutated = false;
-
-        //    NetworkAverageIndex = m.NetworkAverageIndex;
-        //    EpisodeThreshold = m.EpisodeThreshold;
-
-        //    trueIndex = new double[n.factors.Count + 2];
-        //    falseIndex = new double[n.factors.Count + 2];
-        //    weight = new double[n.factors.Count + 2];
-
-        //    //for (int i = 0; i < n.factors.Count+2; i++)
-        //    Parallel.For(0, n.factors.Count + 2, i =>
-        //    {
-        //        trueIndex[i] = m.trueIndex[i];
-        //        falseIndex[i] = m.falseIndex[i];
-        //        weight[i] = m.weight[i];
-        //    });
-
-        //    shows = n.shows;
-
-        //    mutationrate = m.mutationrate;
-        //    mutationintensity = m.mutationintensity;
-        //}
 
         public PredictionModel(Network n, double average, double thresh) //Clean Slate prediction model based on average
         {
@@ -2274,13 +2241,12 @@ namespace TV_Ratings_Predictions
             falseIndex = new double[n.factors.Count+2];
             weight = new double[n.factors.Count+2];
 
-            //for (int i = 0; i < n.factors.Count+2; i++)
-            Parallel.For(0, n.factors.Count + 2, i =>
+            for (int i = 0; i < n.factors.Count+2; i++)
             {
                 trueIndex[i] = NetworkAverageIndex;
                 falseIndex[i] = NetworkAverageIndex;
                 weight[i] = 0;
-            });
+            }
 
             shows = n.shows;
 
@@ -2303,13 +2269,12 @@ namespace TV_Ratings_Predictions
             falseIndex = new double[x.falseIndex.Length];
             weight = new double[x.weight.Length];
 
-            //for (int i = 0; i < x.trueIndex.Length; i++)
-            Parallel.For(0, x.trueIndex.Length, i =>
+            for (int i = 0; i < x.trueIndex.Length; i++)
             {
                 trueIndex[i] = Breed(x.trueIndex[i], y.trueIndex[i]);
                 falseIndex[i] = Breed(x.falseIndex[i], y.falseIndex[i]);
                 weight[i] = Breed(x.weight[i], y.weight[i]);
-            });
+            }
 
             mutationrate = Breed(x.mutationrate, y.mutationrate);
             mutationintensity = Breed(x.mutationintensity, y.mutationintensity);
@@ -2598,13 +2563,12 @@ namespace TV_Ratings_Predictions
             NetworkAverageIndex = MutateValue(NetworkAverageIndex);
             EpisodeThreshold = MutateValue((EpisodeThreshold / 26.0)) * 26.0;
 
-            //for (int i = 0; i < trueIndex.Length; i++)
-            Parallel.For(0, trueIndex.Length, i =>
+            for (int i = 0; i < trueIndex.Length; i++)
             {
                 trueIndex[i] = MutateValue(trueIndex[i]);
                 falseIndex[i] = MutateValue(falseIndex[i]);
                 weight[i] = MutateValue(weight[i]);
-            });
+            }
         }
 
         private double MutateValue(double d, bool increase = false)

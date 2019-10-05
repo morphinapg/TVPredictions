@@ -45,9 +45,8 @@ namespace TV_Ratings_Predictions
 
         private void ShowEditor_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            //for (int i = 0; i < factors.Count; i++)
-
-            Parallel.For(0, factors.Count, i => show.factorValues[i] = factors[i].Setting);
+            for (int i = 0; i < factors.Count; i++)
+                show.factorValues[i] = factors[i].Setting;
         }
 
         private void HalfHour_Toggled(object sender, RoutedEventArgs e)

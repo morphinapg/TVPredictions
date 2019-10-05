@@ -154,7 +154,7 @@ namespace TV_Ratings_Predictions
 
                 Parallel.ForEach(NetworkList, n =>
                 {
-                    Parallel.ForEach(n.shows, s =>
+                    foreach (Show s in n.shows)
                     {
 
                         s.OldRating = s.AverageRating;
@@ -162,7 +162,7 @@ namespace TV_Ratings_Predictions
 
                         if (s.RenewalStatus == "")
                             s.FinalPrediction = s.OldOdds;
-                    });
+                    }
                 });
 
                 NetworkDatabase.pendingSave = true;

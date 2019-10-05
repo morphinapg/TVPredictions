@@ -56,8 +56,10 @@ namespace TV_Ratings_Predictions
 
                     Parallel.ForEach(AllShows, g =>
                     {
-                        Parallel.ForEach(g, s => s.AddFactor());
+                        foreach (AddingFactor s in g)
+                            s.AddFactor();
                     });
+                        
 
                     network.model = new NeuralPredictionModel(network);
                     network.evolution = new EvolutionTree(network);
