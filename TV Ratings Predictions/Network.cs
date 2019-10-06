@@ -1452,33 +1452,42 @@ namespace TV_Ratings_Predictions
         public double GetTargetRating(int year, double targetindex)
         {
 
-            var tempShows = new ObservableCollection<Show>();
-            shows.Sort();
+            //var tempShows = new ObservableCollection<Show>();
+            //shows.Sort();
 
-            foreach (Show s in shows)
-                if (s.year == year && s.ratings.Count > 0)
-                    tempShows.Add(s);
+            //foreach (Show s in shows)
+            //    if (s.year == year && s.ratings.Count > 0)
+            //        tempShows.Add(s);
 
+            //if (tempShows.Count == 0)
+            //{
+            //    tempShows.Clear();
+            //    foreach (Show s in shows)
+            //        if (s.ratings.Count > 0) tempShows.Add(s);
+            //}
+
+            //if (tempShows.Count > 1) //make sure list is sorted
+            //{
+            //    bool sorted = false;
+            //    while (!sorted)
+            //    {
+            //        sorted = true;
+            //        for (int i = 1; i < tempShows.Count; i++)
+            //            if (tempShows[i].ShowIndex > tempShows[i - 1].ShowIndex)
+            //            {
+            //                sorted = false;
+            //                tempShows.Move(i, i - 1);
+            //            }
+            //    }
+            //}
+
+            var tempShows = shows.Where(x => x.year == year && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
             if (tempShows.Count == 0)
             {
-                tempShows.Clear();
-                foreach (Show s in shows)
-                    if (s.ratings.Count > 0) tempShows.Add(s);
-            }
-
-            if (tempShows.Count > 1) //make sure list is sorted
-            {
-                bool sorted = false;
-                while (!sorted)
-                {
-                    sorted = true;
-                    for (int i = 1; i < tempShows.Count; i++)
-                        if (tempShows[i].ShowIndex > tempShows[i - 1].ShowIndex)
-                        {
-                            sorted = false;
-                            tempShows.Move(i, i - 1);
-                        }
-                }
+                var yearList = shows.Where(x => x.ratings.Count > 0).Select(x => x.year).ToList();
+                yearList.Sort();
+                year = yearList.Last();
+                tempShows = shows.Where(x => x.year == year && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
             }
 
             bool found = false;
@@ -1592,7 +1601,9 @@ namespace TV_Ratings_Predictions
 
             //double low = d * (1 - mutationintensity * p), high = 1 - (1 - d) * (1 - mutationintensity * p);
 
-            double low = Math.Max(d - 0.01, 0), high = Math.Min(d + 0.01, 1);
+            var intensity = Math.Max(mutationintensity, 0.01);
+
+            double low = Math.Max(d - intensity, 0), high = Math.Min(d + intensity, 1);
 
             if (increase) low = d;
 
@@ -1621,10 +1632,10 @@ namespace TV_Ratings_Predictions
             for (int i = 0; i < NeuronCount; i++)
             {
                 FirstLayer[i].isMutated = false;
-                FirstLayer[i].Mutate(mutationrate, neuralintensity, mutationintensity);
+                FirstLayer[i].Mutate(mutationrate, neuralintensity, mutationintensity, r);
 
                 SecondLayer[i].isMutated = false;
-                SecondLayer[i].Mutate(mutationrate, neuralintensity, mutationintensity);
+                SecondLayer[i].Mutate(mutationrate, neuralintensity, mutationintensity, r);
 
 
                 if (FirstLayer[i].isMutated || SecondLayer[i].isMutated)
@@ -1632,7 +1643,7 @@ namespace TV_Ratings_Predictions
             }
 
             Output.isMutated = false;
-            Output.Mutate(mutationrate, neuralintensity, mutationintensity);
+            Output.Mutate(mutationrate, neuralintensity, mutationintensity, r);
             if (Output.isMutated)
                 isMutated = true;
         }
@@ -2141,10 +2152,8 @@ namespace TV_Ratings_Predictions
         //    return Math.Log((-d - 1) / (d - 1));
         //}
 
-        public void Mutate(double mutationrate, double neuralintensity, double mutationintensity)
+        public void Mutate(double mutationrate, double neuralintensity, double mutationintensity, Random r)
         {
-
-            Random r = new Random();
 
             for (int i = 0; i < inputSize; i++)
             {
