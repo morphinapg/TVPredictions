@@ -92,7 +92,7 @@ namespace TV_Ratings_Predictions
                 newSession = new ExtendedExecutionForegroundSession { Reason = ExtendedExecutionForegroundReason.Unconstrained };
                 await newSession.RequestExtensionAsync();
 
-                n.evolution.NextGeneration();
+                n.evolution.NextGeneration();              
 
                 newSession.Dispose();
             }

@@ -1325,7 +1325,7 @@ namespace TV_Ratings_Predictions
                         double weight;
 
                         if (accuracy == 1)
-                            weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
+                            weight = 1 - Math.Abs(average - s.ShowIndex) / weightAverage;
                         else
                             weight = (distance + weightAverage) / weightAverage;
 
@@ -1342,7 +1342,7 @@ namespace TV_Ratings_Predictions
                             {
                                 accuracy = 1;
 
-                                weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
+                                weight = 1 - Math.Abs(average - s.ShowIndex) / weightAverage;
 
                                 weight *= tempScore;
 
@@ -1362,7 +1362,7 @@ namespace TV_Ratings_Predictions
                         double weight;
 
                         if (accuracy == 1)
-                            weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
+                            weight = 1 - Math.Abs(average - s.ShowIndex) / weightAverage;
                         else
                             weight = (distance + weightAverage) / weightAverage;
 
@@ -1391,7 +1391,7 @@ namespace TV_Ratings_Predictions
                         double weight;
 
                         if (accuracy == 1)
-                            weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
+                            weight = 1 - Math.Abs(average - s.ShowIndex) / weightAverage;
                         else
                             weight = (distance + weightAverage) / weightAverage;
 
@@ -1405,7 +1405,7 @@ namespace TV_Ratings_Predictions
                             if (odds < 0.6 && odds > 0.4)
                             {
                                 accuracy = 1;
-                                weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
+                                weight = 1 - Math.Abs(average - s.ShowIndex) / weightAverage;
                                 weight *= (1 - Math.Abs(odds - 0.55)) * 4 / 3;
 
                                 if (prediction == 0)
@@ -1425,7 +1425,7 @@ namespace TV_Ratings_Predictions
                         double weight;
 
                         if (accuracy == 1)
-                            weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
+                            weight = 1 - Math.Abs(average - s.ShowIndex) / weightAverage;
                         else
                             weight = (distance + weightAverage) / weightAverage;
 
@@ -1486,6 +1486,15 @@ namespace TV_Ratings_Predictions
             {
                 var yearList = shows.Where(x => x.ratings.Count > 0).Select(x => x.year).ToList();
                 yearList.Sort();
+                if (yearList.Contains(year - 1))
+                    year = year - 1;
+                else if (yearList.Contains(year + 1))
+                    year = year + 1;
+                else if (yearList.Where(x => x < year).Count() > 0)
+                    year = yearList.Where(x => x < year).Last();
+                else
+                    year = yearList.Where(x => x > year).First();
+
                 year = yearList.Last();
                 tempShows = shows.Where(x => x.year == year && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
             }
@@ -1767,7 +1776,11 @@ namespace TV_Ratings_Predictions
         [NonSerialized]
         public Network network;
 
-        [NonSerialized] bool IncreasePrimary, IncreaseRandom, Mutations, RandomMutations;
+        [NonSerialized]
+        bool IncreasePrimary, IncreaseRandom, Mutations, RandomMutations;
+
+        [NonSerialized]
+        public long ticks;
 
         //Primary:
         //First 4 entries will be the top 4 best performing models out of all 3 branches
@@ -1833,12 +1846,12 @@ namespace TV_Ratings_Predictions
                 {
                     Primary[i].SetElite();
                     Randomized[i].SetElite();
-                }                    
+                }
                 else
                 {
                     Primary[i].TestAccuracy();
                     Randomized[i].TestAccuracy();
-                }     
+                }
             }
 
             Primary.Sort();
