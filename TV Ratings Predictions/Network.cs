@@ -1487,9 +1487,9 @@ namespace TV_Ratings_Predictions
                 var yearList = shows.Where(x => x.ratings.Count > 0).Select(x => x.year).ToList();
                 yearList.Sort();
                 if (yearList.Contains(year - 1))
-                    year = year - 1;
+                    year--;
                 else if (yearList.Contains(year + 1))
-                    year = year + 1;
+                    year++;
                 else if (yearList.Where(x => x < year).Count() > 0)
                     year = yearList.Where(x => x < year).Last();
                 else
@@ -1977,6 +1977,7 @@ namespace TV_Ratings_Predictions
         public ObservableCollection<string> factors;
         public List<Show> shows;
         public NeuralPredictionModel model;
+        public Dictionary<int, double> Adjustments;
 
         public MiniNetwork(Network n)
         {
@@ -1986,6 +1987,7 @@ namespace TV_Ratings_Predictions
             factors = n.factors;
             shows = n.shows;
             model = n.model;
+            Adjustments = model.GetAdjustments(true);
 
             Parallel.ForEach(shows, s =>
             {
@@ -1998,8 +2000,6 @@ namespace TV_Ratings_Predictions
 
             foreach (int i in yearlist)
                 n.UpdateIndexes(i);
-
-            var Adjustments = n.model.GetAdjustments(true);
 
             Parallel.ForEach(shows, s => s.PredictedOdds = model.GetOdds(s, Adjustments[s.year]));
         }
