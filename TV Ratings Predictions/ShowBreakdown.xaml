@@ -75,6 +75,10 @@
             </ScrollViewer>
         </Grid>
 
-        <Button x:Name="SaveImage" Grid.Row="2" Content="💾 Save Image" HorizontalAlignment="Center" Margin="10" Click="SaveImage_Click"/>
+        <StackPanel Orientation="Horizontal"  Grid.Row="2" HorizontalAlignment="Center" >
+            <Button x:Name="SaveImage" Content="💾 Save Image" Margin="10" Click="SaveImage_Click"/>
+            <Button x:Name="OptimalSearch" Content="Find Optimal Combination" Click="OptimalSearch_Click"/>
+        </StackPanel>
+        
     </Grid>
 </Page>
