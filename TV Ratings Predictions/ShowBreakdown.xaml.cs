@@ -555,6 +555,7 @@ namespace TV_Ratings_Predictions
                 var NewShow = new Show(s.Name, network, new ObservableCollection<bool>(Factors), EpisodeCount, HalfHour, s.factorNames) { ShowIndex = s.ShowIndex };
                 string TextResult = "Optimal factors for " + s.Name + "\r\n\r\n\r\n";
                 bool IsOptimal = false;
+                var hashes = new List<long>();
 
                 var AlreadyProcessed = new bool[s.factorNames.Count + 2];
                 while (!IsOptimal)
@@ -580,7 +581,10 @@ namespace TV_Ratings_Predictions
                         }
                     }
 
-                    if (!IsOptimal && !AlreadyProcessed[minIndex])
+                    var tempshow = new Show(s.Name, network, new ObservableCollection<bool>(Factors), EpisodeCount, HalfHour, s.factorNames) { ShowIndex = s.ShowIndex };
+                    var hash = tempshow.FactorHash;
+
+                    if (!IsOptimal && !hashes.Contains(hash))
                     {
                         if (minIndex < s.factorNames.Count) //Factors
                             Factors[minIndex] = !Factors[minIndex];
@@ -591,7 +595,8 @@ namespace TV_Ratings_Predictions
 
                         AlreadyProcessed[minIndex] = true;
 
-                        NewShow = new Show(s.Name, network, new ObservableCollection<bool>(Factors), EpisodeCount, HalfHour, s.factorNames) { ShowIndex = s.ShowIndex };
+                        NewShow = tempshow;
+                        hashes.Add(hash);
                     }
                     else
                     {
