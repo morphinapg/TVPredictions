@@ -157,7 +157,7 @@ namespace TV_Ratings_Predictions
                             detailName = Spring ? "Fall Preview with a Premiere in the Spring" : "Premiered in the Fall";
                         else if (Spring)
                             detailName = "Premiered in the Spring";
-                        else
+                        else if (Summer)
                         {
                             detailName = "Premiered in the Summer";
                             SummerFinished = true;
@@ -168,6 +168,8 @@ namespace TV_Ratings_Predictions
                             else
                                 index1 = SummerIndex;
                         }
+                        else
+                            detailName = (FallIndex > -1) ? "Unknown Premiere Date" : "Premiered in the Fall";
 
                         PremiereFinished = true;
 
@@ -572,7 +574,14 @@ namespace TV_Ratings_Predictions
                             IsOptimal = false;
                             if (d.Value < minimum)
                             {
-                                if (!(i < s.factorNames.Count && (s.factorNames[i] == "Syndication" || s.factorNames[i] == "Post-Syndication" || s.factorNames[i] == "Not Original" || s.factorNames[i] == "CBS Show" || s.factorNames[i] == "Animated")))
+                                if (!(i < s.factorNames.Count &&
+                                    (s.factorNames[i] == "Syndication"
+                                    || s.factorNames[i] == "Post-Syndication"
+                                    || s.factorNames[i] == "Not Original"
+                                    || s.factorNames[i] == "CBS Show" || s.factorNames[i] == "Animated"
+                                    || (s.factorNames[i] == "Fall" && s.factorValues[i] == true && s.factorValues[s.factorNames.IndexOf("Spring")] == false && s.factorValues[s.factorNames.IndexOf("Summer")] == false)
+                                    || (s.factorNames[i] == "Spring" && s.factorValues[i] == true && s.factorValues[s.factorNames.IndexOf("Fall")] == false && s.factorValues[s.factorNames.IndexOf("Summer")] == false)
+                                    || (s.factorNames[i] == "Summer" && s.factorValues[i] == true && s.factorValues[s.factorNames.IndexOf("Fall")] == false && s.factorValues[s.factorNames.IndexOf("Spring")] == false))))
                                 {
                                     minimum = d.Value;
                                     minIndex = i;
