@@ -1234,16 +1234,14 @@ namespace TV_Ratings_Predictions
         public double GetSeasonAverageThreshold(int year)
         {
             double total = 0;
-            int count = 0;
-            int maxyear = NetworkDatabase.MaxYear;
 
             var tempList = shows.Where(x => x.year == year && x.ratings.Count > 0).ToList();
-            var totals = new double[tempList.Count];
+            var count = tempList.Count;
+            var totals = new double[count];
 
             Parallel.For(0, tempList.Count, i => totals[i] = GetThreshold(tempList[i], 1));
 
             total = totals.Sum();
-            count = tempList.Count;
 
             return total / count;
         }
