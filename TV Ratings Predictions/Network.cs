@@ -1450,35 +1450,6 @@ namespace TV_Ratings_Predictions
         public double GetTargetRating(int year, double targetindex)
         {
 
-            //var tempShows = new ObservableCollection<Show>();
-            //shows.Sort();
-
-            //foreach (Show s in shows)
-            //    if (s.year == year && s.ratings.Count > 0)
-            //        tempShows.Add(s);
-
-            //if (tempShows.Count == 0)
-            //{
-            //    tempShows.Clear();
-            //    foreach (Show s in shows)
-            //        if (s.ratings.Count > 0) tempShows.Add(s);
-            //}
-
-            //if (tempShows.Count > 1) //make sure list is sorted
-            //{
-            //    bool sorted = false;
-            //    while (!sorted)
-            //    {
-            //        sorted = true;
-            //        for (int i = 1; i < tempShows.Count; i++)
-            //            if (tempShows[i].ShowIndex > tempShows[i - 1].ShowIndex)
-            //            {
-            //                sorted = false;
-            //                tempShows.Move(i, i - 1);
-            //            }
-            //    }
-            //}
-
             var tempShows = shows.Where(x => x.year == year && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
             if (tempShows.Count == 0)
             {
@@ -1979,7 +1950,7 @@ namespace TV_Ratings_Predictions
 
         public MiniNetwork(Network n)
         {
-            List<int> yearlist = new List<int>();    
+            var yearlist = n.shows.Select(x => x.year).Distinct().ToList();  
 
             name = n.name;
             factors = n.factors;
@@ -1987,12 +1958,7 @@ namespace TV_Ratings_Predictions
             model = n.model;
             Adjustments = model.GetAdjustments(true);
 
-            Parallel.ForEach(shows, s =>
-            {
-                s.UpdateAverage();
-                if (!yearlist.Contains(s.year))
-                    yearlist.Add(s.year);
-            });
+            Parallel.ForEach(shows, s => s.UpdateAverage());
 
             shows.Sort();
 

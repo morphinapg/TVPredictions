@@ -12,3 +12,7 @@
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Code Quality", "IDE0052:Remove unread private members", Justification = "<Pending>", Scope = "member", Target = "~F:TV_Ratings_Predictions.PredictionContainer.network")]
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Code Quality", "IDE0052:Remove unread private members", Justification = "<Pending>", Scope = "member", Target = "~F:TV_Ratings_Predictions.AverageContainer.network")]
 
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0063:Use simple 'using' statement", Justification = "<Pending>", Scope = "member", Target = "~M:TV_Ratings_Predictions.NetworkDatabase.ReadFromBinaryFile``1(System.String)~``0")]
+
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0063:Use simple 'using' statement", Justification = "<Pending>", Scope = "member", Target = "~M:TV_Ratings_Predictions.NetworkDatabase.WritePredictionsAsync~System.Threading.Tasks.Task")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0063:Use simple 'using' statement", Justification = "<Pending>", Scope = "member", Target = "~M:TV_Ratings_Predictions.NetworkDatabase.WriteToBinaryFile``1(System.String,``0,System.Boolean)")]

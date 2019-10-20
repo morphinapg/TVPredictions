@@ -60,8 +60,18 @@ namespace TV_Ratings_Predictions
         private void StartEvolution_Click(object sender, RoutedEventArgs e)
         {
             foreach (Network n in NetworkList)
+            {
+                var yearlist = n.shows.Select(x => x.year).Distinct();
+                Parallel.ForEach(n.shows, s => s.UpdateAverage());
+                n.shows.Sort();
+                foreach (int i in yearlist)
+                    n.UpdateIndexes(i);
+
                 if (n.PredictionAccuracy != n.model.TestAccuracy() * 100)
                     n.ModelUpdate(n.model);
+            }
+                
+                
 
             NetworkDatabase.cancelEvolution = false;
             EvolutionWork = new Thread[NetworkList.Count];            

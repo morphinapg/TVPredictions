@@ -47,7 +47,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Text="{x:Bind name}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Bind name, Mode=TwoWay}" VerticalAlignment="Center"/>
                             <CheckBox Grid.Column="1" MinWidth="0" IsChecked="{x:Bind Setting, Mode=TwoWay}"/>
                         </Grid>
                     </DataTemplate>
@@ -109,7 +109,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBox x:Name="RenewalStatus" Text="{x:Bind show.RenewalStatus, Mode=TwoWay}" VerticalAlignment="Center"  Padding="15,10,15,10" MinWidth="200"/>
+                <TextBox x:Name="RenewalStatus" Text="{x:Bind show.RenewalStatus, Mode=TwoWay}" VerticalAlignment="Center"  Padding="15,10,15,10" MinWidth="200" TextChanged="RenewalStatus_TextChanged"/>
                 <Button x:Name="EditStatus" Grid.Column="1" FontFamily="Segoe MDL2 Assets" Content="&#xE104;" Margin="10" Visibility="Collapsed" Click="EditStatus_Click"/>
             </Grid>            
         </Grid>

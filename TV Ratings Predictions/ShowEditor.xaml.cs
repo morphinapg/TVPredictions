@@ -87,5 +87,10 @@ namespace TV_Ratings_Predictions
         {
             
         }
+
+        private void RenewalStatus_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            show.RenewalStatus = RenewalStatus.Text;
+        }
     }
 }
