@@ -1947,6 +1947,7 @@ namespace TV_Ratings_Predictions
         public List<Show> shows;
         public NeuralPredictionModel model;
         public Dictionary<int, double> Adjustments;
+        public double[] RatingsAverages;
 
         public MiniNetwork(Network n)
         {
@@ -1957,6 +1958,7 @@ namespace TV_Ratings_Predictions
             shows = n.shows;
             model = n.model;
             Adjustments = model.GetAdjustments(true);
+            RatingsAverages = n.ratingsAverages;
 
             Parallel.ForEach(shows, s => s.UpdateAverage());
 
