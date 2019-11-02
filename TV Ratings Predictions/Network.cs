@@ -1201,8 +1201,9 @@ namespace TV_Ratings_Predictions
             double total = 0;
             double count = 0;
             int year = NetworkDatabase.MaxYear;
-            
-            var tempList = shows.Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList();
+
+            //var tempList = shows.Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList();
+            var tempList = shows.ToList();
 
             if (parallel)
             {
@@ -1239,7 +1240,7 @@ namespace TV_Ratings_Predictions
             var count = tempList.Count;
             var totals = new double[count];
 
-            Parallel.For(0, tempList.Count, i => totals[i] = GetThreshold(tempList[i], 1));
+            Parallel.For(0, count, i => totals[i] = GetThreshold(tempList[i], 1));
 
             total = totals.Sum();
 
