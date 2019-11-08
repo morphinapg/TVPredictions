@@ -420,6 +420,12 @@ namespace TV_Ratings_Predictions
             ratingsAverages = new double[26];                       //The more shows there are, the longer this can take
             var tempList = shows.Where(x => x.ratings.Count > 0).ToList();
 
+            Parallel.ForEach(tempList, s =>
+            {
+                if (s.ratingsAverages.Contains(0))
+                    s.UpdateAllAverages(0);
+            });
+
             for (int i = 0; i < 26; i++)
             {
                 double total = 0, start = 0;
@@ -427,8 +433,8 @@ namespace TV_Ratings_Predictions
 
                 for (int x = 0; x < tempList.Count; x++)
                 {
-                    start+= shows[x].ratingsAverages[0];
-                    total+= shows[x].ratingsAverages[i];
+                    start+= tempList[x].ratingsAverages[0];
+                    total+= tempList[x].ratingsAverages[i];
                     weight++;
                 }
 
@@ -600,7 +606,6 @@ namespace TV_Ratings_Predictions
 
         public void UpdateAllAverages(int start)
         {
-            //for (int i = start; i < 26; i++)
             Parallel.For(start, 26, i => ratingsAverages[i] = CalculateAverage(i + 1));
         }
 
@@ -619,6 +624,8 @@ namespace TV_Ratings_Predictions
             }
 
             if (ratings.Count > Episodes) Episodes = ratings.Count;
+
+            
 
             return (weights > 0 ? total / weights : 0);
         }
@@ -1112,6 +1119,8 @@ namespace TV_Ratings_Predictions
         public double GetThreshold(Show s, double adjustment)
         {
             var inputs = new double[InputCount];
+            if (s.Renewed || s.Canceled) adjustment = 1;
+
             double[]
                 FirstLayerOutputs = new double[NeuronCount],
                 SecondLayerOutputs = new double[NeuronCount];
@@ -1136,6 +1145,7 @@ namespace TV_Ratings_Predictions
         public double GetModifiedThreshold(Show s, double adjustment, int index, int index2 = -1, int index3 = -1)
         {
             var inputs = new double[InputCount];
+            if (s.Renewed || s.Canceled) adjustment = 1;
             double[]
                 FirstLayerOutputs = new double[NeuronCount],
                 SecondLayerOutputs = new double[NeuronCount];
