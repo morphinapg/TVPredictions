@@ -1,0 +1,37 @@
+﻿<Page
+    x:Class="TV_Ratings_Predictions.DeleteFactor"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TV_Ratings_Predictions"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="4*" MinWidth="400"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Text="Delete a Factor" FontSize="36" Margin="10" TextAlignment="Center" Grid.ColumnSpan="3"/>
+
+        <StackPanel Grid.Column="1" Grid.Row="1">
+            <TextBlock Text="Warning! Deleting a factor will require resetting the prediction model for this network!" TextWrapping="Wrap" Foreground="Red" Margin="25"/>
+
+            <TextBlock Text="Factor Name:" Margin="10,10,10,0"/>
+            <ComboBox x:Name="FactorList" Margin="10,5,10,5" HorizontalAlignment="Stretch" ItemsSource="{x:Bind factors}"/>
+        </StackPanel>
+
+        <RelativePanel Grid.Row="2" Grid.ColumnSpan="3">
+            <Button x:Name="DeleteFactorButton" Content="Delete Factor" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignBottomWithPanel="True" Margin="10" FontSize="18" FontWeight="Normal" Click="DeleteFactorButton_Click"/>
+        </RelativePanel>
+    </Grid>
+</Page>

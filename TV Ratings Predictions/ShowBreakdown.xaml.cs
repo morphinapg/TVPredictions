@@ -261,12 +261,21 @@ namespace TV_Ratings_Predictions
 
                                 break;
                             }
-                        case "Limited Series":
+                        case "New Show":
                             {
                                 if (s.factorValues[i])
-                                    detailName = "Limited Series";
+                                    detailName = "New Series";
                                 else
-                                    detailName = "Not a Limited Series";
+                                    detailName = "Returning Series";
+
+                                break;
+                            }
+                        case "Extended Universe":
+                            {
+                                if (s.factorValues[i])
+                                    detailName = "Part of an Extended Universe";
+                                else
+                                    detailName = "Not part of an Extended Universe";
 
                                 break;
                             }
@@ -579,6 +588,8 @@ namespace TV_Ratings_Predictions
                                     (s.factorNames[i] == "Syndication"
                                     || s.factorNames[i] == "Post-Syndication"
                                     || s.factorNames[i] == "Not Original"
+                                    || s.factorNames[i] == "Extended Universe"
+                                    || s.factorNames[i] == "New Show"
                                     || s.factorNames[i] == "CBS Show" || s.factorNames[i] == "Animated"
                                     || (s.factorNames[i] == "Fall" && s.factorValues[i] == true && s.factorValues[s.factorNames.IndexOf("Spring")] == false && s.factorValues[s.factorNames.IndexOf("Summer")] == false)
                                     || (s.factorNames[i] == "Spring" && s.factorValues[i] == true && s.factorValues[s.factorNames.IndexOf("Fall")] == false && s.factorValues[s.factorNames.IndexOf("Summer")] == false)

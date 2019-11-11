@@ -274,7 +274,7 @@ namespace TV_Ratings_Predictions
 
         public void ModelUpdate(NeuralPredictionModel m)    //Update the Prediction Model with the new model, and let the UI know changes have happened
         {
-            model = m;                          
+            model = new NeuralPredictionModel(m);                          
             PredictionAccuracy = model.TestAccuracy() * 100;    
             OnPropertyChangedAsync("PredictionAccuracy");
             _lastupdate = DateTime.Now;                         

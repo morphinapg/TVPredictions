@@ -195,5 +195,11 @@ namespace TV_Ratings_Predictions
             NetworkDatabase.canGoBack = true;
             Frame.Navigate(typeof(SortFactors), network, new DrillInNavigationTransitionInfo());
         }
+
+        private void DeleteFactor_Click(object sender, RoutedEventArgs e)
+        {
+            NetworkDatabase.canGoBack = true;
+            Frame.Navigate(typeof(DeleteFactor), network, new DrillInNavigationTransitionInfo());
+        }
     }
 }
