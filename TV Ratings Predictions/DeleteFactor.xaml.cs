@@ -63,8 +63,9 @@ namespace TV_Ratings_Predictions
                     Parallel.ForEach(network.shows.ToList(), s => s.factorValues.RemoveAt(index));
 
                     //Reset the prediction model
-                    network.model = new NeuralPredictionModel(network);
-                    network.evolution = new EvolutionTree(network);
+                    var midpoint = network.GetMidpoint();
+                    network.model = new NeuralPredictionModel(network, midpoint);
+                    network.evolution = new EvolutionTree(network, midpoint);
 
                     NetworkDatabase.pendingSave = true;
                     Frame.GoBack();

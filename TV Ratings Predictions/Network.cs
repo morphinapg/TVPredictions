@@ -131,8 +131,8 @@ namespace TV_Ratings_Predictions
                 n.Predictions = new ObservableCollection<PredictionContainer>();
                 n.Averages = new ObservableCollection<AverageContainer>();
 
-                //n.model = new NeuralPredictionModel(n);                               //This commented code is here if I ever need to test
-                //n.evolution = new EvolutionTree(n);                                   //changes to the predictions with a fresh model
+                //n.model = new NeuralPredictionModel(n, n.GetMidpoint());                               //This commented code is here if I ever need to test
+                //n.evolution = new EvolutionTree(n, n.GetMidpoint());                                   //changes to the predictions with a fresh model
 
                 n.model.shows = n.shows;
                 Parallel.ForEach(n.shows, s =>
@@ -289,13 +289,14 @@ namespace TV_Ratings_Predictions
             factors = f;
             shows = new List<Show>();
             FilteredShows = new ObservableCollection<Show>();
-            NetworkRatings = new ObservableCollection<RatingsContainer>();
-            model = new NeuralPredictionModel(this);
+            NetworkRatings = new ObservableCollection<RatingsContainer>();            
             AlphabeticalShows = new ObservableCollection<Show>();
             Predictions = new ObservableCollection<PredictionContainer>();
             Averages = new ObservableCollection<AverageContainer>();
             PredictionAccuracy = model.TestAccuracy() * 100;
-            evolution = new EvolutionTree(this);
+
+            model = new NeuralPredictionModel(this, 0.5);
+            evolution = new EvolutionTree(this, 0.5);
         }
 
         public void Filter(int year)                        //The Filter method, as mentioned earlier, is a very important part of this app's functionality
@@ -493,6 +494,34 @@ namespace TV_Ratings_Predictions
                 return 1;
             }
 
+        }
+
+        public double GetMidpoint()
+        {
+            //First, make a list of all shows canceled or renewed
+            var tmpList = shows.Where(x => x.Renewed || x.Canceled);
+
+            //Next, make a list of all possible midpoints
+            var indexes = tmpList.Select(x => x.ShowIndex).OrderBy(x => x).ToList();
+            var midpoints = new List<double>();
+            for (int i = 1; i < indexes.Count; i++)
+                midpoints.Add((indexes[i - 1] + indexes[i]) / 2);
+            midpoints = midpoints.Distinct().ToList();
+
+            //Next, test how many errors for each midpoint
+            var errors = new ConcurrentDictionary<double, int>();
+            midpoints.AsParallel().ForAll(x =>
+            {
+                var Rerrors = tmpList.Where(s => s.Renewed && s.ShowIndex < x).Count();
+                var Cerrors = tmpList.Where(s => s.Canceled && s.ShowIndex > x).Count();
+                errors[x] = Rerrors + Cerrors;
+            });
+
+            //Find minimum
+            var mininmum = errors.Values.Min();
+
+            //Return average of all midpoints matching that minimum 
+            return errors.Where(x => x.Value == mininmum).Select(x => x.Key).Average();
         }
 
     }
@@ -1046,6 +1075,31 @@ namespace TV_Ratings_Predictions
             }
 
             Output = new Neuron(NeuronCount);
+
+            Random r = new Random();
+            mutationrate = r.NextDouble();
+            mutationintensity = r.NextDouble();
+            neuralintensity = r.NextDouble();
+        }
+
+        public NeuralPredictionModel(Network n, double midpoint) //New Prediction Model based on midpoint
+        {
+            shows = n.shows;
+            isMutated = false;
+
+            InputCount = n.factors.Count + 2;
+            NeuronCount = Convert.ToInt32(Math.Round(InputCount * 2.0 / 3.0 + 1, 0));
+
+            FirstLayer = new Neuron[NeuronCount];
+            SecondLayer = new Neuron[NeuronCount];
+
+            for (int i = 0; i < NeuronCount; i++)
+            {
+                FirstLayer[i] = new Neuron(InputCount, midpoint, true);
+                SecondLayer[i] = new Neuron(NeuronCount, midpoint, true);
+            }
+
+            Output = new Neuron(NeuronCount, midpoint, false);
 
             Random r = new Random();
             mutationrate = r.NextDouble();
@@ -1791,13 +1845,29 @@ namespace TV_Ratings_Predictions
             network = n;
 
             Primary = new List<NeuralPredictionModel>();
-            //CleanSlate = new List<NeuralPredictionModel>();
             Randomized = new List<NeuralPredictionModel>();
 
             for (int i = 0; i < 30; i++)
             {
                 Primary.Add(new NeuralPredictionModel(n));
-                //CleanSlate.Add(new NeuralPredictionModel(n));
+                Randomized.Add(new NeuralPredictionModel(n));
+            }
+
+            Generations = 1;
+            CleanGenerations = 1;
+            RandomGenerations = 1;
+        }
+
+        public EvolutionTree(Network n, double midpoint)
+        {
+            network = n;
+
+            Primary = new List<NeuralPredictionModel>();;
+            Randomized = new List<NeuralPredictionModel>();
+
+            for (int i = 0; i < 30; i++)
+            {
+                Primary.Add(new NeuralPredictionModel(n, midpoint));
                 Randomized.Add(new NeuralPredictionModel(n));
             }
 
@@ -2059,7 +2129,7 @@ namespace TV_Ratings_Predictions
         double[] weights;
         int inputSize;
         public bool isMutated;
-        
+
         public Neuron(int inputs)
         {
             isMutated = false;
@@ -2072,6 +2142,23 @@ namespace TV_Ratings_Predictions
 
             for (int i = 0; i < inputs; i++)
                 weights[i] = r.NextDouble() * 2 - 1;
+
+            inputSize = inputs;
+        }
+
+        public Neuron(int inputs, double midpoint, bool skip)
+        {
+            isMutated = false;
+
+            midpoint = midpoint * 2 - 1;
+
+            bias = skip ? 0 : ReverseActivation(midpoint);
+            outputbias = 0;
+
+            weights = new double[inputs];
+
+            for (int i = 0; i < inputs; i++)
+                weights[i] = 0;
 
             inputSize = inputs;
         }
@@ -2137,10 +2224,10 @@ namespace TV_Ratings_Predictions
             //return (2 / (1 + Math.Exp(-1 * d))) - 1;
         }
 
-        //double ReverseActivation(double d)
-        //{
-        //    return Math.Log((-d - 1) / (d - 1));
-        //}
+        double ReverseActivation(double d)
+        {
+            return Math.Log((-d - 1) / (d - 1));
+        }
 
         public void Mutate(double mutationrate, double neuralintensity, double mutationintensity, Random r)
         {

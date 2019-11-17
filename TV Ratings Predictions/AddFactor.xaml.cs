@@ -59,10 +59,11 @@ namespace TV_Ratings_Predictions
                         foreach (AddingFactor s in g)
                             s.AddFactor();
                     });
-                        
 
-                    network.model = new NeuralPredictionModel(network);
-                    network.evolution = new EvolutionTree(network);
+
+                    var midpoint = network.GetMidpoint();
+                    network.model = new NeuralPredictionModel(network, midpoint);
+                    network.evolution = new EvolutionTree(network, midpoint);
 
                     NetworkDatabase.pendingSave = true;
                     Frame.GoBack();
