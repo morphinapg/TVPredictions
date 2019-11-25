@@ -139,6 +139,7 @@ namespace TV_Ratings_Predictions
                 {
                     s.factorNames = n.factors;
                     s.network = n;
+
                 });
                 n.PredictionAccuracy = n.model.TestAccuracy() * 100;
 
