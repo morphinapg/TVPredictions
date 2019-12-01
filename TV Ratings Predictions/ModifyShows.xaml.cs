@@ -114,7 +114,8 @@ namespace TV_Ratings_Predictions
                             ratings = ratings,
                             year = show.year,
                             OldOdds = show.OldOdds,
-                            OldRating = show.OldRating
+                            OldRating = show.OldRating,
+                            FinalPrediction = show.FinalPrediction
                         };
 
                         network.shows.Add(newShow);
@@ -134,7 +135,8 @@ namespace TV_Ratings_Predictions
                             ratings = ratings,
                             year = nochanges.year,
                             OldOdds = nochanges.OldOdds,
-                            OldRating = nochanges.OldRating
+                            OldRating = nochanges.OldRating,
+                            FinalPrediction = nochanges.FinalPrediction
                         };
 
                         network.shows.Add(newShow);

@@ -139,7 +139,6 @@ namespace TV_Ratings_Predictions
                 {
                     s.factorNames = n.factors;
                     s.network = n;
-
                 });
                 n.PredictionAccuracy = n.model.TestAccuracy() * 100;
 
@@ -148,6 +147,7 @@ namespace TV_Ratings_Predictions
                 
 
                 n.Filter(NetworkDatabase.CurrentYear);                                  //Once the Network is fully restored, perform a filter based on the current TV Season
+
             }
             );
 
@@ -310,7 +310,7 @@ namespace TV_Ratings_Predictions
                 FilteredShows.Add(s);
 
             
-            UpdateIndexes(true);                            //Update ratings indexes, and then populate the various collections used to display the data across the app
+            //UpdateIndexes();                            //Update ratings indexes, and then populate the various collections used to display the data across the app
             RefreshPredictions(true);
             RefreshAverages();
 
@@ -333,52 +333,9 @@ namespace TV_Ratings_Predictions
             return tempList;
         }
 
-        public void UpdateIndexes(bool parallel = false)                //The ShowIndex value represents a value between 0 to 1 for every show in a particular year
-        {                                                               //This is a cumulative weighted percentile of rating, exclusive of 0 and 1
-            var tempList = FilteredShows.ToList().OrderBy(x => x.AverageRating).ThenBy(x => x.Name).ToList();
-
-            double total = 0;
-            bool duplicate = false;
-
-            if (parallel)                                               //First calculate the total of all average ratings, this can be done in parallel or not
-            {
-                var totals = new double[tempList.Count];
-                Parallel.For(0, tempList.Count, i =>
-                {
-                    if (i > 0 && tempList[i - 1].AverageRating == tempList[i].AverageRating)
-                        duplicate = true;
-
-                    totals[i] = tempList[i].AverageRating * (tempList[i].Halfhour ? 0.5 : 1);   //half hour shows are weighted half as much
-                });                                                                             //as the same ratings contribute half as much money to the network
-                total = totals.Sum();
-            }
-            else
-                foreach (Show s in tempList)
-                    total += s.AverageRating * (s.Halfhour ? 0.5 : 1);
-
-
-            double cumulativeTotal = 0;
-
-            foreach (Show s in tempList)                                //Now determine the cumulative total of each show, from lowest to highest rating
-                if (s.ratings.Count > 0)
-                {
-                    s.ShowIndex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;    //The ShowIndex is the cumulative total of the previous shows, plus half of the current show's weighted rating
-                    cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);                                //This allows ShowIndex to be representative of midpoints, rather that beginning/endpoints, resulting in a more balanced prediction
-                }
-
-            if (duplicate)  //If there are duplicate rating scores, then perform the process again with the duplicates reverssed, then average the indexes
-            {
-                cumulativeTotal = 0;
-                tempList = tempList.OrderBy(x => x.AverageRating).ThenByDescending(x => x.Name).ToList();
-
-                foreach (Show s in tempList)                                
-                    if (s.ratings.Count > 0)
-                    {
-                        var newindex = (cumulativeTotal + (s.AverageRating * (s.Halfhour ? 0.25 : 0.5))) / total;    
-                        s.ShowIndex = (s.ShowIndex + newindex) / 2;
-                        cumulativeTotal += s.AverageRating * (s.Halfhour ? 0.5 : 1);                                
-                    }
-            }
+        public void UpdateIndexes()                //The ShowIndex value represents a value between 0 to 1 for every show in a particular year
+        {
+            UpdateIndexes(NetworkDatabase.CurrentYear);
         }
 
         public void UpdateIndexes(int year)                             //Update Indexes for a custom year
@@ -447,6 +404,12 @@ namespace TV_Ratings_Predictions
                 else
                     ratingsAverages[i] = ratingsAverages[i - 1];    //If there aren't enough episodes from any show, it simply stores the previous episode's value
             }
+
+            var yearlist = shows.Select(x => x.year).Distinct();
+            Parallel.ForEach(shows, s => s.UpdateAverage());
+            shows.Sort();
+            foreach (int i in yearlist)
+                UpdateIndexes(i);
         }
 
         void RefreshAverages()      //Updates the Averages collection with all of the ratings average data for every show in FilteredShows
@@ -2030,6 +1993,7 @@ namespace TV_Ratings_Predictions
         public NeuralPredictionModel model;
         public Dictionary<int, double> Adjustments;
         public double[] RatingsAverages;
+        public DateTime PredictionTime;
 
         public MiniNetwork(Network n)
         {
@@ -2046,10 +2010,12 @@ namespace TV_Ratings_Predictions
 
             shows.Sort();
 
-            foreach (int i in yearlist)
-                n.UpdateIndexes(i);
+            //foreach (int i in yearlist)
+            //    n.UpdateIndexes(i);
 
             Parallel.ForEach(shows, s => s.PredictedOdds = model.GetOdds(s, Adjustments[s.year]));
+
+            PredictionTime = DateTime.Now;
         }
     }
 
