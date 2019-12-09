@@ -19,6 +19,7 @@ using Windows.UI;
 using Windows.Storage.Pickers;
 using System.Xml.Serialization;
 using System.Collections.Concurrent;
+using Accord.Statistics.Distributions.Univariate;
 
 namespace TV_Ratings_Predictions 
 {
@@ -227,6 +228,11 @@ namespace TV_Ratings_Predictions
         public double[] ratingsAverages;                                //Typically throughout a TV season, ratings will start out higher and fall throughout the season.
                                                                         //This array describes that pattern for the network, based on ratings data for all shows ever tracked on the network.
 
+
+        public double[][] deviations;                                   //The deviation arrays collect statistics on how much the current projected rating deviates from the final rating
+        public double[] typicalDeviation;                               //as well as how the projected ratings vary week-to-week.
+                                                                        //These statistics drive a Normal Distribution used to calculate odds
+        
         public NeuralPredictionModel model;                             //A NeuralPredictionModel is a Neural Network used for predicting renewal or cancellation of a show.
 
         [NonSerialized]
@@ -298,6 +304,14 @@ namespace TV_Ratings_Predictions
 
             model = new NeuralPredictionModel(this, 0.5);
             evolution = new EvolutionTree(this, 0.5);
+
+            ratingsAverages = new double[26];
+
+            deviations = new double[26][];
+            for (int i = 0; i < 26; i++)
+                deviations[i] = new double[26];
+
+            typicalDeviation = new double[26];
         }
 
         public void Filter(int year)                        //The Filter method, as mentioned earlier, is a very important part of this app's functionality
@@ -410,6 +424,87 @@ namespace TV_Ratings_Predictions
             shows.Sort();
             foreach (int i in yearlist)
                 UpdateIndexes(i);
+
+            //Also update startingDeviation
+            deviations = new double[26][];
+            for (int i = 0; i < 26; i++)
+                deviations[i] = new double[26];
+            typicalDeviation = new double[26];
+
+            //Find minimum and maximum episode counts
+            var episodeCounts = tempList.AsParallel().Where(x => x.ratings.Count > 1).Select(x => x.Episodes).Distinct();
+            int min = episodeCounts.Min() - 1, max = episodeCounts.Max();
+
+            //Interate through episode counts, determining deviation between starting episode and episode #
+
+            Parallel.For(0, max - 1, s =>
+            //for (int s = 0; s < max-1; s++)
+            {
+                for (int i = min; i < max; i++)
+                {
+                    var segment = tempList.Where(x => x.ratings.Count > 1 && x.Episodes > i);
+                    var count = segment.Count();
+
+                    if (count > 1)
+                    {
+                        double deviation = 0;
+                        foreach (Show ss in segment)
+                            deviation += Math.Pow(Math.Log(ss.ratings[0] * AdjustAverage(1, i + 1)) - Math.Log(ss.ratingsAverages[i]), 2);
+
+                        deviations[s][i] = Math.Sqrt(deviation / (count - 1));
+                    }
+                }
+
+                //fill in missing numbers
+                for (int i = 1; i < 26; i++)
+                    if (deviations[s][i] == 0 && deviations[s][i - 1] > 0)
+                        deviations[s][i] = deviations[s][i - 1];
+
+                for (int i = 24; i >= 0; i--)
+                    if (deviations[s][i] == 0 && deviations[s][i + 1] > 0)
+                        deviations[s][i] = deviations[s][i + 1];
+
+
+
+                //find cumulative deviations
+                if (s > 0)
+                {
+                    var segment = tempList.Where(x => x.ratings.Count > 1);
+
+                    double deviation = 0;
+
+                    foreach (Show ss in segment)
+                    {
+                        //calculate standard deviation
+                        double ProjectionVariance = 0;
+                        for (int i = 0; i < s; i++)
+                            ProjectionVariance += Math.Pow(Math.Log(ss.ratingsAverages[i] * ss.network.AdjustAverage(i + 1, ss.Episodes)) - Math.Log(ss.AverageRating), 2);
+
+                        deviation += ProjectionVariance / s;
+                    }
+
+                    typicalDeviation[s] = Math.Sqrt(deviation / segment.Count());
+                }
+            });
+
+            //fill in missing numbers
+            for (int i = 1; i < 26; i++)
+                if (deviations[i].Sum() == 0 && deviations[i - 1].Sum() > 0)
+                    deviations[i] = deviations[i - 1];
+
+            for (int i = 24; i >= 0; i--)
+                if (deviations[i].Sum() == 0 && deviations[i + 1].Sum() > 0)
+                    deviations[i] = deviations[i + 1];
+
+            for (int i = 1; i < 26; i++)
+                if (typicalDeviation[i] == 0 && typicalDeviation[i - 1] > 0)
+                    typicalDeviation[i] = typicalDeviation[i - 1];
+
+            for (int i = 24; i >= 0; i--)
+                if (typicalDeviation[i] == 0 && typicalDeviation[i + 1] > 0)
+                    typicalDeviation[i] = typicalDeviation[i + 1];
+
+
         }
 
         void RefreshAverages()      //Updates the Averages collection with all of the ratings average data for every show in FilteredShows
@@ -1294,8 +1389,34 @@ namespace TV_Ratings_Predictions
         public double GetOdds(Show s, double adjustment, bool raw = false, bool modified = false, int index = -1, int index2 = -1, int index3 = -1)
         {
             var threshold = modified ? GetModifiedThreshold(s, adjustment, index, index2, index3) : GetThreshold(s, adjustment);
-            var exponent = Math.Log(0.5) / Math.Log(threshold);
-            var baseOdds = Math.Pow(s.ShowIndex, exponent);
+
+            var target = GetTargetRating(s.year, threshold);
+            var variance = Math.Log(s.AverageRating) - Math.Log(target);
+            double deviation;
+
+            //calculate standard deviation
+            if (s.ratings.Count > 1)
+            {
+                var count = s.ratings.Count - 1;
+                double ProjectionVariance = 0;
+                for (int i = 0; i < count; i++)
+                    ProjectionVariance += Math.Pow(Math.Log(s.ratingsAverages[i] * s.network.AdjustAverage(i + 1, s.Episodes)) - Math.Log(s.AverageRating), 2);
+                
+                deviation = s.network.deviations[s.ratings.Count - 1][s.Episodes - 1] * Math.Sqrt(ProjectionVariance / count) / s.network.typicalDeviation[s.ratings.Count - 1];
+            }
+            else
+            {
+                deviation = s.network.deviations[0][s.Episodes - 1];
+            }            
+
+            var zscore = variance / deviation;
+
+            var normal = new NormalDistribution();
+
+            var baseOdds = normal.DistributionFunction(zscore);
+
+            //var exponent = Math.Log(0.5) / Math.Log(threshold);
+            //var baseOdds = Math.Pow(s.ShowIndex, exponent);
 
             if (raw)
                 return baseOdds;
@@ -2227,439 +2348,6 @@ namespace TV_Ratings_Predictions
                 outputbias = tempBias * 2 - 1;
                 isMutated = true;
             }
-        }
-    }
-
-    [Serializable]
-    public class  PredictionModel : IComparable<PredictionModel>
-    {
-        [NonSerialized]
-        public List<Show> shows;
-
-        public double NetworkAverageIndex, EpisodeThreshold;
-
-        #pragma warning disable IDE0044 // Add readonly modifier
-        public double[] trueIndex, falseIndex;
-        public double mutationrate, mutationintensity;
-        #pragma warning restore IDE0044 // Add readonly modifier
-
-        public double[] weight;
-
-        [NonSerialized]
-        public double _accuracy;
-
-        [NonSerialized]
-        public bool isMutated;
-
-        public PredictionModel(Network n) //Brand New Prediction Model
-        {
-            Random r = new Random();
-            isMutated = false;
-
-            NetworkAverageIndex = r.NextDouble();
-            EpisodeThreshold = r.NextDouble() * 25 + 1;
-
-            trueIndex = new double[n.factors.Count+2];
-            falseIndex = new double[n.factors.Count+2];
-            weight = new double[n.factors.Count+2];
-
-            for (int i = 0; i < n.factors.Count+2; i++)
-            {
-                trueIndex[i] = r.NextDouble();
-                falseIndex[i] = r.NextDouble();
-                weight[i] = r.NextDouble();
-            }
-
-            shows = n.shows;
-
-            mutationrate = r.NextDouble();
-            mutationintensity = r.NextDouble();
-        }
-
-        public PredictionModel(Network n, double average, double thresh) //Clean Slate prediction model based on average
-        {
-            isMutated = false;
-            NetworkAverageIndex = average;
-            EpisodeThreshold = thresh;
-
-            trueIndex = new double[n.factors.Count+2];
-            falseIndex = new double[n.factors.Count+2];
-            weight = new double[n.factors.Count+2];
-
-            for (int i = 0; i < n.factors.Count+2; i++)
-            {
-                trueIndex[i] = NetworkAverageIndex;
-                falseIndex[i] = NetworkAverageIndex;
-                weight[i] = 0;
-            }
-
-            shows = n.shows;
-
-            Random r = new Random();
-
-            mutationrate = r.NextDouble();
-            mutationintensity = r.NextDouble();
-        }    
-        
-        private PredictionModel(PredictionModel x, PredictionModel y)
-        {
-            isMutated = false;
-
-            shows = x.shows;
-
-            NetworkAverageIndex = Breed(x.NetworkAverageIndex, y.NetworkAverageIndex);
-            EpisodeThreshold = Breed(x.EpisodeThreshold, y.EpisodeThreshold);
-
-            trueIndex = new double[x.trueIndex.Length];
-            falseIndex = new double[x.falseIndex.Length];
-            weight = new double[x.weight.Length];
-
-            for (int i = 0; i < x.trueIndex.Length; i++)
-            {
-                trueIndex[i] = Breed(x.trueIndex[i], y.trueIndex[i]);
-                falseIndex[i] = Breed(x.falseIndex[i], y.falseIndex[i]);
-                weight[i] = Breed(x.weight[i], y.weight[i]);
-            }
-
-            mutationrate = Breed(x.mutationrate, y.mutationrate);
-            mutationintensity = Breed(x.mutationintensity, y.mutationintensity);
-        }
-
-        private double Breed(double x, double y)
-        {
-            var r = new Random();
-            var p = r.NextDouble();
-
-            //return (x * p) + (y * (1 - p));
-
-            return p > 0.5 ? x : y;
-        }
-
-        double GetExponent(double value)
-        {
-            return Math.Log(value) / Math.Log(NetworkAverageIndex);
-        }
-
-        public double GetAverageExponent(int i, bool isTrue)
-        {
-            double trueExponent = GetExponent(trueIndex[i]), falseExponent = GetExponent(falseIndex[i]);
-
-            double total = 0;
-            int count = 0;
-
-            if (i == trueIndex.Length - 2)
-            {
-                foreach (Show s in shows)
-                    if (s.ratings.Count > 0)
-                    {
-                        total += (s.Episodes > EpisodeThreshold) ? trueExponent : falseExponent;
-                        count++;
-                    }   
-            }
-            else if (i == trueIndex.Length - 1)
-            {
-                foreach (Show s in shows)
-                    if (s.ratings.Count > 0)
-                    {
-                        total += s.Halfhour ? trueExponent : falseExponent;
-                        count++;
-                    }
-            }
-            else
-            {
-                foreach (Show s in shows)
-                    if (s.ratings.Count > 0)
-                    {
-                        total += s.factorValues[i] ? trueExponent : falseExponent;
-                        count++;
-                    }
-            }
-
-            double average = total / count;
-            average = isTrue ? trueExponent / average : falseExponent / average;
-            average = average * weight[i] + 1 - weight[i];
-
-            return average;
-        }
-
-        public void SetElite()
-        {
-            _accuracy = 0;
-        }
-
-        public double TestAccuracy()
-        {
-
-            double average = GetAverageThreshold();
-            double weightAverage = Math.Max(average, 1 - average);
-            double total = 0;
-            double weights = 0;
-            int year = NetworkDatabase.MaxYear;
-
-            foreach (Show s in shows.ToList())
-            {
-                if (s.Renewed || s.Canceled)
-                {
-                    int prediction = (s.ShowIndex > GetThreshold(s)) ? 1 : 0, accuracy;
-                    double weight;
-                    if (s.Renewed)
-                    {
-
-                        accuracy = (prediction == 1) ? 1 : 0;
-
-
-
-                        if (accuracy == 1)
-                            weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
-                        else
-                            weight = 1;
-
-                        weight /= year - s.year + 1;
-
-                        if (s.Canceled)
-                        {
-                            double odds = GetOdds(s, true);
-                            if (odds < 0.6 && odds > 0.4)
-                            {
-                                accuracy = 1;
-
-                                weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
-
-                                if (prediction == 1)
-                                    weight *= 2;
-                                else
-                                    weight /= 2;
-                            }
-                            else if (prediction == 0)
-                                weight /= 2;
-                        }
-
-                        total += accuracy * weight;
-                        weights += weight;
-                    }
-                    else if (s.Canceled)
-                    {
-                        accuracy = (prediction == 0) ? 1 : 0;
-
-                        if (accuracy == 1)
-                            weight = 1 - Math.Abs(weightAverage - s.ShowIndex) / weightAverage;
-                        else
-                            weight = 1;
-
-                        weight /= year - s.year + 1;
-
-                        total += accuracy * weight;
-                        weights += weight;
-                    }
-                }
-            }
-
-            _accuracy = (weights == 0) ? 0.0 : (total / weights);
-
-            return _accuracy;
-        }
-
-        public double GetAverageThreshold()
-        {
-            double total = 0;
-            int count = 0;
-
-            foreach (Show s in shows.ToList())
-                if (s.ratings.Count > 0)
-                {
-                    total += GetThreshold(s);
-                    count++;
-                }          
-
-            return total / count;
-        }
-
-        public double GetThreshold(Show s)
-        {
-            double exponent = 1;
-
-            for (int i = 0; i < s.factorValues.Count; i++)
-                exponent *= (s.factorValues[i] ? GetExponent(trueIndex[i]) : GetExponent(falseIndex[i])) * weight[i] + 1 - weight[i];
-
-            int x = s.factorValues.Count;
-            exponent *= (s.Episodes > EpisodeThreshold ? GetExponent(trueIndex[x]) : GetExponent(falseIndex[x])) * weight[x] + 1 - weight[x];
-
-            x++;
-            exponent *= (s.Halfhour ? GetExponent(trueIndex[x]) : GetExponent(falseIndex[x])) * weight[x] + 1 - weight[x];
-
-            return Math.Pow(NetworkAverageIndex, exponent);
-        }
-
-        public double GetOdds(Show s, bool raw = false)
-        {
-            var threshold = GetThreshold(s);
-            var exponent = Math.Log(0.5) / Math.Log(threshold);
-            var baseOdds = Math.Pow(s.ShowIndex, exponent);
-
-            if (raw)
-                return baseOdds;
-
-            var accuracy = _accuracy;
-
-            if (baseOdds > 0.5)
-            {
-                baseOdds -= 0.5;
-                baseOdds *= 2;
-                return (baseOdds * accuracy) / 2 + 0.5;
-            }
-            else
-            {
-                baseOdds *= 2;
-                baseOdds = 1 - baseOdds;
-                return (1 - (baseOdds * accuracy)) / 2;
-            }
-        }
-
-        public double GetNetworkRatingsThreshold(int year)
-        {
-            return GetTargetRating(year, GetAverageThreshold());
-        }
-
-        public double GetTargetRating(int year, double targetindex)
-        {
-
-            var tempShows = new ObservableCollection<Show>();
-            shows.Sort();
-
-            foreach (Show s in shows)
-                if (s.year == year && s.ratings.Count > 0)
-                    tempShows.Add(s);
-
-            if (tempShows.Count == 0)
-            {
-                tempShows.Clear();
-                foreach (Show s in shows)
-                    if (s.ratings.Count > 0) tempShows.Add(s);
-            }
-
-            if (tempShows.Count > 1) //make sure list is sorted
-            {
-                bool sorted = false;
-                while (!sorted)
-                {
-                    sorted = true;
-                    for (int i = 1; i < tempShows.Count; i++)
-                        if (tempShows[i].ShowIndex > tempShows[i - 1].ShowIndex)
-                        {
-                            sorted = false;
-                            tempShows.Move(i, i - 1);
-                        }
-                }
-            }
-
-            bool found = false;
-            int upper = 0, lower = 1;
-            for (int i = 0; i < tempShows.Count && !found; i++)
-            {
-                if (tempShows[i].ShowIndex < targetindex)
-                {
-                    lower = i;
-                    found = true;
-                }
-                else
-                    upper = i;
-            }
-
-            if (tempShows.Count > 0)
-            {
-                double maxIndex, minIndex, maxRating, minRating;
-                if (lower != 0 && lower > upper && tempShows.Count > 1) //match is between two values
-                {
-                    maxIndex = tempShows[upper].ShowIndex;
-                    maxRating = tempShows[upper].AverageRating;
-                    minIndex = tempShows[lower].ShowIndex;
-                    minRating = tempShows[lower].AverageRating;
-                }
-                else if (lower == 0 && tempShows.Count > 1) //match is at the beginning of a multiple item list
-                {
-                    maxIndex = tempShows[0].ShowIndex;
-                    maxRating = tempShows[0].AverageRating;
-                    minIndex = tempShows[1].ShowIndex;
-                    minRating = tempShows[1].AverageRating;
-                }
-                else
-                {
-                    maxIndex = tempShows[upper].ShowIndex;
-                    maxRating = tempShows[upper].AverageRating;
-                    minIndex = 0;
-                    minRating = 0;
-                }
-
-                return (targetindex - minIndex) / (maxIndex - minIndex) * (maxRating - minRating) + minRating;
-            }
-
-            return 0;
-        }
-
-        public void MutateModel()
-        {
-            var r = new Random();
-
-            if (r.NextDouble() > 0.5)
-                mutationrate = MutateValue(mutationrate);
-            else
-                mutationintensity = MutateValue(mutationintensity);
-
-            NetworkAverageIndex = MutateValue(NetworkAverageIndex);
-            EpisodeThreshold = MutateValue((EpisodeThreshold / 26.0)) * 26.0;
-
-            for (int i = 0; i < trueIndex.Length; i++)
-            {
-                trueIndex[i] = MutateValue(trueIndex[i]);
-                falseIndex[i] = MutateValue(falseIndex[i]);
-                weight[i] = MutateValue(weight[i]);
-            }
-        }
-
-        private double MutateValue(double d, bool increase = false)
-        {
-            var r = new Random();
-
-            var p = r.NextDouble();
-
-            double low = d * (1 - mutationintensity * p), high = 1 - (1 - d) * (1 - mutationintensity * p);
-
-            if (increase) low = d;
-
-            if (r.NextDouble() < mutationrate)
-            {
-                isMutated=true;
-                return r.NextDouble() * (high - low) + low;
-            }
-                
-
-            return d;
-        }
-
-        public void IncreaseMutationRate()
-        {
-            mutationrate = MutateValue(mutationrate, true);
-        }
-
-        public int CompareTo(PredictionModel other)
-        {
-            double otherAcc = other._accuracy;
-            double thisAcc = _accuracy;
-
-            return otherAcc.CompareTo(thisAcc);
-
-            //if (otherAcc > thisAcc) return -1;
-            //else if (thisAcc < otherAcc) return 1;
-            //else return 0;
-        }
-
-        public static PredictionModel operator+(PredictionModel x, PredictionModel y)
-        {
-            
-            var model = new PredictionModel(x, y);
-            model.MutateModel();
-
-            return model;
         }
     }
 
