@@ -440,7 +440,7 @@ namespace TV_Ratings_Predictions
             Parallel.For(0, max - 1, s =>
             //for (int s = 0; s < max-1; s++)
             {
-                for (int i = min; i < max; i++)
+                for (int i = s + 1; i < max; i++)
                 {
                     var segment = tempList.Where(x => x.ratings.Count > 1 && x.Episodes > i);
                     var count = segment.Count();
@@ -449,7 +449,7 @@ namespace TV_Ratings_Predictions
                     {
                         double deviation = 0;
                         foreach (Show ss in segment)
-                            deviation += Math.Pow(Math.Log(ss.ratings[0] * AdjustAverage(1, i + 1)) - Math.Log(ss.ratingsAverages[i]), 2);
+                            deviation += Math.Pow(Math.Log(ss.ratingsAverages[s] * AdjustAverage(1, i + 1)) - Math.Log(ss.ratingsAverages[i]), 2);
 
                         deviations[s][i] = Math.Sqrt(deviation / (count - 1));
                     }
@@ -478,7 +478,7 @@ namespace TV_Ratings_Predictions
                         //calculate standard deviation
                         double ProjectionVariance = 0;
                         for (int i = 0; i < s; i++)
-                            ProjectionVariance += Math.Pow(Math.Log(ss.ratingsAverages[i] * ss.network.AdjustAverage(i + 1, ss.Episodes)) - Math.Log(ss.AverageRating), 2);
+                            ProjectionVariance += Math.Pow(Math.Log(ss.ratingsAverages[i] * ss.network.AdjustAverage(i + 1, ss.Episodes)) - Math.Log(ss.ratingsAverages[s]), 2);
 
                         deviation += ProjectionVariance / s;
                     }
