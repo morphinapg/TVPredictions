@@ -70,13 +70,20 @@ namespace TV_Ratings_Predictions
                 {
                     year = tempShow.year,
                     OldOdds = tempShow.OldOdds,
-                    OldRating = tempShow.OldRating
+                    OldRating = tempShow.OldRating,
+                    FinalPrediction = tempShow.FinalPrediction,
+                    ShowIndex = tempShow.ShowIndex,
+                    ratingsAverages = tempShow.ratingsAverages
+                    
                 };
                 nochanges = new Show(tempShow.Name, network, factors, tempShow.Episodes, tempShow.Halfhour, network.factors, tempShow.AverageRating, tempShow.ShowIndex, tempShow.RenewalStatus, tempShow.Renewed, tempShow.Canceled)
                 {
                     year = tempShow.year,
                     OldOdds = tempShow.OldOdds,
-                    OldRating = tempShow.OldRating
+                    OldRating = tempShow.OldRating,
+                    FinalPrediction = tempShow.FinalPrediction,
+                    ShowIndex = tempShow.ShowIndex,
+                    ratingsAverages = tempShow.ratingsAverages
                 };
 
                 ShowEditor.Navigate(typeof(ShowEditor), show);
@@ -115,7 +122,9 @@ namespace TV_Ratings_Predictions
                             year = show.year,
                             OldOdds = show.OldOdds,
                             OldRating = show.OldRating,
-                            FinalPrediction = show.FinalPrediction
+                            FinalPrediction = show.FinalPrediction,
+                            ShowIndex = show.ShowIndex,
+                            ratingsAverages = show.ratingsAverages
                         };
 
                         network.shows.Add(newShow);
@@ -136,7 +145,9 @@ namespace TV_Ratings_Predictions
                             year = nochanges.year,
                             OldOdds = nochanges.OldOdds,
                             OldRating = nochanges.OldRating,
-                            FinalPrediction = nochanges.FinalPrediction
+                            FinalPrediction = nochanges.FinalPrediction,
+                            ShowIndex = nochanges.ShowIndex,
+                            ratingsAverages = nochanges.ratingsAverages
                         };
 
                         network.shows.Add(newShow);
