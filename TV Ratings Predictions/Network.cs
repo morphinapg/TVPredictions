@@ -231,8 +231,8 @@ namespace TV_Ratings_Predictions
 
         public double[][] deviations;                                   //The deviation arrays collect statistics on how much the current projected rating deviates from the final rating
         public double[] typicalDeviation;                               //as well as how the projected ratings vary week-to-week.
-                                                                        //These statistics drive a Normal Distribution used to calculate odds
-        
+        public double TargetError;                                      //These statistics drive a Normal Distribution used to calculate odds
+
         public NeuralPredictionModel model;                             //A NeuralPredictionModel is a Neural Network used for predicting renewal or cancellation of a show.
 
         [NonSerialized]
@@ -449,7 +449,10 @@ namespace TV_Ratings_Predictions
                     {
                         double deviation = 0;
                         foreach (Show ss in segment)
-                            deviation += Math.Pow(Math.Log(ss.ratingsAverages[s] * AdjustAverage(1, i + 1)) - Math.Log(ss.ratingsAverages[i]), 2);
+                        {
+                            deviation += Math.Pow(Math.Log(ss.ratingsAverages[s] * AdjustAverage(s + 1, i + 1)) - Math.Log(ss.ratingsAverages[i]), 2);
+                        }
+                            
 
                         deviations[s][i] = Math.Sqrt(deviation / (count - 1));
                     }
@@ -469,7 +472,7 @@ namespace TV_Ratings_Predictions
                 //find cumulative deviations
                 if (s > 0)
                 {
-                    var segment = tempList.Where(x => x.ratings.Count > 1);
+                    var segment = tempList.Where(x => x.ratings.Count > s);
 
                     double deviation = 0;
 
@@ -478,7 +481,7 @@ namespace TV_Ratings_Predictions
                         //calculate standard deviation
                         double ProjectionVariance = 0;
                         for (int i = 0; i < s; i++)
-                            ProjectionVariance += Math.Pow(Math.Log(ss.ratingsAverages[i] * ss.network.AdjustAverage(i + 1, ss.Episodes)) - Math.Log(ss.ratingsAverages[s]), 2);
+                            ProjectionVariance += Math.Pow(Math.Log(ss.ratingsAverages[i] * ss.network.AdjustAverage(i + 1, ss.Episodes)) - Math.Log(ss.ratingsAverages[s] * ss.network.AdjustAverage(s + 1, ss.Episodes)), 2);
 
                         deviation += ProjectionVariance / s;
                     }
@@ -504,7 +507,22 @@ namespace TV_Ratings_Predictions
                 if (typicalDeviation[i] == 0 && typicalDeviation[i + 1] > 0)
                     typicalDeviation[i] = typicalDeviation[i + 1];
 
+            //Determine how much target ratings deviate per year
+            var Adjustments = model.GetAdjustments(true);
+            var YearlyDeviation = new Dictionary<int, double>();
+            double devs = 0;
 
+            foreach (int i in yearlist)
+            {
+                var segment = tempList.AsParallel().Where(x => x.year == i).Select(x => model.GetTargetRating(i, model.GetThreshold(x, Adjustments[i])));
+                var average = segment.Average();
+                
+                foreach (double d in segment)
+                    devs += Math.Pow(Math.Log(d) - Math.Log(average), 2);
+            }
+
+            //Standard error formula for eviation of target errors
+            TargetError = Math.Sqrt(devs / Math.Max((tempList.Count() - 1), 1)) / Math.Sqrt(Math.Max((tempList.Count() - 1), 1));
         }
 
         void RefreshAverages()      //Updates the Averages collection with all of the ratings average data for every show in FilteredShows
@@ -1400,14 +1418,16 @@ namespace TV_Ratings_Predictions
                 var count = s.ratings.Count - 1;
                 double ProjectionVariance = 0;
                 for (int i = 0; i < count; i++)
-                    ProjectionVariance += Math.Pow(Math.Log(s.ratingsAverages[i] * s.network.AdjustAverage(i + 1, s.Episodes)) - Math.Log(s.AverageRating), 2);
+                    ProjectionVariance += Math.Pow(Math.Log(s.ratingsAverages[i] * s.network.AdjustAverage(i + 1, s.Episodes)) - Math.Log(s.AverageRating * s.network.AdjustAverage(count + 1, s.Episodes)), 2);
                 
                 deviation = s.network.deviations[s.ratings.Count - 1][s.Episodes - 1] * Math.Sqrt(ProjectionVariance / count) / s.network.typicalDeviation[s.ratings.Count - 1];
             }
             else
             {
                 deviation = s.network.deviations[0][s.Episodes - 1];
-            }            
+            }
+
+            deviation += s.network.TargetError;
 
             var zscore = variance / deviation;
 
