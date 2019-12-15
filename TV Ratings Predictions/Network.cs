@@ -2136,6 +2136,10 @@ namespace TV_Ratings_Predictions
         public double[] RatingsAverages;
         public DateTime PredictionTime;
 
+        public double[][] deviations;                                   
+        public double[] typicalDeviation;                               
+        public double TargetError;
+
         public MiniNetwork(Network n)
         {
             var yearlist = n.shows.Select(x => x.year).Distinct().ToList();  
@@ -2157,6 +2161,9 @@ namespace TV_Ratings_Predictions
             Parallel.ForEach(shows, s => s.PredictedOdds = model.GetOdds(s, Adjustments[s.year]));
 
             PredictionTime = DateTime.Now;
+            deviations = n.deviations;
+            typicalDeviation = n.typicalDeviation;
+            TargetError = n.TargetError;
         }
     }
 
