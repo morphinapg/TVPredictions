@@ -83,6 +83,11 @@ namespace TV_Ratings_Predictions
             EditStatus.Visibility = Visibility.Collapsed;
         }
 
+        private void Factor_Checked(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
         private void RenewalStatus_TextChanged(object sender, TextChangedEventArgs e)
         {
             show.RenewalStatus = RenewalStatus.Text;

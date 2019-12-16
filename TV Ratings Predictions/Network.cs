@@ -17,8 +17,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Windows.Storage.Pickers;
+using System.Xml.Serialization;
 using System.Collections.Concurrent;
-using MathNet.Numerics.Distributions;
+using Accord.Statistics.Distributions.Univariate;
 
 namespace TV_Ratings_Predictions 
 {
@@ -1430,9 +1431,9 @@ namespace TV_Ratings_Predictions
 
             var zscore = variance / deviation;
 
-            var normal = new Normal();
+            var normal = new NormalDistribution();
 
-            var baseOdds = normal.CumulativeDistribution(zscore);
+            var baseOdds = normal.DistributionFunction(zscore);
 
             //var exponent = Math.Log(0.5) / Math.Log(threshold);
             //var baseOdds = Math.Pow(s.ShowIndex, exponent);
