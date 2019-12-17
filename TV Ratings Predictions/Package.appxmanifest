@@ -4,7 +4,7 @@
          xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
          xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
          IgnorableNamespaces="uap mp rescap">
-  <Identity Name="da379f94-1bba-430d-898b-67edae53ab33" Publisher="CN=morph" Version="1.0.8.0" />
+  <Identity Name="da379f94-1bba-430d-898b-67edae53ab33" Publisher="CN=morph" Version="1.0.12.0" />
   <mp:PhoneIdentity PhoneProductId="da379f94-1bba-430d-898b-67edae53ab33" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>TV Ratings Predictions</DisplayName>

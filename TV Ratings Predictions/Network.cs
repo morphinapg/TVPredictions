@@ -3,12 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.UI.Core;
@@ -17,9 +14,8 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Windows.Storage.Pickers;
-using System.Xml.Serialization;
 using System.Collections.Concurrent;
-using Accord.Statistics.Distributions.Univariate;
+using MathNet.Numerics.Distributions;
 
 namespace TV_Ratings_Predictions 
 {
@@ -1298,8 +1294,10 @@ namespace TV_Ratings_Predictions
             }
             else
             {
-                for (int i = 0; i < InputCount; i++)
-                    inputs[i] = GetScaledAverage(s, i);
+                return Math.Pow(GetAverageThreshold(true), adjustment);
+
+                //for (int i = 0; i < InputCount; i++)
+                //    inputs[i] = GetScaledAverage(s, i);
             }          
 
 
@@ -1431,9 +1429,9 @@ namespace TV_Ratings_Predictions
 
             var zscore = variance / deviation;
 
-            var normal = new NormalDistribution();
+            var normal = new Normal();
 
-            var baseOdds = normal.DistributionFunction(zscore);
+            var baseOdds = normal.CumulativeDistribution(zscore);
 
             //var exponent = Math.Log(0.5) / Math.Log(threshold);
             //var baseOdds = Math.Pow(s.ShowIndex, exponent);

@@ -133,8 +133,7 @@ namespace TV_Ratings_Predictions
 
         private async void SaveImage_Click(object sender, RoutedEventArgs e)
         {
-            var picker = new FileSavePicker();
-            picker.SuggestedStartLocation = PickerLocationId.Desktop;
+            var picker = new FileSavePicker { SuggestedStartLocation = PickerLocationId.Desktop };
             //picker.DefaultFileExtension = "png";
             picker.FileTypeChoices.Add("PNG Image", new List<string>() { ".png" });
             picker.SuggestedFileName = network.name;
