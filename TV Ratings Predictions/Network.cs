@@ -438,7 +438,7 @@ namespace TV_Ratings_Predictions
             {
                 for (int i = s + 1; i < max; i++)
                 {
-                    var segment = tempList.Where(x => x.ratings.Count > 1 && x.Episodes > i);
+                    var segment = tempList.Where(x => x.ratings.Count > i);
                     var count = segment.Count();
 
                     if (count > 1)
@@ -446,7 +446,16 @@ namespace TV_Ratings_Predictions
                         double deviation = 0;
                         foreach (Show ss in segment)
                         {
+                            double variance = 0;
+                            if (ss.ratings.Count > 1)
+                            {
+                                var average = ss.ratings.Average();
+                                for (int e = 0; e < i; e++)
+                                    variance += Math.Pow(Math.Log(ss.ratings[e]) - Math.Log(average), 2);
+                            }
+
                             deviation += Math.Pow(Math.Log(ss.ratingsAverages[s] * AdjustAverage(s + 1, i + 1)) - Math.Log(ss.ratingsAverages[i]), 2);
+                            deviation += variance / (ss.ratings.Count - 1);
                         }
                             
 
@@ -1416,9 +1425,12 @@ namespace TV_Ratings_Predictions
                 var count = s.ratings.Count - 1;
                 double ProjectionVariance = 0;
                 for (int i = 0; i < count; i++)
+                {
                     ProjectionVariance += Math.Pow(Math.Log(s.ratingsAverages[i] * s.network.AdjustAverage(i + 1, s.Episodes)) - Math.Log(s.AverageRating * s.network.AdjustAverage(count + 1, s.Episodes)), 2);
-                
+                }
+
                 deviation = s.network.deviations[s.ratings.Count - 1][s.Episodes - 1] * Math.Sqrt(ProjectionVariance / count) / s.network.typicalDeviation[s.ratings.Count - 1];
+
             }
             else
             {
