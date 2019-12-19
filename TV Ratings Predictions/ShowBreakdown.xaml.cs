@@ -452,7 +452,7 @@ namespace TV_Ratings_Predictions
 
             bool found = false;
 
-            while (!found)
+            while (!found && multiplier != 0)
             {
                 //oldEx = newEx;
                 change = 0;

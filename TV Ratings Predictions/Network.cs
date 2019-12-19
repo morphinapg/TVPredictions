@@ -512,12 +512,12 @@ namespace TV_Ratings_Predictions
             {
                 var segment = tempList.AsParallel().Where(x => x.year == i).Select(x => model.GetTargetRating(i, model.GetThreshold(x, Adjustments[i])));
                 var average = segment.Average();
-                
+
                 foreach (double d in segment)
                     devs += Math.Pow(Math.Log(d) - Math.Log(average), 2);
             }
 
-            //Standard error formula for eviation of target errors
+            //Standard error formula for deviation of target errors
             TargetError = Math.Sqrt(devs / Math.Max((tempList.Count() - 1), 1)) / Math.Sqrt(Math.Max((tempList.Count() - 1), 1));
         }
 
