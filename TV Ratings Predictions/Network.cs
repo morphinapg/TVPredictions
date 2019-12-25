@@ -128,6 +128,7 @@ namespace TV_Ratings_Predictions
                 n.Predictions = new ObservableCollection<PredictionContainer>();
                 n.Averages = new ObservableCollection<AverageContainer>();
 
+                
                 //n.model = new NeuralPredictionModel(n, n.GetMidpoint());                               //This commented code is here if I ever need to test
                 //n.evolution = new EvolutionTree(n, n.GetMidpoint());                                   //changes to the predictions with a fresh model
 
@@ -137,11 +138,12 @@ namespace TV_Ratings_Predictions
                     s.factorNames = n.factors;
                     s.network = n;
                 });
-                n.PredictionAccuracy = n.model.TestAccuracy() * 100;
 
                 n.evolution.network = n;
+                n.PredictionAccuracy = n.model.TestAccuracy() * 100;
 
                 
+
 
                 n.Filter(NetworkDatabase.CurrentYear);                                  //Once the Network is fully restored, perform a filter based on the current TV Season
 
@@ -222,7 +224,7 @@ namespace TV_Ratings_Predictions
                                                                         //This collection includes an AverageContainer for each Show in FilteredShows        
 
         public double[] ratingsAverages;                                //Typically throughout a TV season, ratings will start out higher and fall throughout the season.
-                                                                        //This array describes that pattern for the network, based on ratings data for all shows ever tracked on the network.
+        public double[] FactorAverages;                                 //This array describes that pattern for the network, based on ratings data for all shows ever tracked on the network.
 
 
         public double[][] deviations;                                   //The deviation arrays collect statistics on how much the current projected rating deviates from the final rating
@@ -519,7 +521,7 @@ namespace TV_Ratings_Predictions
 
             foreach (int i in yearlist)
             {
-                var segment = tempList.AsParallel().Where(x => x.year == i).Select(x => model.GetTargetRating(i, model.GetThreshold(x, Adjustments[i])));
+                var segment = tempList.AsParallel().Where(x => x.year == i).Select(x => model.GetTargetRating(i, model.GetThreshold(x, FactorAverages, Adjustments[i])));
                 var average = segment.Average();
 
                 foreach (double d in segment)
@@ -528,6 +530,9 @@ namespace TV_Ratings_Predictions
 
             //Standard error formula for deviation of target errors
             TargetError = Math.Sqrt(devs / Math.Max((tempList.Count() - 1), 1)) / Math.Sqrt(Math.Max((tempList.Count() - 1), 1));
+
+            //Factor Averages
+            FactorAverages = model.GetAverages(factors);
         }
 
         void RefreshAverages()      //Updates the Averages collection with all of the ratings average data for every show in FilteredShows
@@ -562,7 +567,7 @@ namespace TV_Ratings_Predictions
 
             var Adjustments = model.GetAdjustments(parallel);
 
-            Parallel.ForEach(FilteredShows, s => s.PredictedOdds = model.GetOdds(s, Adjustments[s.year]));
+            Parallel.ForEach(FilteredShows, s => s.PredictedOdds = model.GetOdds(s, FactorAverages, Adjustments[s.year]));
         }
 
         public double AdjustAverage(int currentEpisode, int finalEpisode)   //This applies the typical ratings falloff values to the current weighted ratings average for a show
@@ -1021,7 +1026,7 @@ namespace TV_Ratings_Predictions
 
             var Adjustments = n.model.GetAdjustments(true);
 
-            _targetrating = n.model.GetTargetRating(s.year, n.model.GetThreshold(s, Adjustments[s.year]));
+            _targetrating = n.model.GetTargetRating(s.year, n.model.GetThreshold(s, n.FactorAverages, Adjustments[s.year]));
             TargetRating = Math.Round(_targetrating, 2).ToString("F2");
             showAll = a;
         }
@@ -1252,8 +1257,14 @@ namespace TV_Ratings_Predictions
             _accuracy = 0;
         }
 
-        public double GetThreshold(Show s, double adjustment)
+        public double GetThreshold(Show s, double[] averages, double adjustment)
         {
+            //var averages = new double[InputCount];
+            //for (int i = 0; i < InputCount; i++)
+            //    averages[i] = GetScaledAverage(s, i);
+
+            if (averages is null) averages = new double[InputCount];
+
             var inputs = new double[InputCount];
             if (s.Renewed || s.Canceled) adjustment = 1;
 
@@ -1262,10 +1273,10 @@ namespace TV_Ratings_Predictions
                 SecondLayerOutputs = new double[NeuronCount];
 
             for (int i = 0; i < InputCount - 2; i++)
-                inputs[i] = s.factorValues[i] ? 1 : -1;
+                inputs[i] = s.factorValues[i] ? 1 : -1 - averages[i];
 
-            inputs[InputCount - 2] = s.Episodes / 26.0 * 2 - 1;
-            inputs[InputCount - 1] = s.Halfhour ? 1 : -1;
+            inputs[InputCount - 2] = s.Episodes / 26.0 * 2 - 1 - averages[InputCount - 2];
+            inputs[InputCount - 1] = s.Halfhour ? 1 : -1 - averages[InputCount - 1];
 
             for (int i = 0; i < NeuronCount; i++)
                 FirstLayerOutputs[i] = FirstLayer[i].GetOutput(inputs);
@@ -1278,7 +1289,7 @@ namespace TV_Ratings_Predictions
             return s._calculatedThreshold;
         }
 
-        public double GetModifiedThreshold(Show s, double adjustment, int index, int index2 = -1, int index3 = -1)
+        public double GetModifiedThreshold(Show s, double[] averages, double adjustment, int index, int index2 = -1, int index3 = -1)
         {
             var inputs = new double[InputCount];
             if (s.Renewed || s.Canceled) adjustment = 1;
@@ -1289,16 +1300,16 @@ namespace TV_Ratings_Predictions
             if (index > -1)
             {
                 for (int i = 0; i < InputCount - 2; i++)
-                    inputs[i] = s.factorValues[i] ? 1 : -1;                
-                
-                inputs[InputCount - 1] = s.Halfhour ? 1 : -1;
-                inputs[InputCount - 2] = s.Episodes / 26.0 * 2 - 1;
+                    inputs[i] = s.factorValues[i] ? 1 : -1 - averages[i];
 
-                inputs[index] = GetScaledAverage(s, index);
+                inputs[InputCount - 2] = s.Episodes / 26.0 * 2 - 1 - averages[InputCount - 2];
+                inputs[InputCount - 1] = s.Halfhour ? 1 : -1 - averages[InputCount - 1];
+
+                inputs[index] = 0;  //GetScaledAverage(s, index);
                 if (index2 > -1)
                 {
-                    inputs[index2] = GetScaledAverage(s, index2);
-                    if (index3 > -1) inputs[index3] = GetScaledAverage(s, index3);
+                    inputs[index2] = 0; // GetScaledAverage(s, index2);
+                    if (index3 > -1) inputs[index3] = 0; // GetScaledAverage(s, index3);
                 }
             }
             else
@@ -1321,7 +1332,7 @@ namespace TV_Ratings_Predictions
             return s._calculatedThreshold;
         }
 
-        double GetScaledAverage(Show s, int index)
+        double GetScaledAverage(ObservableCollection<string> factors, int index)
         {
             double weight = 0, total = 0;
             var yearlist = shows.Select(x => x.year).Distinct().ToList();
@@ -1332,9 +1343,9 @@ namespace TV_Ratings_Predictions
                 double score;
                 var count = shows.Where(x => x.year == year).Count();
                 weight += w * count;
-                if (index < s.factorNames.Count)
+                if (index < factors.Count)
                     score = (shows.Where(x => x.year == year && x.factorValues[index]).Count() * 1.0 + shows.Where(x => x.year == year && !x.factorValues[index]).Count() * -1.0);
-                else if (index == s.factorNames.Count)
+                else if (index == factors.Count)
                     score = shows.Where(x => x.year == year).Select(x => x.Episodes).Average() / 26 * 2 - 1;
                 else
                     score = shows.Where(x => x.year == year && x.Halfhour).Count() * 1.0 + shows.Where(x => x.year == year && !x.Halfhour).Count() * -1.0;
@@ -1342,6 +1353,15 @@ namespace TV_Ratings_Predictions
             }
 
             return total / weight;
+        }
+
+        public double[] GetAverages(ObservableCollection<string> factors)
+        {
+            var averages = new double[InputCount];
+            for (int i = 0; i < InputCount; i++)
+                averages[i] = GetScaledAverage(factors, i);
+
+            return averages;
         }
 
         public double GetAverageThreshold(bool parallel = false)
@@ -1352,6 +1372,7 @@ namespace TV_Ratings_Predictions
 
             //var tempList = shows.Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList();
             var tempList = shows.ToList();
+            var averages = tempList.First().network.FactorAverages;
 
             if (parallel)
             {
@@ -1362,7 +1383,7 @@ namespace TV_Ratings_Predictions
                 Parallel.For(0, tempList.Count, i =>
                 {
                     double weight = 1.0 / (year - tempList[i].year + 1);
-                    totals[i] = GetThreshold(tempList[i], 1) * weight;
+                    totals[i] = GetThreshold(tempList[i], averages, 1) * weight;
                     counts[i] = weight;
                 });
 
@@ -1373,7 +1394,7 @@ namespace TV_Ratings_Predictions
                 foreach (Show s in tempList)
                 {
                     double weight = 1.0 / (year - s.year + 1);
-                    total += GetThreshold(s, 1) * weight;
+                    total += GetThreshold(s, averages, 1) * weight;
                     count += weight;
                 }
 
@@ -1387,8 +1408,9 @@ namespace TV_Ratings_Predictions
             var tempList = shows.Where(x => x.year == year && x.ratings.Count > 0).ToList();
             var count = tempList.Count;
             var totals = new double[count];
+            var averages = tempList.First().network.FactorAverages;
 
-            Parallel.For(0, count, i => totals[i] = GetThreshold(tempList[i], 1));
+            Parallel.For(0, count, i => totals[i] = GetThreshold(tempList[i], averages, 1));
 
             total = totals.Sum();
 
@@ -1411,9 +1433,9 @@ namespace TV_Ratings_Predictions
             return Adjustments;
         }
 
-        public double GetOdds(Show s, double adjustment, bool raw = false, bool modified = false, int index = -1, int index2 = -1, int index3 = -1)
+        public double GetOdds(Show s, double[] averages, double adjustment, bool raw = false, bool modified = false, int index = -1, int index2 = -1, int index3 = -1)
         {
-            var threshold = modified ? GetModifiedThreshold(s, adjustment, index, index2, index3) : GetThreshold(s, adjustment);
+            var threshold = modified ? GetModifiedThreshold(s, averages, adjustment, index, index2, index3) : GetThreshold(s, averages, adjustment);
 
             var target = GetTargetRating(s.year, threshold);
             var variance = Math.Log(s.AverageRating) - Math.Log(target);
@@ -1479,7 +1501,8 @@ namespace TV_Ratings_Predictions
             int year = NetworkDatabase.MaxYear;
 
             
-            var Adjustments = GetAdjustments(parallel);            
+            var Adjustments = GetAdjustments(parallel);
+            var averages = shows.First().network.FactorAverages;
 
             var tempList = shows.Where(x => x.Renewed || x.Canceled).ToList();
 
@@ -1493,7 +1516,7 @@ namespace TV_Ratings_Predictions
                 Parallel.For(0, tempList.Count, i =>
                 {
                     Show s = tempList[i];
-                    double threshold = GetThreshold(s, Adjustments[s.year]);
+                    double threshold = GetThreshold(s, averages, Adjustments[s.year]);
                     int prediction = (s.ShowIndex > threshold) ? 1 : 0;
                     double distance = Math.Abs(s.ShowIndex - threshold);
 
@@ -1511,7 +1534,7 @@ namespace TV_Ratings_Predictions
 
                         if (s.Canceled)
                         {
-                            double odds = GetOdds(s, Adjustments[s.year], true);
+                            double odds = GetOdds(s, averages, Adjustments[s.year], true);
                             var tempScore = (1 - Math.Abs(odds - 0.55)) * 4 / 3;
 
                             score[i] = tempScore;
@@ -1559,7 +1582,7 @@ namespace TV_Ratings_Predictions
             {
                 foreach (Show s in tempList)
                 {
-                    double threshold = GetThreshold(s, Adjustments[s.year]);
+                    double threshold = GetThreshold(s, averages, Adjustments[s.year]);
                     int prediction = (s.ShowIndex > threshold) ? 1 : 0;
                     double distance = Math.Abs(s.ShowIndex - threshold);
 
@@ -1577,7 +1600,7 @@ namespace TV_Ratings_Predictions
 
                         if (s.Canceled)
                         {
-                            double odds = GetOdds(s, Adjustments[s.year], true);
+                            double odds = GetOdds(s, averages, Adjustments[s.year], true);
                             scores += (1 - Math.Abs(odds - 0.55)) * 4 / 3;
 
                             if (odds < 0.6 && odds > 0.4)
@@ -2143,7 +2166,7 @@ namespace TV_Ratings_Predictions
         public List<Show> shows;
         public NeuralPredictionModel model;
         public Dictionary<int, double> Adjustments;
-        public double[] RatingsAverages;
+        public double[] RatingsAverages, FactorAverages;
         public DateTime PredictionTime;
 
         public double[][] deviations;                                   
@@ -2160,6 +2183,7 @@ namespace TV_Ratings_Predictions
             model = n.model;
             Adjustments = model.GetAdjustments(true);
             RatingsAverages = n.ratingsAverages;
+            FactorAverages = n.FactorAverages;
 
             Parallel.ForEach(shows, s => s.UpdateAverage());
 
@@ -2168,7 +2192,7 @@ namespace TV_Ratings_Predictions
             //foreach (int i in yearlist)
             //    n.UpdateIndexes(i);
 
-            Parallel.ForEach(shows, s => s.PredictedOdds = model.GetOdds(s, Adjustments[s.year]));
+            Parallel.ForEach(shows, s => s.PredictedOdds = model.GetOdds(s, FactorAverages, Adjustments[s.year]));
 
             PredictionTime = DateTime.Now;
             deviations = n.deviations;
