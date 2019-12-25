@@ -1273,10 +1273,10 @@ namespace TV_Ratings_Predictions
                 SecondLayerOutputs = new double[NeuronCount];
 
             for (int i = 0; i < InputCount - 2; i++)
-                inputs[i] = s.factorValues[i] ? 1 : -1 - averages[i];
+                inputs[i] = (s.factorValues[i] ? 1 : -1) - averages[i];
 
-            inputs[InputCount - 2] = s.Episodes / 26.0 * 2 - 1 - averages[InputCount - 2];
-            inputs[InputCount - 1] = s.Halfhour ? 1 : -1 - averages[InputCount - 1];
+            inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 2];
+            inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 1];
 
             for (int i = 0; i < NeuronCount; i++)
                 FirstLayerOutputs[i] = FirstLayer[i].GetOutput(inputs);
@@ -1300,10 +1300,10 @@ namespace TV_Ratings_Predictions
             if (index > -1)
             {
                 for (int i = 0; i < InputCount - 2; i++)
-                    inputs[i] = s.factorValues[i] ? 1 : -1 - averages[i];
+                    inputs[i] = (s.factorValues[i] ? 1 : -1) - averages[i];
 
-                inputs[InputCount - 2] = s.Episodes / 26.0 * 2 - 1 - averages[InputCount - 2];
-                inputs[InputCount - 1] = s.Halfhour ? 1 : -1 - averages[InputCount - 1];
+                inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 2];
+                inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 1];
 
                 inputs[index] = 0;  //GetScaledAverage(s, index);
                 if (index2 > -1)
