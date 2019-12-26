@@ -1314,7 +1314,18 @@ namespace TV_Ratings_Predictions
             }
             else
             {
-                return Math.Pow(GetAverageThreshold(true), adjustment);
+                for (int i = 0; i < InputCount - 2; i++)
+                    inputs[i] = 0;
+
+                //for (int i = 0; i < NeuronCount; i++)
+                //    FirstLayerOutputs[i] = FirstLayer[i].GetOutput(inputs);
+
+                //for (int i = 0; i < NeuronCount; i++)
+                //    SecondLayerOutputs[i] = SecondLayer[i].GetOutput(FirstLayerOutputs);
+
+                //s._calculatedThreshold = Math.Pow((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, adjustment);
+
+                //return Math.Pow(GetAverageThreshold(true), adjustment);
 
                 //for (int i = 0; i < InputCount; i++)
                 //    inputs[i] = GetScaledAverage(s, i);
