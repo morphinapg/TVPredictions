@@ -1259,10 +1259,6 @@ namespace TV_Ratings_Predictions
 
         public double GetThreshold(Show s, double[] averages, double adjustment)
         {
-            //var averages = new double[InputCount];
-            //for (int i = 0; i < InputCount; i++)
-            //    averages[i] = GetScaledAverage(s, i);
-
             if (averages is null) averages = new double[InputCount];
 
             var inputs = new double[InputCount];
@@ -1311,14 +1307,7 @@ namespace TV_Ratings_Predictions
                     inputs[index2] = 0; // GetScaledAverage(s, index2);
                     if (index3 > -1) inputs[index3] = 0; // GetScaledAverage(s, index3);
                 }
-            }
-            //else
-            //{
-            //    for (int i = 0; i < InputCount - 2; i++)
-            //        inputs[i] = 0;
-
-            //    //return Math.Pow(GetAverageThreshold(true), adjustment);
-            //}          
+            }      
 
 
             for (int i = 0; i < NeuronCount; i++)
