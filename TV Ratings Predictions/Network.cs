@@ -1312,24 +1312,13 @@ namespace TV_Ratings_Predictions
                     if (index3 > -1) inputs[index3] = 0; // GetScaledAverage(s, index3);
                 }
             }
-            else
-            {
-                for (int i = 0; i < InputCount - 2; i++)
-                    inputs[i] = 0;
+            //else
+            //{
+            //    for (int i = 0; i < InputCount - 2; i++)
+            //        inputs[i] = 0;
 
-                //for (int i = 0; i < NeuronCount; i++)
-                //    FirstLayerOutputs[i] = FirstLayer[i].GetOutput(inputs);
-
-                //for (int i = 0; i < NeuronCount; i++)
-                //    SecondLayerOutputs[i] = SecondLayer[i].GetOutput(FirstLayerOutputs);
-
-                //s._calculatedThreshold = Math.Pow((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, adjustment);
-
-                //return Math.Pow(GetAverageThreshold(true), adjustment);
-
-                //for (int i = 0; i < InputCount; i++)
-                //    inputs[i] = GetScaledAverage(s, i);
-            }          
+            //    //return Math.Pow(GetAverageThreshold(true), adjustment);
+            //}          
 
 
             for (int i = 0; i < NeuronCount; i++)
@@ -1657,7 +1646,10 @@ namespace TV_Ratings_Predictions
 
         public double GetNetworkRatingsThreshold(int year, bool parallel)
         {
-            _ratingstheshold = GetTargetRating(year, GetAverageThreshold(parallel));
+            //_ratingstheshold = GetTargetRating(year, GetAverageThreshold(parallel));
+            var s = shows.First();
+            var Adjustment = GetAdjustments(parallel)[year];
+            _ratingstheshold = GetTargetRating(year, GetModifiedThreshold(s, s.network.FactorAverages, Adjustment, -1));
             return _ratingstheshold;
         }
 

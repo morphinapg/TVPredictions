@@ -71,6 +71,7 @@ namespace TV_Ratings_Predictions
         {
             var year = DateTime.Today.Month < 9 ? DateTime.Today.Year - 1 : DateTime.Today.Year;
             NetworkDatabase.MaxYear = year;
+            NetworkDatabase.CurrentYear = year;
 
             await NetworkDatabase.ReadSettings();
 
