@@ -66,7 +66,7 @@ namespace TV_Ratings_Predictions
                 foreach (double d in tempShow.ratings)
                     ratings.Add(d);
 
-                show = new Show(tempShow.Name, network, factors, tempShow.Episodes, tempShow.Halfhour, network.factors, tempShow.AverageRating, tempShow.ShowIndex, tempShow.RenewalStatus, tempShow.Renewed, tempShow.Canceled)
+                show = new Show(tempShow.Name, network, tempShow.Season, factors, tempShow.Episodes, tempShow.Halfhour, network.factors, tempShow.AverageRating, tempShow.ShowIndex, tempShow.RenewalStatus, tempShow.Renewed, tempShow.Canceled)
                 {
                     year = tempShow.year,
                     OldOdds = tempShow.OldOdds,
@@ -76,7 +76,7 @@ namespace TV_Ratings_Predictions
                     ratingsAverages = tempShow.ratingsAverages
                     
                 };
-                nochanges = new Show(tempShow.Name, network, factors, tempShow.Episodes, tempShow.Halfhour, network.factors, tempShow.AverageRating, tempShow.ShowIndex, tempShow.RenewalStatus, tempShow.Renewed, tempShow.Canceled)
+                nochanges = new Show(tempShow.Name, network, tempShow.Season, factors, tempShow.Episodes, tempShow.Halfhour, network.factors, tempShow.AverageRating, tempShow.ShowIndex, tempShow.RenewalStatus, tempShow.Renewed, tempShow.Canceled)
                 {
                     year = tempShow.year,
                     OldOdds = tempShow.OldOdds,
@@ -116,7 +116,7 @@ namespace TV_Ratings_Predictions
                         foreach (bool b in show.factorValues)
                             factors.Add(b);
 
-                        var newShow = new Show(show.Name, network, factors, show.Episodes, show.Halfhour, network.factors, show.AverageRating, show.ShowIndex, show.RenewalStatus, show.Renewed, show.Canceled)
+                        var newShow = new Show(show.Name, network, show.Season, factors, show.Episodes, show.Halfhour, network.factors, show.AverageRating, show.ShowIndex, show.RenewalStatus, show.Renewed, show.Canceled)
                         {
                             ratings = ratings,
                             year = show.year,
@@ -139,7 +139,7 @@ namespace TV_Ratings_Predictions
                         foreach (bool b in nochanges.factorValues)
                             factors.Add(b);
 
-                        var newShow = new Show(nochanges.Name, network, factors, nochanges.Episodes, nochanges.Halfhour, network.factors, nochanges.AverageRating, nochanges.ShowIndex, nochanges.RenewalStatus, nochanges.Renewed, nochanges.Canceled)
+                        var newShow = new Show(nochanges.Name, network, nochanges.Season, factors, nochanges.Episodes, nochanges.Halfhour, network.factors, nochanges.AverageRating, nochanges.ShowIndex, nochanges.RenewalStatus, nochanges.Renewed, nochanges.Canceled)
                         {
                             ratings = ratings,
                             year = nochanges.year,

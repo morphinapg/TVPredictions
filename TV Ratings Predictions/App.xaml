@@ -4,13 +4,21 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:TV_Ratings_Predictions">
     <Application.Resources>
-        <local:InverseBooleanConverter x:Key="BoolConverter"/>
-        <local:NullableBooleanToBooleanConverter x:Key="NullableBooleanToBooleanConverter"/>
-        <local:BooleanToVisibilityConverter x:Key="VisibilityConverter"/>
-        <local:DoubleToPercent x:Key="DoubleToPercent"/>
-        <local:DoubleToPercentUnrounded x:Key="DoubleToPercentUnrounded"/>
-        <local:LastUpdateConverter x:Key="LastUpdateConverter"/>
-        <local:NumberColor x:Key="NumberColor"/>
-        <local:StatusColor x:Key="StatusColor"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!-- Other merged dictionaries here -->
+            </ResourceDictionary.MergedDictionaries>
+            <!-- Other app resources here -->
+
+            <local:InverseBooleanConverter x:Key="BoolConverter"/>
+            <local:NullableBooleanToBooleanConverter x:Key="NullableBooleanToBooleanConverter"/>
+            <local:BooleanToVisibilityConverter x:Key="VisibilityConverter"/>
+            <local:DoubleToPercent x:Key="DoubleToPercent"/>
+            <local:DoubleToPercentUnrounded x:Key="DoubleToPercentUnrounded"/>
+            <local:LastUpdateConverter x:Key="LastUpdateConverter"/>
+            <local:NumberColor x:Key="NumberColor"/>
+            <local:StatusColor x:Key="StatusColor"/>
+        </ResourceDictionary>    
     </Application.Resources>
 </Application>

@@ -6,12 +6,22 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:WinUI="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
 
     <StackPanel>
         <TextBlock Text="Show Name:" FontSize="20" Margin="10,25,10,10"/>
         <TextBox x:Name="ShowName" Text="{x:Bind show.Name, Mode=TwoWay}" FontSize="22"/>
+        <Grid Margin="0,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Season #:" Margin="10,0" VerticalAlignment="Center"/>
+            <WinUI:NumberBox x:Name="SeasonNumber" Grid.Column="1" Value="{x:Bind show.Season, Mode=TwoWay}" Minimum="0" SpinButtonPlacementMode="Inline" SmallChange="1"/>
+        </Grid>
         <TextBlock Text="Number of Episodes:" Margin="10"/>
 
         <Grid>

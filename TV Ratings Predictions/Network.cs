@@ -655,7 +655,7 @@ namespace TV_Ratings_Predictions
             set
             {
                 _episodes = value;
-                OnPropertyChanged("episodes");
+                OnPropertyChanged("Episodes");
             }
         }
 
@@ -666,7 +666,18 @@ namespace TV_Ratings_Predictions
             set
             {
                 _halfhour = value;
-                OnPropertyChanged("halfhour");
+                OnPropertyChanged("Halfhour");
+            }
+        }
+
+        private int _season;
+        public int Season
+        {
+            get { return _season; }
+            set
+            {
+                _season = value;
+                OnPropertyChanged("Season");
             }
         }
 
@@ -695,7 +706,7 @@ namespace TV_Ratings_Predictions
             //NetworkDatabase.WriteSettings();
         }
 
-        public Show(string ShowName, Network n, ObservableCollection<bool> FactorList, int EpisodeCount, bool isHalfHour, ObservableCollection<string> names, double avg = 0, double index = 1, string status = "", bool ren = false, bool can = false)
+        public Show(string ShowName, Network n, int season, ObservableCollection<bool> FactorList, int EpisodeCount, bool isHalfHour, ObservableCollection<string> names, double avg = 0, double index = 1, string status = "", bool ren = false, bool can = false)
         {
             Name = ShowName;
             factorValues = FactorList;
@@ -713,6 +724,7 @@ namespace TV_Ratings_Predictions
             Canceled = can;
             network = n;
             ratingsAverages = new double[26];
+            Season = season;
         }
 
         public void UpdateAverage()

@@ -5,6 +5,7 @@
     xmlns:local="using:TV_Ratings_Predictions"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:WinUI="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Loaded="Page_Loaded">
 
@@ -28,6 +29,15 @@
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="Show Name:" FontSize="20" Margin="10,25,10,10"/>
                     <TextBox x:Name="ShowName" FontSize="22"/>
+                    <Grid Margin="5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Season #:" Margin="5,0" VerticalAlignment="Center"/>
+                        <WinUI:NumberBox x:Name="SeasonNumber" Grid.Column="1" Value="{x:Bind season, Mode=TwoWay}" Minimum="0" SpinButtonPlacementMode="Inline" SmallChange="1"/>
+                    </Grid>
                     <TextBlock Text="Number of Episodes:" Margin="10"/>
 
                     <Grid>

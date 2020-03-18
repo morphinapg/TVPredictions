@@ -27,6 +27,7 @@ namespace TV_Ratings_Predictions
         ObservableCollection<Factor> factors;
         bool halfhour = true;
         int episodes = 13;
+        int season = 1;
 
         public AddShow()
         {
@@ -64,7 +65,7 @@ namespace TV_Ratings_Predictions
 
             if (name!="" && notExist)
             {
-                network.shows.Add(new Show(name, network, settings, episodes, !halfhour, network.factors));
+                network.shows.Add(new Show(name, network, season, settings, episodes, !halfhour, network.factors));
                 ShowName.Text = "";
                 HalfHour.IsOn = true;
 
