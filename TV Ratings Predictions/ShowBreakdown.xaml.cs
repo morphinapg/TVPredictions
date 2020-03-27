@@ -384,6 +384,26 @@ namespace TV_Ratings_Predictions
 
             details.Add(new DetailsContainer(detailName, detailValue));
 
+            switch (s.Season % 10)
+            {
+                case 1:
+                    detailName = s.Season + "st Season";
+                    break;
+                case 2:
+                    detailName = s.Season + "nd Season";
+                    break;
+                case 3:
+                    detailName = s.Season + "rd Season";
+                    break;
+                default:
+                    detailName = s.Season + "th Season";
+                    break;
+            }
+
+            NewOdds = network.model.GetOdds(s, network.FactorAverages, Adjustments[s.year], false, true, s.factorNames.Count + 2);
+            detailValue = CurrentOdds - NewOdds;
+            details.Add(new DetailsContainer(detailName, detailValue));
+
             double change = 0;
             foreach (DetailsContainer d in details)
                 change += d.Value;
