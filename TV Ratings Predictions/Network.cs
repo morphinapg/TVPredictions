@@ -128,7 +128,6 @@ namespace TV_Ratings_Predictions
                 n.Predictions = new ObservableCollection<PredictionContainer>();
                 n.Averages = new ObservableCollection<AverageContainer>();
 
-                
                 //n.model = new NeuralPredictionModel(n, n.GetMidpoint());                               //This commented code is here if I ever need to test
                 //n.evolution = new EvolutionTree(n, n.GetMidpoint());                                   //changes to the predictions with a fresh model
 
@@ -225,11 +224,11 @@ namespace TV_Ratings_Predictions
 
         public double[] ratingsAverages;                                //Typically throughout a TV season, ratings will start out higher and fall throughout the season.
         public double[] FactorAverages;                                 //This array describes that pattern for the network, based on ratings data for all shows ever tracked on the network.
-
-
+        
         public double[][] deviations;                                   //The deviation arrays collect statistics on how much the current projected rating deviates from the final rating
         public double[] typicalDeviation;                               //as well as how the projected ratings vary week-to-week.
         public double TargetError;                                      //These statistics drive a Normal Distribution used to calculate odds
+        public double SeasonDeviation;
 
         public NeuralPredictionModel model;                             //A NeuralPredictionModel is a Neural Network used for predicting renewal or cancellation of a show.
 
@@ -533,6 +532,21 @@ namespace TV_Ratings_Predictions
 
             //Factor Averages
             FactorAverages = model.GetAverages(factors);
+
+            //Find Standard Deviation For Season #
+            var SeasonAverage = model.GetSeasonAverage(factors);
+            double weights = 0;
+            double totals = 0;
+
+            foreach (int i in yearlist)
+            {
+                var segment = tempList.Where(x => x.year == i);
+                var w = 1.0 / (NetworkDatabase.MaxYear - i + 1);
+                totals += segment.AsParallel().Select(x => Math.Pow(x.Season - SeasonAverage, 2)).Sum() * w;
+                weights += segment.Count() * w;
+            }
+
+            SeasonDeviation = Math.Sqrt(totals / weights);
         }
 
         void RefreshAverages()      //Updates the Averages collection with all of the ratings average data for every show in FilteredShows
@@ -1162,7 +1176,7 @@ namespace TV_Ratings_Predictions
             isMutated = false;
 
             InputCount = n.factors.Count + 2;
-            NeuronCount = Convert.ToInt32(Math.Round(InputCount * 2.0 / 3.0 + 1, 0));
+            NeuronCount = Convert.ToInt32(Math.Round((InputCount + 1) * 2.0 / 3.0 + 1, 0));
 
             FirstLayer = new Neuron[NeuronCount];
             SecondLayer = new Neuron[NeuronCount];
@@ -1187,7 +1201,7 @@ namespace TV_Ratings_Predictions
             isMutated = false;
 
             InputCount = n.factors.Count + 2;
-            NeuronCount = Convert.ToInt32(Math.Round(InputCount * 2.0 / 3.0 + 1, 0));
+            NeuronCount = Convert.ToInt32(Math.Round((InputCount + 1) * 2.0 / 3.0 + 1, 0));
 
             FirstLayer = new Neuron[NeuronCount];
             SecondLayer = new Neuron[NeuronCount];
@@ -1271,20 +1285,21 @@ namespace TV_Ratings_Predictions
 
         public double GetThreshold(Show s, double[] averages, double adjustment)
         {
-            if (averages is null) averages = new double[InputCount];
+            if (averages is null) averages = new double[InputCount + 1];
 
-            var inputs = new double[InputCount];
+            var inputs = new double[InputCount + 1];
             if (s.Renewed || s.Canceled) adjustment = 1;
 
             double[]
                 FirstLayerOutputs = new double[NeuronCount],
                 SecondLayerOutputs = new double[NeuronCount];
 
-            for (int i = 0; i < InputCount - 2; i++)
+            for (int i = 0; i < InputCount - 3; i++)
                 inputs[i] = (s.factorValues[i] ? 1 : -1) - averages[i];
 
-            inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 2];
-            inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 1];
+            inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 3];
+            inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 2];
+            inputs[InputCount] = (s.Season - averages[InputCount - 1]) / s.network.SeasonDeviation;
 
             for (int i = 0; i < NeuronCount; i++)
                 FirstLayerOutputs[i] = FirstLayer[i].GetOutput(inputs);
@@ -1292,14 +1307,16 @@ namespace TV_Ratings_Predictions
             for (int i = 0; i < NeuronCount; i++)
                 SecondLayerOutputs[i] = SecondLayer[i].GetOutput(FirstLayerOutputs);
 
-            s._calculatedThreshold = Math.Pow((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, adjustment);
+            s._calculatedThreshold = Math.Pow((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, adjustment);            
 
             return s._calculatedThreshold;
         }
 
         public double GetModifiedThreshold(Show s, double[] averages, double adjustment, int index, int index2 = -1, int index3 = -1)
         {
-            var inputs = new double[InputCount];
+            if (averages is null) averages = new double[InputCount + 1];
+
+            var inputs = new double[InputCount + 1];
             if (s.Renewed || s.Canceled) adjustment = 1;
             double[]
                 FirstLayerOutputs = new double[NeuronCount],
@@ -1307,11 +1324,12 @@ namespace TV_Ratings_Predictions
 
             if (index > -1)
             {
-                for (int i = 0; i < InputCount - 2; i++)
+                for (int i = 0; i < InputCount - 3; i++)
                     inputs[i] = (s.factorValues[i] ? 1 : -1) - averages[i];
 
                 inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 2];
                 inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 1];
+                inputs[InputCount] = (s.Season - averages[InputCount]) / s.network.SeasonDeviation;
 
                 inputs[index] = 0;  //GetScaledAverage(s, index);
                 if (index2 > -1)
@@ -1344,22 +1362,101 @@ namespace TV_Ratings_Predictions
                 double score;
                 var count = shows.Where(x => x.year == year).Count();
                 weight += w * count;
+
+                var RenewedShows = shows.Where(x => x.year == year && x.Renewed);
+                var CanceledShows = shows.Where(x => x.year == year && x.Canceled);
+                var NoStatus = shows.Where(x => x.year == year && !x.Renewed && !x.Canceled);
+
                 if (index < factors.Count)
-                    score = (shows.Where(x => x.year == year && x.factorValues[index]).Count() * 1.0 + shows.Where(x => x.year == year && !x.factorValues[index]).Count() * -1.0);
+                {
+                    var RenewedScore = (RenewedShows.Where(x => x.factorValues[index]).Count() * 1.0 + RenewedShows.Where(x => !x.factorValues[index]).Count() * -1.0);
+                    var CanceledScore = (CanceledShows.Where(x => x.factorValues[index]).Count() * 1.0 + CanceledShows.Where(x => !x.factorValues[index]).Count() * -1.0);
+                    var NoStatusScore = (NoStatus.Where(x => x.factorValues[index]).Count() * 1.0 + NoStatus.Where(x => !x.factorValues[index]).Count() * -1.0);
+
+                    if (RenewedShows.Count() > 0 && CanceledShows.Count() > 0)
+                    {
+                        RenewedScore /= RenewedShows.Count();
+                        CanceledScore /= CanceledShows.Count();
+                        var TrueAverage = (RenewedScore + CanceledScore) / 2;
+                        score = TrueAverage * (RenewedShows.Count() + CanceledShows.Count()) + NoStatusScore;
+                    }
+                    else
+                        score = RenewedScore + CanceledScore + NoStatusScore;
+                }                    
                 else if (index == factors.Count)
-                    score = shows.Where(x => x.year == year).Select(x => x.Episodes).Average() / 26 * 2 - 1;
+                {
+                    //score = shows.Where(x => x.year == year).Select(x => x.Episodes).Average() / 26 * 2 - 1;
+
+                    if (RenewedShows.Count() > 0 && CanceledShows.Count() > 0)
+                    {
+                        var RenewedScore = RenewedShows.Select(x => x.Episodes).Average() / 26 * 2 - 1;
+                        var CanceledScore = CanceledShows.Select(x => x.Episodes).Average() / 26 * 2 - 1;
+
+                        var TrueAverage = (RenewedScore + CanceledScore) / 2;
+
+                        var NoStatusScore = (NoStatus.Count() > 0) ? NoStatus.Select(x => x.Episodes).Average() / 26 * 2 - 1 : 0;
+
+                        score = TrueAverage * (RenewedShows.Count() + CanceledShows.Count()) + NoStatusScore * NoStatus.Count();
+                    }
+                    else
+                    {
+                        score = (count > 0) ? shows.Where(x => x.year == year).Select(x => x.Episodes).Average() / 26 * 2 - 1 : 0;
+                        score *= count;
+                    }
+                }                    
+                else if (index == factors.Count + 1)
+                {
+                    //score = shows.Where(x => x.year == year && x.Halfhour).Count() * 1.0 + shows.Where(x => x.year == year && !x.Halfhour).Count() * -1.0;
+                
+                    var RenewedScore = RenewedShows.Where(x => x.Halfhour).Count() * 1.0 + RenewedShows.Where(x => !x.Halfhour).Count() * -1.0;
+                    var CanceledScore = CanceledShows.Where(x => x.Halfhour).Count() * 1.0 + CanceledShows.Where(x => !x.Halfhour).Count() * -1.0;
+                    var NoStatusScore = NoStatus.Where(x => x.Halfhour).Count() * 1.0 + NoStatus.Where(x => !x.Halfhour).Count() * -1.0;
+
+                    if (RenewedShows.Count() > 0 && CanceledShows.Count() > 0)
+                    {
+                        RenewedScore /= RenewedShows.Count();
+                        CanceledScore /= CanceledShows.Count();
+                        var TrueAverage = (RenewedScore + CanceledScore) / 2;
+                        score = TrueAverage * (RenewedShows.Count() + CanceledShows.Count()) + NoStatusScore;
+                    }
+                    else
+                        score = RenewedScore + CanceledScore + NoStatusScore;               
+                }    
                 else
-                    score = shows.Where(x => x.year == year && x.Halfhour).Count() * 1.0 + shows.Where(x => x.year == year && !x.Halfhour).Count() * -1.0;
+                {
+                    if (RenewedShows.Count() > 0 && CanceledShows.Count() > 0)
+                    {
+                        var RenewedScore = RenewedShows.Select(x => x.Season).Average();
+                        var CanceledScore = CanceledShows.Select(x => x.Season).Average();
+
+                        var TrueAverage = (RenewedScore + CanceledScore) / 2;
+
+                        var NoStatusScore = (NoStatus.Count() > 0) ? NoStatus.Select(x => x.Season).Average() : 0;
+
+                        score = TrueAverage * (RenewedShows.Count() + CanceledShows.Count()) + NoStatusScore * NoStatus.Count();
+                    }
+                    else
+                    {
+                        score = (count > 0) ? shows.Where(x => x.year == year).Select(x => x.Season).Average() : 0;
+                        score *= count;
+                    }
+                }
+
                 total += score * w;
-            }
+            }           
 
             return total / weight;
         }
 
+        public double GetSeasonAverage(ObservableCollection<string> factors)
+        {
+            return GetScaledAverage(factors, InputCount);
+        }
+
         public double[] GetAverages(ObservableCollection<string> factors)
         {
-            var averages = new double[InputCount];
-            for (int i = 0; i < InputCount; i++)
+            var averages = new double[InputCount + 1];
+            for (int i = 0; i < InputCount + 1; i++)
                 averages[i] = GetScaledAverage(factors, i);
 
             return averages;
