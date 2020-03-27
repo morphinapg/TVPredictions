@@ -1317,7 +1317,7 @@ namespace TV_Ratings_Predictions
             if (averages is null) averages = new double[InputCount + 1];
 
             var inputs = new double[InputCount + 1];
-            if (s.Renewed || s.Canceled) adjustment = 1;
+            //if (s.Renewed || s.Canceled) adjustment = 1;
             double[]
                 FirstLayerOutputs = new double[NeuronCount],
                 SecondLayerOutputs = new double[NeuronCount];
