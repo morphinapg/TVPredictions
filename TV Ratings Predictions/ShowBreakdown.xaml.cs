@@ -389,21 +389,29 @@ namespace TV_Ratings_Predictions
 
             if (s.Season > 1)
             {
-                switch (s.Season % 10)
+                var hundredpart = s.Season / 100;
+                var remainder = s.Season - hundredpart * 100;
+                var tenpart = remainder / 10;
+                if (tenpart == 1)
+                    detailName = s.Season + "th Season";
+                else
                 {
-                    case 1:
-                        detailName = s.Season + "st Season";
-                        break;
-                    case 2:
-                        detailName = s.Season + "nd Season";
-                        break;
-                    case 3:
-                        detailName = s.Season + "rd Season";
-                        break;
-                    default:
-                        detailName = s.Season + "th Season";
-                        break;
-                }
+                    switch (s.Season % 10)
+                    {
+                        case 1:
+                            detailName = s.Season + "st Season";
+                            break;
+                        case 2:
+                            detailName = s.Season + "nd Season";
+                            break;
+                        case 3:
+                            detailName = s.Season + "rd Season";
+                            break;
+                        default:
+                            detailName = s.Season + "th Season";
+                            break;
+                    }
+                }                
 
                 NewOdds = network.model.GetOdds(s, network.FactorAverages, Adjustments[s.year], false, true, s.factorNames.Count + 2);
                 detailValue = CurrentOdds - NewOdds;
