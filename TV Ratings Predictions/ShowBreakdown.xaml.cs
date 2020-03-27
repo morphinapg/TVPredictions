@@ -609,7 +609,7 @@ namespace TV_Ratings_Predictions
                 bool IsOptimal = false;
                 var hashes = new List<long>();
 
-                var AlreadyProcessed = new bool[s.factorNames.Count + 2];
+                var AlreadyProcessed = new bool[s.factorNames.Count + 3];
                 while (!IsOptimal)
                 {
                     var Results = GenerateDetails(NewShow, Adjustments, true);
