@@ -1183,7 +1183,7 @@ namespace TV_Ratings_Predictions
 
             for (int i = 0; i < NeuronCount; i++)
             {
-                FirstLayer[i] = new Neuron(InputCount);
+                FirstLayer[i] = new Neuron(InputCount + 1);
                 SecondLayer[i] = new Neuron(NeuronCount);
             }
 
@@ -1208,7 +1208,7 @@ namespace TV_Ratings_Predictions
 
             for (int i = 0; i < NeuronCount; i++)
             {
-                FirstLayer[i] = new Neuron(InputCount, midpoint, true);
+                FirstLayer[i] = new Neuron(InputCount + 1, midpoint, true);
                 SecondLayer[i] = new Neuron(NeuronCount, midpoint, true);
             }
 
@@ -1294,12 +1294,12 @@ namespace TV_Ratings_Predictions
                 FirstLayerOutputs = new double[NeuronCount],
                 SecondLayerOutputs = new double[NeuronCount];
 
-            for (int i = 0; i < InputCount - 3; i++)
+            for (int i = 0; i < InputCount - 2; i++)
                 inputs[i] = (s.factorValues[i] ? 1 : -1) - averages[i];
 
-            inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 3];
-            inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 2];
-            inputs[InputCount] = (s.Season - averages[InputCount - 1]) / s.network.SeasonDeviation;
+            inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 2];
+            inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 1];
+            inputs[InputCount] = (s.Season - averages[InputCount]) / s.network.SeasonDeviation;
 
             for (int i = 0; i < NeuronCount; i++)
                 FirstLayerOutputs[i] = FirstLayer[i].GetOutput(inputs);
@@ -1324,7 +1324,7 @@ namespace TV_Ratings_Predictions
 
             if (index > -1)
             {
-                for (int i = 0; i < InputCount - 3; i++)
+                for (int i = 0; i < InputCount - 2; i++)
                     inputs[i] = (s.factorValues[i] ? 1 : -1) - averages[i];
 
                 inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 2];
