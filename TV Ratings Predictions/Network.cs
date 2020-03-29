@@ -2273,6 +2273,7 @@ namespace TV_Ratings_Predictions
         public double[][] deviations;                                   
         public double[] typicalDeviation;                               
         public double TargetError;
+        public double SeasonDeviation;
 
         public MiniNetwork(Network n)
         {
@@ -2299,6 +2300,7 @@ namespace TV_Ratings_Predictions
             deviations = n.deviations;
             typicalDeviation = n.typicalDeviation;
             TargetError = n.TargetError;
+            SeasonDeviation = n.SeasonDeviation;
         }
     }
 
