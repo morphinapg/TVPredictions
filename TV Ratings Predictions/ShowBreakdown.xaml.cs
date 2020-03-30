@@ -448,7 +448,7 @@ namespace TV_Ratings_Predictions
                     var show = list.First();
                     var c = list.Count();
                     counts[x] = c;
-                    totalOdds[x] = network.model.GetOdds(new Show(s.Name, s.network, s.Season, s.factorValues, s.Episodes, s.Halfhour, s.factorNames) { ShowIndex = s.ShowIndex, year = s.year, AverageRating = s.AverageRating }, network.FactorAverages, Adjustments[s.year]);
+                    totalOdds[x] = network.model.GetOdds(new Show { Name = s.Name, network = s.network, Season = s.Season, factorValues = s.factorValues, Episodes = s.Episodes, Halfhour = s.Halfhour, factorNames = s.factorNames, ShowIndex = s.ShowIndex, year = s.year, AverageRating = s.AverageRating, ratings = s.ratings, ratingsAverages = s.ratingsAverages }, network.FactorAverages, Adjustments[s.year]);
                 });
 
                 var bo = totalOdds.Sum() / counts.Sum();
