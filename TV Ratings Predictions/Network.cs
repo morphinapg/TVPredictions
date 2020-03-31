@@ -152,7 +152,6 @@ namespace TV_Ratings_Predictions
             foreach (Network n in settings.NetworkList)                                 //After all networks are restored and filtered, add them to the global database
                 NetworkList.Add(n);
 
-
             NetworkDatabase.SortNetworks();                                             //and sort by Network Average Renewal threshold
         }
 
@@ -718,6 +717,14 @@ namespace TV_Ratings_Predictions
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
             //NetworkDatabase.WriteSettings();
+        }
+
+        /// <summary>
+        /// Please declare properies manually
+        /// </summary>
+        public Show()
+        {
+
         }
 
         public Show(string ShowName, Network n, int season, ObservableCollection<bool> FactorList, int EpisodeCount, bool isHalfHour, ObservableCollection<string> names, double avg = 0, double index = 1, string status = "", bool ren = false, bool can = false)
