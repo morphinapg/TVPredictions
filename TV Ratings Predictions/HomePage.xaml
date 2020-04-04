@@ -12,7 +12,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="2*" MinHeight="300"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -25,7 +25,7 @@
         <TextBlock Text="Current Network Accuracy:" HorizontalAlignment="Center" Grid.Column="1" Margin="25" FontSize="20"/>
 
         
-        <controls:DataGrid x:Name="NetworkAccuracy" Grid.Row="1" Grid.Column="1" ItemsSource="{x:Bind NetworkList}" AutoGenerateColumns="False" FontFamily="Segoe UI" HeadersVisibility="None" Margin="10">
+        <controls:DataGrid x:Name="NetworkAccuracy" Grid.Row="1" Grid.Column="1" ItemsSource="{x:Bind NetworkList}" AutoGenerateColumns="False" FontFamily="Segoe UI" HeadersVisibility="None" Margin="10" VerticalAlignment="Center">
             <controls:DataGrid.Columns>
                 <controls:DataGridTemplateColumn Header="Network">
                     <controls:DataGridTemplateColumn.CellTemplate>
