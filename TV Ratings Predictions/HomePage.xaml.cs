@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -27,18 +28,39 @@ namespace TV_Ratings_Predictions
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class HomePage : Page
+    public sealed partial class HomePage : Page, INotifyPropertyChanged
     {
         //DispatcherTimer timer;
 
         ObservableCollection<Network> NetworkList;
         Thread[] EvolutionWork;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            //NetworkDatabase.WriteSettings();
+        }
+
+        string locks
+        {
+            get
+            {
+                return NetworkDatabase.Locks;
+            }
+        }
         
 
         public HomePage()
         {
             this.InitializeComponent();
             NetworkList = NetworkDatabase.NetworkList;
+            NetworkDatabase.LocksUpdated += NetworkDatabase_LocksUpdated;
+        }
+
+        private void NetworkDatabase_LocksUpdated(object sender, EventArgs e)
+        {
+            OnPropertyChanged("locks");
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -66,6 +88,8 @@ namespace TV_Ratings_Predictions
                 //n.shows.Sort();
                 //foreach (int i in yearlist)
                 //    n.UpdateIndexes(i);
+
+                NetworkDatabase.StartTime = DateTime.Now;
 
                 if (n.PredictionAccuracy != n.model.TestAccuracy() * 100)
                     n.ModelUpdate(n.model);

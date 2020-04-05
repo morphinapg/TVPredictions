@@ -36,12 +36,28 @@ namespace TV_Ratings_Predictions
         public static bool cancelEvolution = false;     //When true, this instructs the genetic algorithm threads to stop running
         public static bool EvolutionStarted = false;    //This lets the app know that the genetic algoritm has begun processing, for displaying the correct button on the home page.
         public static bool UseOdds = false;             //This is a togglable value that informs whether to use straight 0-100% odds for predictions, or use Renewed/Canceled with a confidence % instead.
+        public static DateTime StartTime;               //Defines the time when the "Start Evolution" button was pressed
+        private static string locks = "";
+        public static string Locks
+        {
+            get
+            {
+                return locks;
+            }
+            set
+            {
+                locks = value;
+                LocksUpdated?.Invoke(locks, new EventArgs());
+            }
+        }
+        public static event EventHandler LocksUpdated;
 
         [NonSerialized]
         public static int MaxYear;                      //This value represents the current TV season start year, and is used to restrict a DatePicker on the MainPage
                                                         //It is also used during the calculation of prediction accuracy, as TV shows closer to current airing get higher weight
 
-        static int _currentyear;                        //Stores the currently selected TV Season year
+        static int _currentyear;                        //Stores the currently selected TV Season year        
+
         public static int CurrentYear                   //When the current year changes, the database needs to update the filtered selection of shows for each network
         {
             get

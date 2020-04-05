@@ -46,8 +46,25 @@ namespace TV_Ratings_Predictions
         private void Timer_Tick(object sender, object e)
         {
             if (NetworkDatabase.onHomePage)
+            {
+                string locks = "";
                 foreach (Network n in NetworkDatabase.NetworkList)
+                {
                     n.OnPropertyChangedAsync("LastUpdate");
+
+                    if (NetworkDatabase.EvolutionStarted)
+                    {
+                        locks += n.name + ": ";
+                        if ((n._lastupdate < NetworkDatabase.StartTime && (DateTime.Now - NetworkDatabase.StartTime).TotalSeconds > 60) || (n._lastupdate > NetworkDatabase.StartTime && (DateTime.Now - n._lastupdate).TotalSeconds > 60))
+                            locks += "✔ ";
+                        else
+                            locks += "❌ ";
+                    }                    
+                }
+                NetworkDatabase.Locks = locks;
+            }
+                
+                    
 
             if (NetworkDatabase.pendingSave)
             {

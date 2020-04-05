@@ -63,6 +63,8 @@
 
         <TextBlock HorizontalAlignment="Center" Grid.Column="1" Grid.Row="1" x:Name="Message" Text="No networks are currently in the database. Please click the add button (+) to the left to add a network." TextWrapping="WrapWholeWords" TextAlignment="Justify" FontSize="18" Visibility="Collapsed" Margin="0,50,0,0"/>
 
+        <TextBlock x:Name="Locks" Text="{x:Bind locks, Mode=OneWay}" Grid.Row="2" VerticalAlignment="Bottom" Margin="25,10,10,10" TextWrapping="WrapWholeWords"/>
+
         <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center">
             <Button x:Name="StartEvolution" Content="▶ Start Evolution" Click="StartEvolution_Click" Margin="15"/>
             <Button x:Name="StopEvolution" Content="🛑 Stop Evolution" Visibility="Collapsed" Click="StopEvolution_Click" Margin="15"/>            
