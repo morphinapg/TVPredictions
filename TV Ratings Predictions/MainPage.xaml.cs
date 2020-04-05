@@ -54,7 +54,7 @@ namespace TV_Ratings_Predictions
 
                     if (NetworkDatabase.EvolutionStarted)
                     {
-                        locks += n.name + ": ";
+                        locks += "\r\n" + n.name + ": ";
                         if ((n._lastupdate < NetworkDatabase.StartTime && (DateTime.Now - NetworkDatabase.StartTime).TotalSeconds > 60) || (n._lastupdate > NetworkDatabase.StartTime && (DateTime.Now - n._lastupdate).TotalSeconds > 60))
                             locks += "✔ ";
                         else
