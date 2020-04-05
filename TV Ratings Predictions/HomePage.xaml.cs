@@ -81,6 +81,8 @@ namespace TV_Ratings_Predictions
 
         private void StartEvolution_Click(object sender, RoutedEventArgs e)
         {
+            NetworkDatabase.StartTime = DateTime.Now;
+
             foreach (Network n in NetworkList)
             {
                 //var yearlist = n.shows.Select(x => x.year).Distinct();
@@ -89,7 +91,7 @@ namespace TV_Ratings_Predictions
                 //foreach (int i in yearlist)
                 //    n.UpdateIndexes(i);
 
-                NetworkDatabase.StartTime = DateTime.Now;
+                n.PredictionLocked = false;                
 
                 if (n.PredictionAccuracy != n.model.TestAccuracy() * 100)
                     n.ModelUpdate(n.model);

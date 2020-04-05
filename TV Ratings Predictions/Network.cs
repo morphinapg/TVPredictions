@@ -258,6 +258,9 @@ namespace TV_Ratings_Predictions
                 
         public DateTime _lastupdate;                                    //This value represents the last time the prediction model was updated
 
+        [NonSerialized]
+        public bool PredictionLocked = false;
+
         public string LastUpdate                                        //Displaying the _lastupdate property as a string, for display on the Home Page
         {
             get
