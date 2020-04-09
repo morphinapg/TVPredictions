@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Toolkit.Uwp.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,6 +12,7 @@ using Windows.ApplicationModel.ExtendedExecution;
 using Windows.ApplicationModel.ExtendedExecution.Foreground;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.System.Threading;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -187,6 +189,16 @@ namespace TV_Ratings_Predictions
             result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
+                //Make a Backup of the current data
+                var helper = new LocalObjectStorageHelper();
+
+                if (await helper.FileExistsAsync("Settings"))           //If the Settings exists, read the settings and make a backup
+                {
+                    StorageFolder localFolder = ApplicationData.Current.LocalFolder;
+                    StorageFile newFile = await localFolder.GetFileAsync("Settings");
+                    _ = await newFile.CopyAsync(ApplicationData.Current.LocalFolder, "ExportedSettings", NameCollisionOption.ReplaceExisting);
+                }
+
                 await NetworkDatabase.WritePredictionsAsync();
 
                 Parallel.ForEach(NetworkList, n =>
