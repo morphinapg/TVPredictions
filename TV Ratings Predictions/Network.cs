@@ -602,11 +602,19 @@ namespace TV_Ratings_Predictions
             Parallel.ForEach(FilteredShows, s => s.PredictedOdds = model.GetOdds(s, FactorAverages, Adjustments[s.year]));
         }
 
-        public double AdjustAverage(int currentEpisode, int finalEpisode)   //This applies the typical ratings falloff values to the current weighted ratings average for a show
+        public double AdjustAverage(int currentEpisode, int finalEpisode, double currentDrop = -1)   //This applies the typical ratings falloff values to the current weighted ratings average for a show
         {                                                                   //The result is a prediction for where the show's weighted ratings average will be at the end of the season
             try                                                             //This allows for more of a fair comparison between shows at different points in their seasons
             {
-                return ratingsAverages[finalEpisode - 1] / ratingsAverages[currentEpisode - 1];
+                double ExpectedDrop = (currentDrop == -1 || currentEpisode == 1) ? 1 : ratingsAverages[currentEpisode - 1] / ratingsAverages[0];
+                double slope = (currentDrop == -1 || currentEpisode == 1) ? 1 : Math.Log10(currentDrop) / Math.Log10(ExpectedDrop);
+
+                if (currentEpisode == 2) slope = (slope + 1) / 2;
+
+                double PredictedDrop = Math.Log10(ratingsAverages[finalEpisode - 1] / ratingsAverages[currentEpisode - 1]);
+
+                //return ratingsAverages[finalEpisode - 1] / ratingsAverages[currentEpisode - 1];
+                return Math.Pow(10, PredictedDrop * slope);
             }
             catch
             {
@@ -769,7 +777,9 @@ namespace TV_Ratings_Predictions
 
         public void UpdateAverage()
         {
-            AverageRating = CalculateAverage(ratings.Count) * network.AdjustAverage(ratings.Count, Episodes);
+            double CalculatedAverage = CalculateAverage(ratings.Count),
+                CurrentDrop = (CalculatedAverage > 0) ? CalculatedAverage / ratings[0] : 1;
+            AverageRating = CalculatedAverage * network.AdjustAverage(ratings.Count, Episodes, CurrentDrop);
         }
 
         public void UpdateAllAverages(int start)
@@ -800,7 +810,8 @@ namespace TV_Ratings_Predictions
 
         public double CurrentAverage()
         {
-            return AverageRating / network.AdjustAverage(ratings.Count, Episodes);
+            //return AverageRating / network.AdjustAverage(ratings.Count, Episodes);
+            return CalculateAverage(ratings.Count);
         }
 
         public override string ToString()
