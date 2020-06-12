@@ -1636,7 +1636,7 @@ namespace TV_Ratings_Predictions
 
             //double weightAverage = Math.Max(average, 1 - average);
 
-            double scores = 0;
+            double errors = 0, scores = 0;
             double totals = 0;
             double weights = 0;
             int year = NetworkDatabase.MaxYear;
@@ -1647,13 +1647,14 @@ namespace TV_Ratings_Predictions
 
             var tempList = shows.Where(x => x.Renewed || x.Canceled).ToList();
 
-            double lowest = 1;
+            double lowest = 1, scorelow = 1;
 
             if (parallel)
             {
                 double[]
-                    t = new double[tempList.Count], 
-                    w = new double[tempList.Count], 
+                    t = new double[tempList.Count],
+                    w = new double[tempList.Count],
+                    error = new double[tempList.Count], 
                     score = new double[tempList.Count];
 
                 Parallel.For(0, tempList.Count, i =>
@@ -1676,7 +1677,7 @@ namespace TV_Ratings_Predictions
                             weight /= (odds < 0.6 && odds > 0.4) ? 4 : 2;
                         }
                         else if (accuracy == 0)
-                            score[i] = Math.Abs(odds - 0.5);
+                            error[i] = Math.Abs(odds - 0.5);
 
                         t[i] = accuracy * weight;
                         w[i] = weight;
@@ -1688,7 +1689,7 @@ namespace TV_Ratings_Predictions
 
                         weight /= year - s.year + 1;
                         if (accuracy == 0)
-                            score[i] = Math.Abs(odds - 0.5);
+                            error[i] = Math.Abs(odds - 0.5);
 
                         t[i] = accuracy * weight;
                         w[i] = weight;
@@ -1697,11 +1698,17 @@ namespace TV_Ratings_Predictions
 
                 Parallel.For(0, w.Length, i =>
                 {
+                    if (error[i] > 0) error[i] *= w[i];
                     if (score[i] > 0) score[i] *= w[i];
                 });
 
-                scores = score.Sum();
-                lowest = score.Where(x => x > 0).Min();
+                errors = error.Sum() + score.Sum();
+                var smallError = error.Where(x => x > 0);
+                var smallScore = score.Where(x => x > 0);
+                var errorMin = smallError.Count() > 0 ? smallError.Min() : 0;
+                var scoreMin = smallScore.Count() > 0 ? smallScore.Min() : 0;
+
+                lowest = Math.Max(errorMin, scoreMin);
                 totals = t.Sum();
                 weights = w.Sum();
 
@@ -1725,6 +1732,7 @@ namespace TV_Ratings_Predictions
                         if (s.Canceled)
                         {
                             var dif = Math.Abs(odds - 0.55);
+                            if (dif < scorelow) scorelow = dif;
 
                             weight /= (odds < 0.6 && odds > 0.4) ? 4 : 2;
 
@@ -1734,7 +1742,7 @@ namespace TV_Ratings_Predictions
                         {
                             var dif = Math.Abs(odds - 0.5);
                             if (dif < lowest) lowest = dif;
-                            scores += dif * weight;
+                            errors += dif * weight;
                         }
                             
 
@@ -1751,20 +1759,21 @@ namespace TV_Ratings_Predictions
                         {
                             var dif = Math.Abs(odds - 0.5);
                             if (dif < lowest) lowest = dif;
-                            scores += dif * weight;
+                            errors += dif * weight;
                         }
 
                         totals += accuracy * weight;
                         weights += weight;
                     }
                 }
-            }
 
-            
+                if (lowest == 1)
+                    lowest = (scorelow == 1) ? 0 : scorelow;
+            }            
 
             _accuracy = (weights == 0) ? 0.0 : (totals / weights);
-            _score = scores;
-            _error = lowest;      
+            _score = errors;
+            _error = lowest;
 
             return _accuracy;
         }
