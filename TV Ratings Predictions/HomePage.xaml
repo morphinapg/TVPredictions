@@ -39,14 +39,13 @@
                     <controls:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="local:Network">
                             <Grid>
+                                <ToolTipService.ToolTip>
+                                    <ToolTip>
+                                        <TextBlock Text="{x:Bind LowestError, Mode=OneWay}"/>
+                                    </ToolTip>
+                                </ToolTipService.ToolTip>
                                 <ProgressBar Maximum="100" Value="{x:Bind PredictionAccuracy, Mode=OneWay}" VerticalAlignment="Stretch" FontFamily="Segoe UI" Margin="5"/>
-                                <TextBlock Text="{x:Bind PredictionError, Mode=OneWay}" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0">
-                                    <ToolTipService.ToolTip>
-                                        <ToolTip>
-                                            <TextBlock Text="{x:Bind LowestError, Mode=OneWay}"/>
-                                        </ToolTip>
-                                    </ToolTipService.ToolTip>
-                                </TextBlock>
+                                <TextBlock Text="{x:Bind PredictionError, Mode=OneWay}" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0"/>
                             </Grid>                            
                         </DataTemplate>
                     </controls:DataGridTemplateColumn.CellTemplate>
