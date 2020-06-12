@@ -30,5 +30,6 @@
     <Capability Name="internetClient" />
     <rescap:Capability Name="extendedExecutionUnconstrained"/>
     <rescap:Capability Name="extendedBackgroundTaskTime"/>
+    <rescap:Capability Name="expandedResources"/>
   </Capabilities>
 </Package>

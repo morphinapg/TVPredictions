@@ -124,15 +124,34 @@ namespace TV_Ratings_Predictions
         {            
             Network n = (Network)param;
 
+            //int g = 0;
+            //var startTime = DateTime.Now;
+
             ExtendedExecutionForegroundSession newSession;
             while (!NetworkDatabase.cancelEvolution)
             {
+                //g++;
                 newSession = new ExtendedExecutionForegroundSession { Reason = ExtendedExecutionForegroundReason.Unconstrained };
                 await newSession.RequestExtensionAsync();
 
                 n.evolution.NextGeneration();              
 
                 newSession.Dispose();
+
+                //if (g == 100 && n.name == "CBS")
+                //{
+                //    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                //    {
+                //        ContentDialog dialog = new ContentDialog
+                //        {
+                //            PrimaryButtonText = "OK",
+                //            Content = "100 generations took " + (DateTime.Now - startTime).TotalMilliseconds + " ms"
+                //        };
+                //        ContentDialogResult result;
+                //        result = await dialog.ShowAsync();
+                //    });                    
+                //}
+
             }
         }
 

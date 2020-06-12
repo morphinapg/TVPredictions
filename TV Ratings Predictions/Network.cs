@@ -2164,6 +2164,7 @@ namespace TV_Ratings_Predictions
             }
 
             //Sort all 3 Branches from Highest to lowest
+            var AllTasks = new List<Task>();
 
             for (int i = 0; i < 30; i++)
             {
@@ -2174,10 +2175,16 @@ namespace TV_Ratings_Predictions
                 }
                 else
                 {
-                    Primary[i].TestAccuracy();
-                    Randomized[i].TestAccuracy();
+                    var tempi = i;
+
+                    AllTasks.Add(Task.Factory.StartNew(() => Primary[tempi].TestAccuracy()));
+                    AllTasks.Add(Task.Factory.StartNew(() => Randomized[tempi].TestAccuracy()));
+                    //Primary[i].TestAccuracy();
+                    //Randomized[i].TestAccuracy();
                 }
             }
+
+            Task.WaitAll(AllTasks.ToArray());
 
             Primary.Sort();
             Randomized.Sort();
