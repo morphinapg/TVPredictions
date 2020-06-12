@@ -1674,7 +1674,10 @@ namespace TV_Ratings_Predictions
                         if (s.Canceled)
                         {                            
                             score[i] = Math.Abs(odds - 0.55);
-                            weight /= (odds < 0.6 && odds > 0.4) ? 4 : 2;
+                            if ((odds < 0.4) || (odds > 0.5 && odds < 0.6))
+                                weight /= 2;
+                            else
+                                weight /= 4;
                         }
                         else if (accuracy == 0)
                             error[i] = Math.Abs(odds - 0.5);
@@ -1734,7 +1737,11 @@ namespace TV_Ratings_Predictions
                             var dif = Math.Abs(odds - 0.55);
                             if (dif > scorehigh) scorehigh = dif;
 
-                            weight /= (odds < 0.6 && odds > 0.4) ? 4 : 2;
+                            //weight /= (odds < 0.6 && odds > 0.4) ? 4 : 2;
+                            if ((odds < 0.4) || (odds > 0.5 && odds < 0.6))
+                                weight /= 2;
+                            else
+                                weight /= 4;
 
                             errors += dif * weight;
                         }
