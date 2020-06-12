@@ -1647,7 +1647,7 @@ namespace TV_Ratings_Predictions
 
             var tempList = shows.Where(x => x.Renewed || x.Canceled).ToList();
 
-            double lowest = 1, scorelow = 1;
+            double lowest = 1, scorehigh = 0;
 
             if (parallel)
             {
@@ -1706,9 +1706,9 @@ namespace TV_Ratings_Predictions
                 var smallError = error.Where(x => x > 0);
                 var smallScore = score.Where(x => x > 0);
                 var errorMin = smallError.Count() > 0 ? smallError.Min() : 0;
-                var scoreMin = smallScore.Count() > 0 ? smallScore.Min() : 0;
+                var scoreMax = smallScore.Count() > 0 ? smallScore.Max() : 0;
 
-                lowest = Math.Max(errorMin, scoreMin);
+                lowest = (errorMin > 0) ? errorMin : scoreMax;
                 totals = t.Sum();
                 weights = w.Sum();
 
@@ -1732,7 +1732,7 @@ namespace TV_Ratings_Predictions
                         if (s.Canceled)
                         {
                             var dif = Math.Abs(odds - 0.55);
-                            if (dif < scorelow) scorelow = dif;
+                            if (dif > scorehigh) scorehigh = dif;
 
                             weight /= (odds < 0.6 && odds > 0.4) ? 4 : 2;
 
@@ -1767,8 +1767,7 @@ namespace TV_Ratings_Predictions
                     }
                 }
 
-                if (lowest == 1)
-                    lowest = (scorelow == 1) ? 0 : scorelow;
+                if (lowest == 1) lowest = scorehigh;
             }            
 
             _accuracy = (weights == 0) ? 0.0 : (totals / weights);
@@ -2164,7 +2163,6 @@ namespace TV_Ratings_Predictions
             }
 
             //Sort all 3 Branches from Highest to lowest
-            var AllTasks = new List<Task>();
 
             for (int i = 0; i < 30; i++)
             {
@@ -2175,16 +2173,10 @@ namespace TV_Ratings_Predictions
                 }
                 else
                 {
-                    var tempi = i;
-
-                    AllTasks.Add(Task.Factory.StartNew(() => Primary[tempi].TestAccuracy()));
-                    AllTasks.Add(Task.Factory.StartNew(() => Randomized[tempi].TestAccuracy()));
-                    //Primary[i].TestAccuracy();
-                    //Randomized[i].TestAccuracy();
+                    Primary[i].TestAccuracy(true);
+                    Randomized[i].TestAccuracy(true);
                 }
             }
-
-            Task.WaitAll(AllTasks.ToArray());
 
             Primary.Sort();
             Randomized.Sort();
