@@ -1636,7 +1636,7 @@ namespace TV_Ratings_Predictions
 
             //double weightAverage = Math.Max(average, 1 - average);
 
-            double errors = 0, scores = 0;
+            double errors = 0;
             double totals = 0;
             double weights = 0;
             int year = NetworkDatabase.MaxYear;
@@ -1736,7 +1736,7 @@ namespace TV_Ratings_Predictions
 
                             weight /= (odds < 0.6 && odds > 0.4) ? 4 : 2;
 
-                            scores += dif * weight;
+                            errors += dif * weight;
                         }
                         else if (accuracy == 0)
                         {
