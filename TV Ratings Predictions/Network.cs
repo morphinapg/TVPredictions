@@ -2608,12 +2608,12 @@ namespace TV_Ratings_Predictions
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            return ((double)value).ToString("N1") + "%";
+            return ((double)value).ToString("N2") + "%";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            return ((double)value).ToString("N1") + "%";
+            return ((double)value).ToString("N2") + "%";
         }
     }
 
