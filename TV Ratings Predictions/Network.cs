@@ -248,7 +248,7 @@ namespace TV_Ratings_Predictions
         public NeuralPredictionModel model;                             //A NeuralPredictionModel is a Neural Network used for predicting renewal or cancellation of a show.
 
         [NonSerialized]
-        public double PredictionAccuracy;                               //A value used for storing the accuracy of the current model. This value is displayed on the Home Page.
+        public double PredictionAccuracy, PredictionError, LowestError; //A value used for storing the accuracy of the current model. This value is displayed on the Home Page.
 
         public EvolutionTree evolution;                                 //This object represents a Genetic Algorithm system used to search for better prediction models.
 
@@ -297,8 +297,12 @@ namespace TV_Ratings_Predictions
         public void ModelUpdate(NeuralPredictionModel m)    //Update the Prediction Model with the new model, and let the UI know changes have happened
         {
             model = new NeuralPredictionModel(m);                          
-            PredictionAccuracy = model.TestAccuracy() * 100;    
+            PredictionAccuracy = model.TestAccuracy() * 100;
+            PredictionError = model._score;
+            LowestError = model._error;
             OnPropertyChangedAsync("PredictionAccuracy");
+            OnPropertyChangedAsync("PredictionError");
+            OnPropertyChangedAsync("LowestError");
             _lastupdate = DateTime.Now;                         
             OnPropertyChangedAsync("LastUpdate");
 
@@ -596,6 +600,8 @@ namespace TV_Ratings_Predictions
         public void UpdateOdds(bool parallel = false)       //Calculate model accuracy, and then update the odds for every show in FilteredShows
         {
             PredictionAccuracy = model.TestAccuracy(parallel) * 100;
+            PredictionError = model._score;
+            LowestError = model._error;
 
             var Adjustments = model.GetAdjustments(parallel);
 
@@ -1201,7 +1207,7 @@ namespace TV_Ratings_Predictions
         public double mutationrate, mutationintensity, neuralintensity;
 
         [NonSerialized]
-        public double _accuracy, _ratingstheshold, _score;
+        public double _accuracy, _ratingstheshold, _score, _error;
 
         [NonSerialized]
         public bool isMutated;
@@ -1626,9 +1632,9 @@ namespace TV_Ratings_Predictions
 
         public double TestAccuracy(bool parallel = false)
         {
-            double average = GetAverageThreshold(parallel);
+            //double average = GetAverageThreshold(parallel);
 
-            double weightAverage = Math.Max(average, 1 - average);
+            //double weightAverage = Math.Max(average, 1 - average);
 
             double scores = 0;
             double totals = 0;
@@ -1640,6 +1646,8 @@ namespace TV_Ratings_Predictions
             var averages = shows.First().network.FactorAverages;
 
             var tempList = shows.Where(x => x.Renewed || x.Canceled).ToList();
+
+            double lowest = 1;
 
             if (parallel)
             {
@@ -1653,41 +1661,22 @@ namespace TV_Ratings_Predictions
                     Show s = tempList[i];
                     double threshold = GetThreshold(s, averages, Adjustments[s.year]);
                     int prediction = (s.ShowIndex > threshold) ? 1 : 0;
-                    double distance = Math.Abs(s.ShowIndex - threshold);
+                    double odds = GetOdds(s, averages, Adjustments[s.year], true);
 
                     if (s.Renewed)
                     {
                         int accuracy = (prediction == 1) ? 1 : 0;
-                        double weight;
+                        double weight = 1;
 
-                        if (accuracy == 1)
-                            weight = 1 - Math.Abs(average - s.ShowIndex) / weightAverage;
-                        else
-                            weight = (distance + weightAverage) / weightAverage;
-
-                        weight /= year - s.year + 1;
+                        weight /= year - s.year + 1;                        
 
                         if (s.Canceled)
-                        {
-                            double odds = GetOdds(s, averages, Adjustments[s.year], true);
-                            var tempScore = (1 - Math.Abs(odds - 0.55)) * 4 / 3;
-
-                            score[i] = tempScore;
-
-                            if (odds < 0.6 && odds > 0.4)
-                            {
-                                accuracy = 1;
-
-                                weight = 1 - Math.Abs(average - s.ShowIndex) / weightAverage;
-
-                                weight *= tempScore;
-
-                                if (prediction == 0)
-                                    weight /= 2;
-                            }
-                            else
-                                weight /= 2;
+                        {                            
+                            score[i] = Math.Abs(odds - 0.55);
+                            weight /= (odds < 0.6 && odds > 0.4) ? 4 : 2;
                         }
+                        else if (accuracy == 0)
+                            score[i] = Math.Abs(odds - 0.5);
 
                         t[i] = accuracy * weight;
                         w[i] = weight;
@@ -1695,23 +1684,28 @@ namespace TV_Ratings_Predictions
                     else if (s.Canceled)
                     {
                         int accuracy = (prediction == 0) ? 1 : 0;
-                        double weight;
-
-                        if (accuracy == 1)
-                            weight = 1 - Math.Abs(average - s.ShowIndex) / weightAverage;
-                        else
-                            weight = (distance + weightAverage) / weightAverage;
+                        double weight = 1;
 
                         weight /= year - s.year + 1;
+                        if (accuracy == 0)
+                            score[i] = Math.Abs(odds - 0.5);
 
                         t[i] = accuracy * weight;
                         w[i] = weight;
                     }
                 });
 
+                Parallel.For(0, w.Length, i =>
+                {
+                    if (score[i] > 0) score[i] *= w[i];
+                });
+
                 scores = score.Sum();
+                lowest = score.Where(x => x > 0).Min();
                 totals = t.Sum();
                 weights = w.Sum();
+
+                
             }
             else
             {
@@ -1719,38 +1713,30 @@ namespace TV_Ratings_Predictions
                 {
                     double threshold = GetThreshold(s, averages, Adjustments[s.year]);
                     int prediction = (s.ShowIndex > threshold) ? 1 : 0;
-                    double distance = Math.Abs(s.ShowIndex - threshold);
+                    double odds = GetOdds(s, averages, Adjustments[s.year], true);
 
                     if (s.Renewed)
                     {
                         int accuracy = (prediction == 1) ? 1 : 0;
-                        double weight;
+                        double weight = 1;
 
-                        if (accuracy == 1)
-                            weight = 1 - Math.Abs(average - s.ShowIndex) / weightAverage;
-                        else
-                            weight = (distance + weightAverage) / weightAverage;
-
-                        weight /= year - s.year + 1;
+                        weight /= year - s.year + 1;       
 
                         if (s.Canceled)
                         {
-                            double odds = GetOdds(s, averages, Adjustments[s.year], true);
-                            scores += (1 - Math.Abs(odds - 0.55)) * 4 / 3;
+                            var dif = Math.Abs(odds - 0.55);
 
-                            if (odds < 0.6 && odds > 0.4)
-                            {
-                                accuracy = 1;
-                                weight = 1 - Math.Abs(average - s.ShowIndex) / weightAverage;
-                                weight *= (1 - Math.Abs(odds - 0.55)) * 4 / 3;
+                            weight /= (odds < 0.6 && odds > 0.4) ? 4 : 2;
 
-                                if (prediction == 0)
-                                    weight /= 2;
-                            }
-                            else
-                                weight /= 2;
-
+                            scores += dif * weight;
                         }
+                        else if (accuracy == 0)
+                        {
+                            var dif = Math.Abs(odds - 0.5);
+                            if (dif < lowest) lowest = dif;
+                            scores += dif * weight;
+                        }
+                            
 
                         totals += accuracy * weight;
                         weights += weight;
@@ -1758,14 +1744,15 @@ namespace TV_Ratings_Predictions
                     else if (s.Canceled)
                     {
                         int accuracy = (prediction == 0) ? 1 : 0;
-                        double weight;
-
-                        if (accuracy == 1)
-                            weight = 1 - Math.Abs(average - s.ShowIndex) / weightAverage;
-                        else
-                            weight = (distance + weightAverage) / weightAverage;
+                        double weight = 1;
 
                         weight /= year - s.year + 1;
+                        if (accuracy == 0)
+                        {
+                            var dif = Math.Abs(odds - 0.5);
+                            if (dif < lowest) lowest = dif;
+                            scores += dif * weight;
+                        }
 
                         totals += accuracy * weight;
                         weights += weight;
@@ -1773,8 +1760,11 @@ namespace TV_Ratings_Predictions
                 }
             }
 
+            
+
             _accuracy = (weights == 0) ? 0.0 : (totals / weights);
             _score = scores;
+            _error = lowest;      
 
             return _accuracy;
         }
@@ -1983,7 +1973,7 @@ namespace TV_Ratings_Predictions
             if (thisAcc != otherAcc)
                 return otherAcc.CompareTo(thisAcc);
             else
-                return otherWeight.CompareTo(thisWeight);
+                return thisWeight.CompareTo(otherWeight);
         }
 
         public static NeuralPredictionModel operator +(NeuralPredictionModel x, NeuralPredictionModel y)
@@ -2048,7 +2038,7 @@ namespace TV_Ratings_Predictions
             {
                 if (x._accuracy == y._accuracy)
                 {
-                    if (x._score > y._score)
+                    if (x._score < y._score)
                         return true;
                     else
                         return false;
@@ -2066,7 +2056,7 @@ namespace TV_Ratings_Predictions
             {
                 if (x._accuracy == y._accuracy)
                 {
-                    if (x._score < y._score)
+                    if (x._score > y._score)
                         return true;
                     else
                         return false;
@@ -2584,9 +2574,7 @@ namespace TV_Ratings_Predictions
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            if (value is bool)
-                return (bool)value;
-            return false;
+            return value is bool isTrue ? isTrue : (object)false;
         }
     }
 
@@ -2598,12 +2586,12 @@ namespace TV_Ratings_Predictions
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            return (value is bool && (bool)value) ? Visibility.Visible : Visibility.Collapsed;
+            return (value is bool isTrue && isTrue) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            return value is Visibility && (Visibility)value == Visibility.Visible;
+            return value is Visibility isVisible && isVisible == Visibility.Visible;
         }
     }
 
@@ -2694,11 +2682,11 @@ namespace TV_Ratings_Predictions
         {
             int number;
 
-            if (value is double)
+            if (value is double statusValue)
             {
-                if (value == null || (double)value == 0)
+                if (value == null || statusValue == 0)
                     number = 0;
-                else if ((double)value > 0)
+                else if (statusValue > 0)
                     number = 1;
                 else
                     number = -1;

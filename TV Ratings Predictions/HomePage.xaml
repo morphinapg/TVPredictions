@@ -38,7 +38,16 @@
                 <controls:DataGridTemplateColumn Header="Current Accuracy" Width="*">
                     <controls:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="local:Network">
-                            <ProgressBar Maximum="100" Value="{x:Bind PredictionAccuracy, Mode=OneWay}" Grid.Column="1" VerticalAlignment="Stretch" FontFamily="Segoe UI" Margin="5"/>
+                            <Grid>
+                                <ProgressBar Maximum="100" Value="{x:Bind PredictionAccuracy, Mode=OneWay}" VerticalAlignment="Stretch" FontFamily="Segoe UI" Margin="5"/>
+                                <TextBlock Text="{x:Bind PredictionError, Mode=OneWay}" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip>
+                                            <TextBlock Text="{x:Bind LowestError, Mode=OneWay}"/>
+                                        </ToolTip>
+                                    </ToolTipService.ToolTip>
+                                </TextBlock>
+                            </Grid>                            
                         </DataTemplate>
                     </controls:DataGridTemplateColumn.CellTemplate>
                 </controls:DataGridTemplateColumn>
