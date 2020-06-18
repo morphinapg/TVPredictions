@@ -425,44 +425,7 @@ namespace TV_Ratings_Predictions
 
             double multiplier = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
 
-            if (multiplier < 0)
-            {
-                double shift = change != 0 ? (CurrentOdds - BaseOdds) - change : 1;
-                if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) shift = 0;
-                double oldEx = 1, exponent = 1, increment = (shift < 0) ? 0.0001 : -0.0001;
-
-                double oldChange = change;
-
-                bool found = false;
-
-                while (!found && shift != 0)
-                {
-                    //oldEx = newEx;
-                    change = 0;
-                    oldEx = exponent;
-                    exponent += increment;
-                    foreach (DetailsContainer d in details)
-                    {
-                        change += Math.Pow((d.Value + 1) / 2, exponent) * 2 - 1;
-                    }
-
-                    if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
-                    {
-                        found = true;
-                        exponent = oldEx;
-                    }
-                    else
-                        oldChange = change;
-
-                    //if (exponent == 0.01) found = true;
-                }
-
-                foreach (DetailsContainer d in details)
-                {
-                    d.Value = Math.Pow((d.Value + 1) / 2, exponent) * 2 - 1;
-                }
-            }
-            else
+            if (multiplier > 0)
             {
                 double shift = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
                 if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) shift = 0;
@@ -494,19 +457,58 @@ namespace TV_Ratings_Predictions
                     else
                         oldChange = change;
 
-                    //if (exponent == 0.01) found = true;
+                    if (exponent == 0.0001 || Math.Round(change, 4) == 0) found = true;
+                }
+
+                if (exponent > 0.0001)
+                    foreach (DetailsContainer d in details)
+                    {
+                        if (d.Value > 0)
+                            d.Value = Math.Pow(d.Value, exponent);
+                        else
+                            d.Value = -Math.Pow(-d.Value, exponent);
+                    }
+                else
+                    multiplier *= -1;
+            }
+
+            if (multiplier < 0)
+            {
+                double shift = change != 0 ? (CurrentOdds - BaseOdds) - change : 1;
+                if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) shift = 0;
+                double oldEx = 1, exponent = 1, increment = (shift < 0) ? 0.0001 : -0.0001;
+
+                double oldChange = change;
+
+                bool found = false;
+
+                while (!found && shift != 0)
+                {
+                    //oldEx = newEx;
+                    change = 0;
+                    oldEx = exponent;
+                    exponent += increment;
+                    foreach (DetailsContainer d in details)
+                    {
+                        change += Math.Pow((d.Value + 1) / 2, exponent) * 2 - 1;
+                    }
+
+                    if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
+                    {
+                        found = true;
+                        exponent = oldEx;
+                    }
+                    else
+                        oldChange = change;
+
+                    if (exponent == 0.0001) found = true;
                 }
 
                 foreach (DetailsContainer d in details)
                 {
-                    if (d.Value > 0)
-                        d.Value = Math.Pow(d.Value, exponent);
-                    else
-                        d.Value = -Math.Pow(-d.Value, exponent);
+                    d.Value = Math.Pow((d.Value + 1) / 2, exponent) * 2 - 1;
                 }
-            }
-
-            
+            }    
 
             change = 0;
             foreach (DetailsContainer d in details)
