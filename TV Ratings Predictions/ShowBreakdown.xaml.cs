@@ -423,40 +423,90 @@ namespace TV_Ratings_Predictions
             foreach (DetailsContainer d in details)
                 change += d.Value;
 
-            double shift = change != 0 ? (CurrentOdds - BaseOdds) - change : 1;
-            if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) shift = 0;
-            double oldEx = 1, exponent = 1, increment = (shift < 0) ? 0.0001 : -0.0001;
+            double multiplier = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
 
-            double oldChange = change;
-
-            bool found = false;
-
-            while (!found && shift != 0)
+            if (multiplier < 0)
             {
-                //oldEx = newEx;
-                change = 0;
-                oldEx = exponent;
-                exponent += increment;
+                double shift = change != 0 ? (CurrentOdds - BaseOdds) - change : 1;
+                if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) shift = 0;
+                double oldEx = 1, exponent = 1, increment = (shift < 0) ? 0.0001 : -0.0001;
+
+                double oldChange = change;
+
+                bool found = false;
+
+                while (!found && shift != 0)
+                {
+                    //oldEx = newEx;
+                    change = 0;
+                    oldEx = exponent;
+                    exponent += increment;
+                    foreach (DetailsContainer d in details)
+                    {
+                        change += Math.Pow((d.Value + 1) / 2, exponent) * 2 - 1;
+                    }
+
+                    if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
+                    {
+                        found = true;
+                        exponent = oldEx;
+                    }
+                    else
+                        oldChange = change;
+
+                    //if (exponent == 0.01) found = true;
+                }
+
                 foreach (DetailsContainer d in details)
                 {
-                    change += Math.Pow((d.Value+1)/2, exponent) * 2 - 1;
+                    d.Value = Math.Pow((d.Value + 1) / 2, exponent) * 2 - 1;
                 }
-
-                if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
-                {
-                    found = true;
-                    exponent = oldEx;
-                }
-                else
-                    oldChange = change;
-
-                //if (exponent == 0.01) found = true;
             }
-
-            foreach (DetailsContainer d in details)
+            else
             {
-                d.Value = Math.Pow((d.Value + 1) / 2, exponent) * 2 - 1;
+                double shift = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
+                if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) shift = 0;
+                double oldEx = 1, exponent = 1, increment = (shift < 1) ? 0.0001 : -0.0001;
+
+                double oldChange = change;
+
+                bool found = false;
+
+                while (!found && shift != 0)
+                {
+                    //oldEx = newEx;
+                    change = 0;
+                    oldEx = exponent;
+                    exponent += increment;
+                    foreach (DetailsContainer d in details)
+                    {
+                        if (d.Value > 0)
+                            change += Math.Pow(d.Value, exponent);
+                        else
+                            change -= Math.Pow(-d.Value, exponent);
+                    }
+
+                    if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
+                    {
+                        found = true;
+                        exponent = oldEx;
+                    }
+                    else
+                        oldChange = change;
+
+                    //if (exponent == 0.01) found = true;
+                }
+
+                foreach (DetailsContainer d in details)
+                {
+                    if (d.Value > 0)
+                        d.Value = Math.Pow(d.Value, exponent);
+                    else
+                        d.Value = -Math.Pow(-d.Value, exponent);
+                }
             }
+
+            
 
             change = 0;
             foreach (DetailsContainer d in details)
@@ -464,7 +514,7 @@ namespace TV_Ratings_Predictions
 
             if (change != 0 && change != (CurrentOdds - BaseOdds))
             {
-                double multiplier = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
+                multiplier = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
                 if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) multiplier = 0;
 
                 foreach (DetailsContainer d in details)
