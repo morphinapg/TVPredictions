@@ -433,6 +433,8 @@ namespace TV_Ratings_Predictions
 
                 long TrialCount = (long)(Math.Log(0.00005) / Math.Log(details.Select(x => Math.Abs(x.Value)).Max()) / 0.0001) + 1;
 
+                TrialCount = Math.Min(TrialCount, 1000000);
+
                 var Trials = new double[TrialCount];                
 
                 //bool found = false;
