@@ -429,49 +429,39 @@ namespace TV_Ratings_Predictions
             {
                 double shift = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
                 if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) shift = 0;
-                double oldEx = 1, exponent = 1, increment = (Math.Abs(shift) > 1) ? 0.0001 : -0.0001;
+                double exponent = 1, increment = (Math.Abs(shift) > 1) ? 0.0001 : -0.0001;
 
-                double oldChange = change;
+                long TrialCount = (long)(Math.Log(0.00005) / Math.Log(details.Select(x => Math.Abs(x.Value)).Max()) / 0.0001) + 1;
 
-                //check if increment assumption is wrong
+                var Trials = new double[TrialCount];                
+
+                //bool found = false;
+
+                Parallel.For(0, TrialCount, i =>
+                {
+                    double c = 0;
+                    double ex = i * 0.0001 + 0.0001;
+
+                    foreach (DetailsContainer d in details)
+                    {
+                        if (d.Value > 0)
+                            c += Math.Pow(d.Value, ex);
+                        else
+                            c -= Math.Pow(-d.Value, ex);
+                    }
+
+                    Trials[i] = Math.Abs(c - (CurrentOdds - BaseOdds));
+                });
+
+                exponent = Array.IndexOf(Trials, Trials.Min()) * 0.0001 + 0.0001;
+
                 change = 0;
                 foreach (DetailsContainer d in details)
                 {
                     if (d.Value > 0)
-                        change += Math.Pow(d.Value, exponent+increment);
+                        change += Math.Pow(d.Value, exponent);
                     else
-                        change -= Math.Pow(-d.Value, exponent+increment);
-                }
-
-                if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
-                    increment *= -1;
-
-                bool found = false;
-
-
-                while (!found && shift != 0)
-                {
-                    //oldEx = newEx;
-                    change = 0;
-                    oldEx = exponent;
-                    exponent += increment;
-                    foreach (DetailsContainer d in details)
-                    {
-                        if (d.Value > 0)
-                            change += Math.Pow(d.Value, exponent);
-                        else
-                            change -= Math.Pow(-d.Value, exponent);
-                    }
-
-                    if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
-                    {
-                        found = true;
-                        exponent = oldEx;
-                    }
-                    else
-                        oldChange = change;
-
-                    if (exponent == 0.0001 || Math.Round(change, 4) == 0) found = true;
+                        change -= Math.Pow(-d.Value, exponent);
                 }
 
                 if (exponent > 0.0001 && Math.Round(change,4) > 0)
