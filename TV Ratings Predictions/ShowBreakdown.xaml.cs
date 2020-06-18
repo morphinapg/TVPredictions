@@ -1,4 +1,5 @@
-﻿using Microsoft.Toolkit.Uwp.UI.Controls;
+﻿using MathNet.Numerics.Optimization;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -422,73 +423,15 @@ namespace TV_Ratings_Predictions
             foreach (DetailsContainer d in details)
                 change += d.Value;
 
-            double multiplier = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
-            if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) multiplier = 0;
-            bool BaseReverse = false;
-
-            if (change != 0 && change != (CurrentOdds - BaseOdds))
-            {
-                if (multiplier < 0)
-                {
-                    double ex = Math.Log(CurrentOdds) / Math.Log(BaseOdds);
-                    BaseOdds = Math.Pow(CurrentOdds, ex);
-                    multiplier = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
-                    BaseReverse = true;
-                }
-            }
-
-            if (BaseReverse)
-            {
-                var hashes = network.shows.Select(x => x.FactorHash).Distinct().ToList();
-                var totalOdds = new double[hashes.Count];
-                var counts = new int[hashes.Count];
-                Parallel.For(0, hashes.Count, x =>
-                {
-                    var list = network.shows.Where(y => y.FactorHash == hashes[x]);
-                    var show = list.First();
-                    var c = list.Count();
-                    counts[x] = c;
-                    totalOdds[x] = network.model.GetOdds(new Show { Name = s.Name, network = s.network, Season = s.Season, factorValues = s.factorValues, Episodes = s.Episodes, Halfhour = s.Halfhour, factorNames = s.factorNames, ShowIndex = s.ShowIndex, year = s.year, AverageRating = s.AverageRating, ratings = s.ratings, ratingsAverages = s.ratingsAverages }, network.FactorAverages, Adjustments[s.year]);
-                });
-
-                var bo = totalOdds.Sum() / counts.Sum();
-                if ((CurrentOdds - bo) / change > 0)
-                {
-                    BaseOdds = bo;
-                    BaseReverse = false;
-                }
-                else
-                {
-                    var o = CurrentOdds - change;
-                    if (o > 0 && o < 1)
-                    {
-                        BaseOdds = o;
-                        BaseReverse = false;
-                    }
-                }
-            }
-
-
-            multiplier = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
-            if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) multiplier = 0;
-            double oldEx = 1, exponent = 1, increment = (multiplier < 1) ? 0.01 : -0.01;
+            double shift = change != 0 ? (CurrentOdds - BaseOdds) - change : 1;
+            if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) shift = 0;
+            double oldEx = 1, exponent = 1, increment = (shift < 0) ? 0.0001 : -0.0001;
 
             double oldChange = change;
 
-            change = 0;
-            foreach (DetailsContainer d in details)
-            {
-                if (d.Value > 0)
-                    change += Math.Pow(d.Value, oldEx + increment);
-                else
-                    change -= Math.Pow(-d.Value, oldEx + increment);
-            }
-            if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
-                increment *= -1;
-
             bool found = false;
 
-            while (!found && multiplier != 0)
+            while (!found && shift != 0)
             {
                 //oldEx = newEx;
                 change = 0;
@@ -496,10 +439,7 @@ namespace TV_Ratings_Predictions
                 exponent += increment;
                 foreach (DetailsContainer d in details)
                 {
-                    if (d.Value > 0)
-                        change += Math.Pow(d.Value, exponent);
-                    else
-                        change -= Math.Pow(-d.Value, exponent);
+                    change += Math.Pow((d.Value+1)/2, exponent) * 2 - 1;
                 }
 
                 if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
@@ -510,15 +450,12 @@ namespace TV_Ratings_Predictions
                 else
                     oldChange = change;
 
-                if (exponent == 0.01) found = true;
+                //if (exponent == 0.01) found = true;
             }
 
             foreach (DetailsContainer d in details)
             {
-                if (d.Value > 0)
-                    d.Value = Math.Pow(d.Value, exponent);
-                else
-                    d.Value = -Math.Pow(-d.Value, exponent);
+                d.Value = Math.Pow((d.Value + 1) / 2, exponent) * 2 - 1;
             }
 
             change = 0;
@@ -527,7 +464,7 @@ namespace TV_Ratings_Predictions
 
             if (change != 0 && change != (CurrentOdds - BaseOdds))
             {
-                multiplier = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
+                double multiplier = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
                 if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) multiplier = 0;
 
                 foreach (DetailsContainer d in details)
