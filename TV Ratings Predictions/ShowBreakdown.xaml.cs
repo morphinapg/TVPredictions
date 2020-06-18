@@ -433,6 +433,19 @@ namespace TV_Ratings_Predictions
 
                 double oldChange = change;
 
+                //check if increment assumption is wrong
+                change = 0;
+                foreach (DetailsContainer d in details)
+                {
+                    if (d.Value > 0)
+                        change += Math.Pow(d.Value, exponent+increment);
+                    else
+                        change -= Math.Pow(-d.Value, exponent+increment);
+                }
+
+                if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
+                    increment *= -1;
+
                 bool found = false;
 
 
