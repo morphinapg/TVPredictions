@@ -1788,6 +1788,22 @@ namespace TV_Ratings_Predictions
         {
             //_ratingstheshold = GetTargetRating(year, GetAverageThreshold(parallel));
             var s = shows.First();
+
+            var YearList = shows.Where(x => x.ratings.Count > 0).Select(x => x.year).Distinct().ToList();
+            YearList.Sort();
+
+            if (!YearList.Contains(year))
+            {
+                if (YearList.Contains(year - 1))
+                    year--;
+                else if (YearList.Contains(year + 1))
+                    year++;
+                else if (YearList.Where(x => x < year).Count() > 0)
+                    year = YearList.Where(x => x < year).Last();
+                else
+                    year = YearList.Where(x => x > year).First();
+            }
+
             var Adjustment = GetAdjustments(parallel)[year];
             _ratingstheshold = GetTargetRating(year, GetModifiedThreshold(s, s.network.FactorAverages, Adjustment, -1));
             return _ratingstheshold;
