@@ -16,6 +16,7 @@ using Windows.UI;
 using Windows.Storage.Pickers;
 using System.Collections.Concurrent;
 using MathNet.Numerics.Distributions;
+using Windows.UI.Xaml.Media.Animation;
 
 namespace TV_Ratings_Predictions 
 {
@@ -1546,6 +1547,8 @@ namespace TV_Ratings_Predictions
         {
             double total = 0;
 
+            year = CheckYear(year);
+
             var tempList = shows.Where(x => x.year == year && x.ratings.Count > 0).ToList();
             var count = tempList.Count;
             var totals = new double[count];
@@ -1556,6 +1559,26 @@ namespace TV_Ratings_Predictions
             total = totals.Sum();
 
             return total / count;
+        }
+
+        private int CheckYear(int year)
+        {
+            var YearList = shows.Where(x => x.ratings.Count > 0).Select(x => x.year).Distinct().ToList();
+            YearList.Sort();
+
+            if (!YearList.Contains(year))
+            {
+                if (YearList.Contains(year - 1))
+                    year--;
+                else if (YearList.Contains(year + 1))
+                    year++;
+                else if (YearList.Where(x => x < year).Count() > 0)
+                    year = YearList.Where(x => x < year).Last();
+                else
+                    year = YearList.Where(x => x > year).First();
+            }
+
+            return year;
         }
 
         private double GetAdjustment(double NetworkAverage, double SeasonAverage)
@@ -1789,20 +1812,7 @@ namespace TV_Ratings_Predictions
             //_ratingstheshold = GetTargetRating(year, GetAverageThreshold(parallel));
             var s = shows.First();
 
-            var YearList = shows.Where(x => x.ratings.Count > 0).Select(x => x.year).Distinct().ToList();
-            YearList.Sort();
-
-            if (!YearList.Contains(year))
-            {
-                if (YearList.Contains(year - 1))
-                    year--;
-                else if (YearList.Contains(year + 1))
-                    year++;
-                else if (YearList.Where(x => x < year).Count() > 0)
-                    year = YearList.Where(x => x < year).Last();
-                else
-                    year = YearList.Where(x => x > year).First();
-            }
+            year = CheckYear(year);
 
             var Adjustment = GetAdjustments(parallel)[year];
             _ratingstheshold = GetTargetRating(year, GetModifiedThreshold(s, s.network.FactorAverages, Adjustment, -1));
@@ -1815,18 +1825,20 @@ namespace TV_Ratings_Predictions
             var tempShows = shows.Where(x => x.year == year && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
             if (tempShows.Count == 0)
             {
-                var yearList = shows.Where(x => x.ratings.Count > 0).Select(x => x.year).ToList();
-                yearList.Sort();
-                if (yearList.Contains(year - 1))
-                    year--;
-                else if (yearList.Contains(year + 1))
-                    year++;
-                else if (yearList.Where(x => x < year).Count() > 0)
-                    year = yearList.Where(x => x < year).Last();
-                else
-                    year = yearList.Where(x => x > year).First();
+                //var yearList = shows.Where(x => x.ratings.Count > 0).Select(x => x.year).ToList();
+                //yearList.Sort();
+                //if (yearList.Contains(year - 1))
+                //    year--;
+                //else if (yearList.Contains(year + 1))
+                //    year++;
+                //else if (yearList.Where(x => x < year).Count() > 0)
+                //    year = yearList.Where(x => x < year).Last();
+                //else
+                //    year = yearList.Where(x => x > year).First();
 
-                year = yearList.Last();
+                //year = yearList.Last();
+
+                year = CheckYear(year);
                 tempShows = shows.Where(x => x.year == year && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
             }
 
