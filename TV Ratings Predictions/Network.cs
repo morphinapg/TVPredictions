@@ -206,6 +206,18 @@ namespace TV_Ratings_Predictions
                     var serializer = new DataContractSerializer(typeof(List<MiniNetwork>));
                     serializer.WriteObject(stream, Networks);
                 }
+
+                Parallel.ForEach(NetworkList, n =>
+                {
+                    foreach (Show s in n.shows)
+                    {
+                        s.OldRating = s.AverageRating;
+                        s.OldOdds = s.PredictedOdds;
+
+                        if (s.RenewalStatus == "")
+                            s.FinalPrediction = s.OldOdds;
+                    }
+                });
             }
         }        
     }

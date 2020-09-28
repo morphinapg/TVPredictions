@@ -220,18 +220,7 @@ namespace TV_Ratings_Predictions
 
                 await NetworkDatabase.WritePredictionsAsync();
 
-                Parallel.ForEach(NetworkList, n =>
-                {
-                    foreach (Show s in n.shows)
-                    {
-
-                        s.OldRating = s.AverageRating;
-                        s.OldOdds = s.PredictedOdds;
-
-                        if (s.RenewalStatus == "")
-                            s.FinalPrediction = s.OldOdds;
-                    }
-                });
+                
 
                 NetworkDatabase.pendingSave = true;
             }
