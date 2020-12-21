@@ -623,7 +623,9 @@ namespace TV_Ratings_Predictions
 
         public double AdjustAverage(int currentEpisode, int finalEpisode, double currentDrop = -1)   //This applies the typical ratings falloff values to the current weighted ratings average for a show
         {                                                                   //The result is a prediction for where the show's weighted ratings average will be at the end of the season
-            try                                                             //This allows for more of a fair comparison between shows at different points in their seasons
+                                                                            //This allows for more of a fair comparison between shows at different points in their seasons            
+
+            try
             {
                 double ExpectedDrop = (currentDrop == -1 || currentEpisode == 1) ? 1 : ratingsAverages[currentEpisode - 1] / ratingsAverages[0];
                 double slope = (currentDrop == -1 || currentEpisode == 1) ? 1 : Math.Log10(currentDrop) / Math.Log10(ExpectedDrop);
