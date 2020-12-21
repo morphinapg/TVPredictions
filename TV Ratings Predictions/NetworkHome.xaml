@@ -41,6 +41,7 @@
 
                     <Button x:Name="AddShow" Content="Add Show" HorizontalAlignment="Center" Click="AddShow_Click" Margin="10"/>
                     <Button x:Name="EditRatings" Content="Edit Ratings" Margin="10" Click="EditRatings_Click"/>
+                    <Button x:Name="EditViewers" Content="Edit Viewers" Margin="10" Click="EditViewers_Click"/>
                     <Button x:Name="ModifyShows" Content="Modify Shows" Margin="10" Click="ModifyShows_Click"/>
                 </controls:WrapPanel>
             </Grid>            

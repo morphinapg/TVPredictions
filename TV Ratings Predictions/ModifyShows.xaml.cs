@@ -66,21 +66,23 @@ namespace TV_Ratings_Predictions
                 foreach (double d in tempShow.ratings)
                     ratings.Add(d);
 
-                show = new Show(tempShow.Name, network, tempShow.Season, factors, tempShow.Episodes, tempShow.Halfhour, network.factors, tempShow.AverageRating, tempShow.ShowIndex, tempShow.RenewalStatus, tempShow.Renewed, tempShow.Canceled)
+                show = new Show(tempShow.Name, network, tempShow.Season, factors, tempShow.Episodes, tempShow.Halfhour, network.factors, tempShow.AverageRating, tempShow.ShowIndex, tempShow.RenewalStatus, tempShow.Renewed, tempShow.Canceled, tempShow.AverageViewers)
                 {
                     year = tempShow.year,
                     OldOdds = tempShow.OldOdds,
                     OldRating = tempShow.OldRating,
+                    OldViewers = tempShow.OldViewers,
                     FinalPrediction = tempShow.FinalPrediction,
                     ShowIndex = tempShow.ShowIndex,
                     ratingsAverages = tempShow.ratingsAverages
                     
                 };
-                nochanges = new Show(tempShow.Name, network, tempShow.Season, factors, tempShow.Episodes, tempShow.Halfhour, network.factors, tempShow.AverageRating, tempShow.ShowIndex, tempShow.RenewalStatus, tempShow.Renewed, tempShow.Canceled)
+                nochanges = new Show(tempShow.Name, network, tempShow.Season, factors, tempShow.Episodes, tempShow.Halfhour, network.factors, tempShow.AverageRating, tempShow.ShowIndex, tempShow.RenewalStatus, tempShow.Renewed, tempShow.Canceled, tempShow.AverageViewers)
                 {
                     year = tempShow.year,
                     OldOdds = tempShow.OldOdds,
                     OldRating = tempShow.OldRating,
+                    OldViewers = tempShow.OldViewers,
                     FinalPrediction = tempShow.FinalPrediction,
                     ShowIndex = tempShow.ShowIndex,
                     ratingsAverages = tempShow.ratingsAverages
@@ -116,12 +118,13 @@ namespace TV_Ratings_Predictions
                         foreach (bool b in show.factorValues)
                             factors.Add(b);
 
-                        var newShow = new Show(show.Name, network, show.Season, factors, show.Episodes, show.Halfhour, network.factors, show.AverageRating, show.ShowIndex, show.RenewalStatus, show.Renewed, show.Canceled)
+                        var newShow = new Show(show.Name, network, show.Season, factors, show.Episodes, show.Halfhour, network.factors, show.AverageRating, show.ShowIndex, show.RenewalStatus, show.Renewed, show.Canceled, show.AverageViewers)
                         {
                             ratings = ratings,
                             year = show.year,
                             OldOdds = show.OldOdds,
                             OldRating = show.OldRating,
+                            OldViewers = show.OldViewers,
                             FinalPrediction = show.FinalPrediction,
                             ShowIndex = show.ShowIndex,
                             ratingsAverages = show.ratingsAverages
@@ -139,12 +142,13 @@ namespace TV_Ratings_Predictions
                         foreach (bool b in nochanges.factorValues)
                             factors.Add(b);
 
-                        var newShow = new Show(nochanges.Name, network, nochanges.Season, factors, nochanges.Episodes, nochanges.Halfhour, network.factors, nochanges.AverageRating, nochanges.ShowIndex, nochanges.RenewalStatus, nochanges.Renewed, nochanges.Canceled)
+                        var newShow = new Show(nochanges.Name, network, nochanges.Season, factors, nochanges.Episodes, nochanges.Halfhour, network.factors, nochanges.AverageRating, nochanges.ShowIndex, nochanges.RenewalStatus, nochanges.Renewed, nochanges.Canceled, nochanges.AverageViewers)
                         {
                             ratings = ratings,
                             year = nochanges.year,
                             OldOdds = nochanges.OldOdds,
                             OldRating = nochanges.OldRating,
+                            OldViewers = nochanges.OldViewers,
                             FinalPrediction = nochanges.FinalPrediction,
                             ShowIndex = nochanges.ShowIndex,
                             ratingsAverages = nochanges.ratingsAverages

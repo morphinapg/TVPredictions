@@ -333,6 +333,7 @@ namespace TV_Ratings_Predictions
                 var tShow = new Show(s.Name, network, s.Season, s.factorValues, i, s.Halfhour, s.factorNames)
                 {
                     AverageRating = s.AverageRating,
+                    AverageViewers = s.AverageViewers,
                     year = s.year,
                     ShowIndex = s.ShowIndex
                 };
@@ -630,7 +631,7 @@ namespace TV_Ratings_Predictions
                 var EpisodeCount = s.Episodes;
                 var Adjustments = network.model.GetAdjustments(true);
 
-                var NewShow = new Show(s.Name, network, s.Season, new ObservableCollection<bool>(Factors), EpisodeCount, HalfHour, s.factorNames) { ShowIndex = s.ShowIndex, year = s.year, AverageRating = s.AverageRating };
+                var NewShow = new Show(s.Name, network, s.Season, new ObservableCollection<bool>(Factors), EpisodeCount, HalfHour, s.factorNames) { ShowIndex = s.ShowIndex, year = s.year, AverageRating = s.AverageRating, AverageViewers = s.AverageViewers };
                 string TextResult = "Optimal factors for " + s.Name + "\r\n\r\n\r\n";
                 bool IsOptimal = false;
                 var hashes = new List<long>();
@@ -668,7 +669,7 @@ namespace TV_Ratings_Predictions
                         }
                     }
 
-                    var tempshow = new Show(s.Name, network, s.Season, new ObservableCollection<bool>(Factors), EpisodeCount, HalfHour, s.factorNames) { ShowIndex = s.ShowIndex, year = s.year, AverageRating = s.AverageRating };
+                    var tempshow = new Show(s.Name, network, s.Season, new ObservableCollection<bool>(Factors), EpisodeCount, HalfHour, s.factorNames) { ShowIndex = s.ShowIndex, year = s.year, AverageRating = s.AverageRating, AverageViewers = s.AverageViewers };
                     var hash = tempshow.FactorHash;
 
                     if (!IsOptimal && !hashes.Contains(hash))

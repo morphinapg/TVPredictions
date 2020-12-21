@@ -156,6 +156,9 @@
     <Compile Include="EditRatings.xaml.cs">
       <DependentUpon>EditRatings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="EditViewers.xaml.cs">
+      <DependentUpon>EditViewers.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="HomePage.xaml.cs">
       <DependentUpon>HomePage.xaml</DependentUpon>
@@ -272,6 +275,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="EditRatings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EditViewers.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

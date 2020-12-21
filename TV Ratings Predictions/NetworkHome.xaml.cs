@@ -200,5 +200,11 @@ namespace TV_Ratings_Predictions
             NetworkDatabase.canGoBack = true;
             Frame.Navigate(typeof(DeleteFactor), network, new DrillInNavigationTransitionInfo());
         }
+
+        private void EditViewers_Click(object sender, RoutedEventArgs e)
+        {
+            NetworkDatabase.canGoBack = true;
+            Frame.Navigate(typeof(EditViewers), network, new DrillInNavigationTransitionInfo());
+        }
     }
 }

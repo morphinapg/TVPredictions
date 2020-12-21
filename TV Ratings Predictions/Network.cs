@@ -141,6 +141,7 @@ namespace TV_Ratings_Predictions
             {
                 n.FilteredShows = new ObservableCollection<Show>();                     
                 n.NetworkRatings = new ObservableCollection<RatingsContainer>();
+                n.NetworkViewers = new ObservableCollection<RatingsContainer>();
                 n.AlphabeticalShows = new ObservableCollection<Show>();
                 n.Predictions = new ObservableCollection<PredictionContainer>();
                 n.Averages = new ObservableCollection<AverageContainer>();
@@ -212,6 +213,7 @@ namespace TV_Ratings_Predictions
                     foreach (Show s in n.shows)
                     {
                         s.OldRating = s.AverageRating;
+                        s.OldViewers = s.AverageViewers;
                         s.OldOdds = s.PredictedOdds;
 
                         if (s.RenewalStatus == "")
@@ -241,6 +243,9 @@ namespace TV_Ratings_Predictions
         [NonSerialized]
         public ObservableCollection<RatingsContainer> NetworkRatings;   //A RatingsContainer includes all of the episode ratings for a season of a show
                                                                         //This collection includes a RatingsContainer for every Show in AlphabeticalShows
+
+        [NonSerialized]
+        public ObservableCollection<RatingsContainer> NetworkViewers;
 
         [NonSerialized]
         public ObservableCollection<PredictionContainer> Predictions;   //A PredictionContainer contains all of the information needed to display predictions for a Show
@@ -328,7 +333,8 @@ namespace TV_Ratings_Predictions
             factors = f;
             shows = new List<Show>();
             FilteredShows = new ObservableCollection<Show>();
-            NetworkRatings = new ObservableCollection<RatingsContainer>();            
+            NetworkRatings = new ObservableCollection<RatingsContainer>();
+            NetworkViewers = new ObservableCollection<RatingsContainer>();
             AlphabeticalShows = new ObservableCollection<Show>();
             Predictions = new ObservableCollection<PredictionContainer>();
             Averages = new ObservableCollection<AverageContainer>();
@@ -350,6 +356,7 @@ namespace TV_Ratings_Predictions
         {                                                   
             FilteredShows.Clear();
             NetworkRatings.Clear();
+            NetworkViewers.Clear();
             AlphabeticalShows.Clear();
             
             foreach (Show s in CustomFilter(year))          //Filter shows by year and sort by Average Rating
@@ -365,6 +372,7 @@ namespace TV_Ratings_Predictions
             {
                 AlphabeticalShows.Add(s);
                 NetworkRatings.Add(new RatingsContainer(this, s));
+                NetworkViewers.Add(new RatingsContainer(this, s, true));
             }
         }
 
@@ -621,7 +629,7 @@ namespace TV_Ratings_Predictions
             Parallel.ForEach(FilteredShows, s => s.PredictedOdds = model.GetOdds(s, FactorAverages, Adjustments[s.year]));
         }
 
-        public double AdjustAverage(int currentEpisode, int finalEpisode, double currentDrop = -1)   //This applies the typical ratings falloff values to the current weighted ratings average for a show
+        public double AdjustAverage(int currentEpisode, int finalEpisode, double currentDrop = -1, bool viewers = false)   //This applies the typical ratings falloff values to the current weighted ratings average for a show
         {                                                                   //The result is a prediction for where the show's weighted ratings average will be at the end of the season
                                                                             //This allows for more of a fair comparison between shows at different points in their seasons            
 
@@ -703,9 +711,9 @@ namespace TV_Ratings_Predictions
         [NonSerialized]
         public ObservableCollection<string> factorNames;
         public int year;
-        public List<double> ratings;
-        public double AverageRating, ShowIndex, PredictedOdds;
-        public double OldRating, OldOdds, FinalPrediction;
+        public List<double> ratings, viewers;
+        public double AverageRating, ShowIndex, PredictedOdds, AverageViewers;
+        public double OldRating, OldOdds, FinalPrediction, OldViewers;
         public string RenewalStatus;
         public bool Renewed, Canceled;
 
@@ -775,7 +783,7 @@ namespace TV_Ratings_Predictions
 
         }
 
-        public Show(string ShowName, Network n, int season, ObservableCollection<bool> FactorList, int EpisodeCount, bool isHalfHour, ObservableCollection<string> names, double avg = 0, double index = 1, string status = "", bool ren = false, bool can = false)
+        public Show(string ShowName, Network n, int season, ObservableCollection<bool> FactorList, int EpisodeCount, bool isHalfHour, ObservableCollection<string> names, double avgR = 0, double index = 1, string status = "", bool ren = false, bool can = false, double avgV = 0)
         {
             Name = ShowName;
             factorValues = FactorList;
@@ -784,7 +792,8 @@ namespace TV_Ratings_Predictions
             year = NetworkDatabase.CurrentYear;
             ratings = new List<double>();
             factorNames = names;
-            AverageRating = avg;
+            AverageRating = avgR;
+            AverageViewers = avgV;
             ShowIndex = index;
             Renewed = false;
             Canceled = false;
@@ -801,6 +810,10 @@ namespace TV_Ratings_Predictions
             double CalculatedAverage = CalculateAverage(ratings.Count),
                 CurrentDrop = (CalculatedAverage > 0) ? CalculatedAverage / ratings[0] : 1;
             AverageRating = CalculatedAverage * network.AdjustAverage(ratings.Count, Episodes, CurrentDrop);
+
+            CalculatedAverage = CalculateAverage(viewers.Count, true);
+            CurrentDrop = (CalculatedAverage > 0) ? CalculatedAverage / viewers[0] : 1;
+            AverageViewers = CalculatedAverage * network.AdjustAverage(viewers.Count, Episodes, CurrentDrop, true);
         }
 
         public void UpdateAllAverages(int start)
@@ -808,31 +821,39 @@ namespace TV_Ratings_Predictions
             Parallel.For(start, 26, i => ratingsAverages[i] = CalculateAverage(i + 1));
         }
 
-        public double CalculateAverage(int EpisodeNumber)
+        public double CalculateAverage(int EpisodeNumber, bool view = false)
         {
             double
                 total = 0,
                 weights = 0;
 
-            for (int i = 0; i < Math.Min(EpisodeNumber, ratings.Count); i++)
-            {
-                double w = Math.Pow(i + 1, 2);
+            if (view)
+                for (int i = 0; i < Math.Min(EpisodeNumber, viewers.Count); i++)
+                {
+                    double w = Math.Pow(i + 1, 2);
 
-                total += ratings[i] * w;
-                weights += w;
-            }
+                    total += viewers[i] * w;
+                    weights += w;
+                }
+            else
+                for (int i = 0; i < Math.Min(EpisodeNumber, ratings.Count); i++)
+                {
+                    double w = Math.Pow(i + 1, 2);
+
+                    total += ratings[i] * w;
+                    weights += w;
+                }
 
             if (ratings.Count > Episodes) Episodes = ratings.Count;
-
             
 
             return (weights > 0 ? total / weights : 0);
         }
 
-        public double CurrentAverage()
+        public double CurrentAverage(bool Viewers = false)
         {
             //return AverageRating / network.AdjustAverage(ratings.Count, Episodes);
-            return CalculateAverage(ratings.Count);
+            return CalculateAverage(ratings.Count, Viewers);
         }
 
         public override string ToString()
@@ -883,11 +904,11 @@ namespace TV_Ratings_Predictions
 
         private RatingsContainer() { }
 
-        public RatingsContainer(Network n, Show s)
+        public RatingsContainer(Network n, Show s, bool Viewers = false)
         {
             network = n;
 
-            Ratings = s.ratings;
+            Ratings = Viewers ? s.viewers : s.ratings;
 
             ShowName = s.Name;
 
@@ -956,11 +977,28 @@ namespace TV_Ratings_Predictions
             }
         }
 
+        double _viewers;
+        public string Viewers
+        {
+            get
+            {
+                return (show.viewers.Count > 0) ? Math.Round(_viewers, 2).ToString("F2") : "";
+            }
+        }
+
         public double RatingsDiff
         {
             get
             {
                 return (show.OldRating == 0) ? 0 : Math.Round(_rating - show.OldRating, 2);
+            }
+        }
+
+        public double ViewersDiff
+        {
+            get
+            {
+                return (show.OldViewers == 0) ? 0 : Math.Round(_viewers - show.OldViewers, 2);
             }
         }
 
@@ -1032,9 +1070,9 @@ namespace TV_Ratings_Predictions
             get
             {
                 if (NetworkDatabase.UseOdds)
-                    return (show.OldRating == 0 && show.OldOdds == 0) ? 0 : Math.Round(odds - show.OldOdds, 2);
+                    return (show.OldRating == 0 && show.OldOdds == 0 && show.OldViewers == 0) ? 0 : Math.Round(odds - show.OldOdds, 2);
                 else
-                    return (show.OldRating == 0 && show.OldOdds == 0) ? 0 : Math.Round((odds - show.OldOdds) * 2, 2);
+                    return (show.OldRating == 0 && show.OldOdds == 0 && show.OldViewers == 0) ? 0 : Math.Round((odds - show.OldOdds) * 2, 2);
             }
         }
 
@@ -1055,7 +1093,7 @@ namespace TV_Ratings_Predictions
         {
             get
             {
-                if (show.OldRating == 0 && show.OldOdds == 0)
+                if (show.OldRating == 0 && show.OldOdds == 0 && show.OldViewers == 0)
                     return "(NEW)";
                 else
                     return "";
@@ -1106,6 +1144,7 @@ namespace TV_Ratings_Predictions
             Show = s.Name;
             odds = s.PredictedOdds;
             _rating = s.AverageRating;
+            _viewers = s.AverageViewers;
             Status = s.RenewalStatus;
 
             var Adjustments = n.model.GetAdjustments(true);
