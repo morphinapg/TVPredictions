@@ -27,7 +27,7 @@ namespace TV_Ratings_Predictions
         public ObservableCollection<Show> shows;
         private Show show;
         private Show nochanges;
-        List<double> ratings;
+        List<double> ratings, viewers;
         bool itemSelected;
 
         public ModifyShows()
@@ -65,6 +65,10 @@ namespace TV_Ratings_Predictions
                 ratings = new List<double>();
                 foreach (double d in tempShow.ratings)
                     ratings.Add(d);
+
+                viewers = new List<double>();
+                foreach (double d in tempShow.viewers)
+                    viewers.Add(d);
 
                 show = new Show(tempShow.Name, network, tempShow.Season, factors, tempShow.Episodes, tempShow.Halfhour, network.factors, tempShow.AverageRating, tempShow.ShowIndex, tempShow.RenewalStatus, tempShow.Renewed, tempShow.Canceled, tempShow.AverageViewers)
                 {
@@ -121,6 +125,7 @@ namespace TV_Ratings_Predictions
                         var newShow = new Show(show.Name, network, show.Season, factors, show.Episodes, show.Halfhour, network.factors, show.AverageRating, show.ShowIndex, show.RenewalStatus, show.Renewed, show.Canceled, show.AverageViewers)
                         {
                             ratings = ratings,
+                            viewers = viewers,
                             year = show.year,
                             OldOdds = show.OldOdds,
                             OldRating = show.OldRating,
@@ -145,6 +150,7 @@ namespace TV_Ratings_Predictions
                         var newShow = new Show(nochanges.Name, network, nochanges.Season, factors, nochanges.Episodes, nochanges.Halfhour, network.factors, nochanges.AverageRating, nochanges.ShowIndex, nochanges.RenewalStatus, nochanges.Renewed, nochanges.Canceled, nochanges.AverageViewers)
                         {
                             ratings = ratings,
+                            viewers = viewers,
                             year = nochanges.year,
                             OldOdds = nochanges.OldOdds,
                             OldRating = nochanges.OldRating,

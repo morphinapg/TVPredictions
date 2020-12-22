@@ -44,7 +44,7 @@ namespace TV_Ratings_Predictions
             //NetworkDatabase.WriteSettings();
         }
 
-        string locks
+        string LocksList
         {
             get
             {
