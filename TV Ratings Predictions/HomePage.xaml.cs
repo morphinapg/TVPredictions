@@ -62,7 +62,7 @@ namespace TV_Ratings_Predictions
 
         private void NetworkDatabase_LocksUpdated(object sender, EventArgs e)
         {
-            OnPropertyChanged("locks");
+            OnPropertyChanged("LocksList");
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
