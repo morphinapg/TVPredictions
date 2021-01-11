@@ -154,6 +154,7 @@ namespace TV_Ratings_Predictions
                 {
                     s.factorNames = n.factors;
                     s.network = n;
+                    //if (s.viewers is null) s.viewers = new List<double>();
                 });
 
                 n.evolution.network = n;
@@ -791,6 +792,7 @@ namespace TV_Ratings_Predictions
             _halfhour = isHalfHour;
             year = NetworkDatabase.CurrentYear;
             ratings = new List<double>();
+            viewers = new List<double>();
             factorNames = names;
             AverageRating = avgR;
             AverageViewers = avgV;
