@@ -81,6 +81,25 @@
             <Button x:Name="Export" Content="💾 Export and Save Predictions" Click="Export_Click" Margin="15"/>
         </StackPanel>
 
-        <HyperlinkButton x:Name="AllShows" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10,10,25,10" Click="AllShows_Click">All Shows by Rating</HyperlinkButton>
+        <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="5,5,20,5">
+            <Button x:Name="SummerAlert" Background="Yellow" Padding="5" Visibility="Collapsed" Click="SummerAlert_Click">
+                <Button.Flyout>
+                    <Flyout>
+                        <ListView x:Name="SummerList"/>
+                    </Flyout>                    
+                </Button.Flyout>
+                Possible Summer Shows
+            </Button>
+            <Button x:Name="SummerAlert2" Background="Yellow" Padding="5" Visibility="Collapsed">
+                <Button.Flyout>
+                    <Flyout>
+                        <ListView x:Name="SummerList2"/>
+                    </Flyout>
+                </Button.Flyout>
+                Shows Possibly Marked Incorrectly for Summer
+            </Button>
+            <HyperlinkButton x:Name="AllShows" Click="AllShows_Click" Padding="5">All Shows by Rating</HyperlinkButton>
+        </StackPanel>
+        
     </Grid>
 </Page>

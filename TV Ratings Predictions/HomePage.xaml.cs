@@ -74,6 +74,39 @@ namespace TV_Ratings_Predictions
 
             StartEvolution.Visibility = NetworkDatabase.EvolutionStarted ? Visibility.Collapsed : Visibility.Visible;
             StopEvolution.Visibility = NetworkDatabase.EvolutionStarted ? Visibility.Visible : Visibility.Collapsed;
+
+            //Check if Summer shows
+            var date = DateTime.Now;
+            if (date.Month < 6)
+            {
+                var weeks = (new DateTime(date.Year, 6, 1) - date).TotalDays / 7;
+
+                var Possibles = NetworkDatabase.NetworkList.AsParallel().SelectMany(x => x.shows).Where(x => x.factorNames.Contains("Summer") && x.year == NetworkDatabase.MaxYear && (x.Episodes - x.ratings.Count) > weeks && !x.factorValues[x.factorNames.IndexOf("Summer")]).Select(x => x.Name).ToList();
+                var Impossibles = NetworkDatabase.NetworkList.AsParallel().SelectMany(x => x.shows).Where(x => x.factorNames.Contains("Summer") && x.year == NetworkDatabase.MaxYear && (x.Episodes - x.ratings.Count) < weeks && x.factorValues[x.factorNames.IndexOf("Summer")]).Select(x => x.Name).ToList();
+
+                if (Possibles.Count > 0)
+                {
+                    Possibles.Sort();
+                    SummerList.ItemsSource = Possibles;
+                    SummerAlert.Visibility = Visibility.Visible;
+                }
+                else
+                    SummerAlert.Visibility = Visibility.Collapsed;
+
+                if (Impossibles.Count > 0)
+                {
+                    Impossibles.Sort();
+                    SummerList2.ItemsSource = Impossibles;
+                    SummerAlert2.Visibility = Visibility.Visible;
+                }
+                else
+                    SummerAlert2.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                SummerAlert.Visibility = Visibility.Collapsed;
+                SummerAlert2.Visibility = Visibility.Collapsed;
+            }                
         }
 
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
@@ -229,6 +262,11 @@ namespace TV_Ratings_Predictions
         private void AllShows_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(AllShowsByRating));
+        }
+
+        private void SummerAlert_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
