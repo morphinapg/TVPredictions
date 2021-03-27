@@ -102,6 +102,19 @@ namespace TV_Ratings_Predictions
                 else
                     SummerAlert2.Visibility = Visibility.Collapsed;
             }
+            else if (date.Month < 9)
+            {
+                var Possibles = NetworkDatabase.NetworkList.AsParallel().SelectMany(x => x.shows).Where(x => x.factorNames.Contains("Summer") && x.year == NetworkDatabase.MaxYear && (x.Episodes - x.ratings.Count) > 0 && !x.factorValues[x.factorNames.IndexOf("Summer")]).Select(x => x.Name).ToList();
+
+                if (Possibles.Count > 0)
+                {
+                    Possibles.Sort();
+                    SummerList.ItemsSource = Possibles;
+                    SummerAlert.Visibility = Visibility.Visible;
+                }
+                else
+                    SummerAlert.Visibility = Visibility.Collapsed;
+            }
             else
             {
                 SummerAlert.Visibility = Visibility.Collapsed;
