@@ -1384,10 +1384,11 @@ namespace TV_Ratings_Predictions
 
         public double GetThreshold(Show s, double[] averages, double adjustment)
         {
+            if (s.year < NetworkDatabase.MaxYear) adjustment = 1;
+
             if (averages is null) averages = new double[InputCount + 1];
 
             var inputs = new double[InputCount + 1];
-            if (s.Renewed || s.Canceled) adjustment = 1;
 
             double[]
                 FirstLayerOutputs = new double[NeuronCount],
@@ -1413,10 +1414,11 @@ namespace TV_Ratings_Predictions
 
         public double GetModifiedThreshold(Show s, double[] averages, double adjustment, int index, int index2 = -1, int index3 = -1)
         {
+            if (s.year < NetworkDatabase.MaxYear) adjustment = 1;
+
             if (averages is null) averages = new double[InputCount + 1];
 
             var inputs = new double[InputCount + 1];
-            //if (s.Renewed || s.Canceled) adjustment = 1;
             double[]
                 FirstLayerOutputs = new double[NeuronCount],
                 SecondLayerOutputs = new double[NeuronCount];
