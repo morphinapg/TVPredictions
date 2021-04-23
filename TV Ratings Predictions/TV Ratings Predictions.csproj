@@ -150,6 +150,8 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="AverageContainer.cs" />
+    <Compile Include="Converters.cs" />
     <Compile Include="DeleteFactor.xaml.cs">
       <DependentUpon>DeleteFactor.xaml</DependentUpon>
     </Compile>
@@ -159,6 +161,8 @@
     <Compile Include="EditViewers.xaml.cs">
       <DependentUpon>EditViewers.xaml</DependentUpon>
     </Compile>
+    <Compile Include="EvolutionTree.cs" />
+    <Compile Include="Factor.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="HomePage.xaml.cs">
       <DependentUpon>HomePage.xaml</DependentUpon>
@@ -166,6 +170,7 @@
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MiniNetwork.cs" />
     <Compile Include="ModifyShows.xaml.cs">
       <DependentUpon>ModifyShows.xaml</DependentUpon>
     </Compile>
@@ -173,10 +178,16 @@
     <Compile Include="NetworkAccuracy.xaml.cs">
       <DependentUpon>NetworkAccuracy.xaml</DependentUpon>
     </Compile>
+    <Compile Include="NetworkDatabase.cs" />
     <Compile Include="NetworkHome.xaml.cs">
       <DependentUpon>NetworkHome.xaml</DependentUpon>
     </Compile>
+    <Compile Include="NeuralPredictionModel.cs" />
+    <Compile Include="Neuron.cs" />
+    <Compile Include="PredictionContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RatingsContainer.cs" />
+    <Compile Include="Show.cs" />
     <Compile Include="ShowBreakdown.xaml.cs">
       <DependentUpon>ShowBreakdown.xaml</DependentUpon>
     </Compile>
