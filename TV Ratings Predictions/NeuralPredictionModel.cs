@@ -169,6 +169,21 @@ namespace TV_Ratings_Predictions
             return s._calculatedThreshold;
         }
 
+        public double GetModifiedThreshold(double[] inputs, double adjustment)
+        {
+            double[]
+                FirstLayerOutputs = new double[NeuronCount],
+                SecondLayerOutputs = new double[NeuronCount];
+
+            for (int i = 0; i < NeuronCount; i++)
+                FirstLayerOutputs[i] = FirstLayer[i].GetOutput(inputs);
+
+            for (int i = 0; i < NeuronCount; i++)
+                SecondLayerOutputs[i] = SecondLayer[i].GetOutput(FirstLayerOutputs);
+
+            return Math.Pow((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, adjustment);
+        }
+
         public double GetModifiedThreshold(Show s, double[] averages, double adjustment, int index, int index2 = -1, int index3 = -1)
         {
             if (s.year < NetworkDatabase.MaxYear) adjustment = 1;
@@ -409,6 +424,62 @@ namespace TV_Ratings_Predictions
                 Adjustments[y] = GetAdjustment(average, GetSeasonAverageThreshold(y));
 
             return Adjustments;
+        }
+
+        public double GetModifiedOdds(Show s, double[] ModifiedFactors, double adjustment, bool raw = false)
+        {
+            var threshold = GetModifiedThreshold(ModifiedFactors, adjustment);
+
+            var target = GetTargetRating(s.year, threshold);
+            var variance = Math.Log(s.AverageRating) - Math.Log(target);
+            double deviation;
+
+            //calculate standard deviation
+            if (s.ratings.Count > 1)
+            {
+                var count = s.ratings.Count - 1;
+                double ProjectionVariance = 0;
+                for (int i = 0; i < count; i++)
+                {
+                    ProjectionVariance += Math.Pow(Math.Log(s.ratingsAverages[i] * s.network.AdjustAverage(i + 1, s.Episodes)) - Math.Log(s.AverageRating * s.network.AdjustAverage(count + 1, s.Episodes)), 2);
+                }
+
+                deviation = s.network.deviations[s.ratings.Count - 1][s.Episodes - 1] * Math.Sqrt(ProjectionVariance / count) / s.network.typicalDeviation[s.ratings.Count - 1];
+
+            }
+            else
+            {
+                deviation = s.network.deviations[0][s.Episodes - 1];
+            }
+
+            deviation += s.network.TargetError;
+
+            var zscore = variance / deviation;
+
+            var normal = new Normal();
+
+            var baseOdds = normal.CumulativeDistribution(zscore);
+
+            //var exponent = Math.Log(0.5) / Math.Log(threshold);
+            //var baseOdds = Math.Pow(s.ShowIndex, exponent);
+
+            if (raw)
+                return baseOdds;
+
+            var accuracy = _accuracy;
+
+            if (baseOdds > 0.5)
+            {
+                baseOdds -= 0.5;
+                baseOdds *= 2;
+                return (baseOdds * accuracy) / 2 + 0.5;
+            }
+            else
+            {
+                baseOdds *= 2;
+                baseOdds = 1 - baseOdds;
+                return (1 - (baseOdds * accuracy)) / 2;
+            }
         }
 
         public double GetOdds(Show s, double[] averages, double adjustment, bool raw = false, bool modified = false, int index = -1, int index2 = -1, int index3 = -1)

@@ -53,6 +53,450 @@ namespace TV_Ratings_Predictions
             NetworkDatabase.canGoBack = false;
         }
 
+        DetailsCombo GenerateDetails(Show s, Dictionary<int, double> Adjustments, int[] FactorOrder, bool AllFactors = false) //Generate Factor details, but change the order of the search
+        {
+            //Needed: Code needs to start with a blank slate of average factor values, and one by one, modify that to the actual values, following the order given by FactorOrder
+
+            var details = new List<DetailsContainer>();
+
+            bool SyndicationFinished = false, OwnedFinished = false, PremiereFinished = false, SummerFinished = false, SeasonFinished = false;
+            string detailName;
+
+            double CurrentOdds = network.model.GetOdds(s, network.FactorAverages, Adjustments[s.year]), NewOdds, detailValue;
+
+            var tempList = network.shows.OrderBy(x => x.Episodes).ToList();
+            int LowestEpisode = tempList.First().Episodes, HighestEpisode = tempList.Last().Episodes;
+
+            var BaseOdds = network.model.GetOdds(s, network.FactorAverages, Adjustments[s.year], false, true, -1);
+            var FactorCount = network.factors.Count;
+
+
+            var CurrentFactors = new double[FactorCount + 3];
+            for (int i = 0; i < FactorCount + 2; i++)
+                CurrentFactors[i] = network.FactorAverages[i];
+
+
+            foreach (int i in FactorOrder)
+            {
+                //Need code to handle episode # and half hour here before other factors
+
+                if (i == FactorCount + 2 || (i < FactorCount && network.factors[i] == "New Show")) //Season #
+                {
+                    if (!SeasonFinished)
+                    {
+                        CurrentFactors[i] = (s.Season - network.FactorAverages[i]) / network.SeasonDeviation;
+
+                        bool NewShow = false;
+                        var NewShowIndex = network.factors.IndexOf("New Show");
+                        if (NewShowIndex > -1) NewShow = s.factorValues[NewShowIndex];
+                        if (NewShow) CurrentFactors[NewShowIndex] = 1 - network.FactorAverages[NewShowIndex];
+
+                        var hundredpart = s.Season / 100;
+                        var remainder = s.Season - hundredpart * 100;
+                        var tenpart = remainder / 10;
+                        if (tenpart == 1)
+                            detailName = s.Season + "th Season";
+                        else
+                        {
+                            switch (s.Season % 10)
+                            {
+                                case 1:
+                                    detailName = s.Season + "st Season";
+                                    break;
+                                case 2:
+                                    detailName = s.Season + "nd Season";
+                                    break;
+                                case 3:
+                                    detailName = s.Season + "rd Season";
+                                    break;
+                                default:
+                                    detailName = s.Season + "th Season";
+                                    break;
+                            }
+                        }
+
+                        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+
+                        detailValue = CurrentOdds - NewOdds;
+
+                        details.Add(new DetailsContainer(detailName, detailValue));
+
+                        SeasonFinished = true;
+                    }
+                }
+                else if (i == FactorCount) //Episode Count
+                {
+                    detailName = s.Episodes + " Episodes Ordered";
+
+                    CurrentFactors[i] = s.Episodes / 26.0 * 2 - 1 - network.FactorAverages[i];
+
+                    NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+
+                    detailValue = CurrentOdds - NewOdds;
+
+                    details.Add(new DetailsContainer(detailName, detailValue));
+                }
+                else if (i == FactorCount+1) //Half Hour
+                {
+                    detailName = s.Halfhour ? "Half Hour Show" : "Hour Long Show";
+
+                    CurrentFactors[i] = s.Halfhour ? 1 : -1 - network.FactorAverages[i];
+
+                    NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+
+                    detailValue = CurrentOdds - NewOdds;
+
+                    details.Add(new DetailsContainer(detailName, detailValue));
+                }
+                else if ((network.factors[i] == "Syndication" || network.factors[i] == "Post-Syndication") && !AllFactors)
+                {
+                    if (!SyndicationFinished)
+                    {
+                        bool Syndication = false;
+                        bool PostSyndication = false;
+                        int SyndicationIndex = network.factors.IndexOf("Syndication"), PostIndex = network.factors.IndexOf("Post-Syndication");
+
+                        if (SyndicationIndex > -1)
+                        { 
+                            Syndication = s.factorValues[SyndicationIndex];
+                            CurrentFactors[SyndicationIndex] = Syndication ? 1 : -1 - network.FactorAverages[SyndicationIndex];
+                        }
+                        if (PostIndex > -1) 
+                        { 
+                            PostSyndication = s.factorValues[PostIndex];
+                            CurrentFactors[PostIndex] = PostSyndication ? 1 : -1 - network.FactorAverages[PostIndex];
+                        }
+
+
+                        if (Syndication)
+                            detailName = "Will be syndicated next season";
+                        else if (PostSyndication)
+                            detailName = "Has already been syndicated";
+                        else
+                            detailName = "Not syndicated yet";
+
+                        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+
+                        detailValue = CurrentOdds - NewOdds;
+
+                        details.Add(new DetailsContainer(detailName, detailValue));
+
+                        SyndicationFinished = true;
+                    }
+                }
+                else if ((network.factors[i] == "Spring" || network.factors[i] == "Summer" || network.factors[i] == "Fall") && !AllFactors)
+                {
+                    if (!PremiereFinished)
+                    {
+                        bool Spring = false, Summer = false, Fall = false;
+                        int FallIndex = network.factors.IndexOf("Fall"), SpringIndex = network.factors.IndexOf("Spring"), SummerIndex = network.factors.IndexOf("Summer");
+                        if (FallIndex > -1)
+                        {
+                            Fall = s.factorValues[FallIndex];
+                            CurrentFactors[FallIndex] = Fall ? 1 : -1 - network.FactorAverages[FallIndex];
+                        }
+                        if (SpringIndex > -1)
+                        {
+                            Spring = s.factorValues[SpringIndex];
+                            CurrentFactors[SpringIndex] = Spring ? 1 : -1 - network.FactorAverages[SpringIndex];
+                        }                            
+                        if (SummerIndex > -1)
+                            Summer = s.factorValues[SummerIndex];  
+
+                        if (Fall)
+                            detailName = Spring ? "Fall Preview with a Premiere in the Spring" : "Premiered in the Fall";
+                        else if (Spring)
+                            detailName = "Premiered in the Spring";
+                        else if (Summer)
+                        {
+                            detailName = "Premiered in the Summer";
+                            SummerFinished = true;
+                            CurrentFactors[SummerIndex] = 1 - network.FactorAverages[SummerIndex];
+                        }
+                        else
+                            detailName = (FallIndex > -1) ? "Unknown Premiere Date" : "Premiered in the Fall";
+
+                        PremiereFinished = true;
+
+                        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+
+                        detailValue = CurrentOdds - NewOdds;
+
+                        details.Add(new DetailsContainer(detailName, detailValue));
+                    }
+
+                    if (network.factors[i] == "Summer" && !SummerFinished)
+                    {
+                        CurrentFactors[i] = s.factorValues[i] ? 1 : -1 - network.FactorAverages[i];
+
+                        if (s.factorValues[i])
+                            detailName = "Aired in the Summer";
+                        else
+                            detailName = "Did not air in the Summer";
+
+                        
+                        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+
+                        detailValue = CurrentOdds - NewOdds;
+
+                        details.Add(new DetailsContainer(detailName, detailValue));
+
+                        SummerFinished = true;
+                    }
+                }
+                else if ((network.factors[i] == "Not Original" || network.factors[i] == "CBS Show") && !AllFactors)
+                {
+                    if (!OwnedFinished)
+                    {
+                        if (s.factorNames.Contains("CBS Show") && s.factorNames.Contains("Not Original"))
+                        {
+                            int index = s.factorNames.IndexOf("Not Original"), index2 = s.factorNames.IndexOf("CBS Show");
+                            bool NotOriginal = s.factorValues[index], CBSShow = s.factorValues[index2];
+                            CurrentFactors[index] = NotOriginal ? 1 : -1 - network.FactorAverages[index];
+                            CurrentFactors[index2] = CBSShow ? 1 : -1 - network.FactorAverages[index2];
+
+                            if (NotOriginal)
+                                detailName = "Show is not owned by the network";
+                            else if (CBSShow)
+                                detailName = "Show is owned by CBS";
+                            else
+                                detailName = "Show is owned by WB";
+
+                            NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+                        }
+                        else
+                        {
+                            CurrentFactors[i] = s.factorValues[i] ? 1 : -1 - network.FactorAverages[i];
+
+                            if (s.factorValues[i])
+                                detailName = "Show is not owned by the network";
+                            else
+                                detailName = "Show is owned by the network";
+
+                            NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+                        }
+
+                        detailValue = CurrentOdds - NewOdds;
+                        details.Add(new DetailsContainer(detailName, detailValue));
+                        OwnedFinished = true;
+                    }
+                }
+                else
+                {
+                    CurrentFactors[i] = s.factorValues[i] ? 1 : -1 - network.FactorAverages[i];
+
+                    switch (network.factors[i])
+                    {
+                        case "Friday":
+                            {
+                                if (s.factorValues[i])
+                                    detailName = "Airs on Friday or Saturday";
+                                else
+                                    detailName = "Does not air on Friday or Saturday";
+
+                                break;
+                            }
+                        case "10pm":
+                            {
+                                if (s.factorValues[i])
+                                    detailName = "Airs at 10pm";
+                                else
+                                    detailName = "Airs before 10pm";
+
+                                break;
+                            }
+                        case "Animated":
+                            {
+                                if (s.factorValues[i])
+                                    detailName = "Animated show";
+                                else
+                                    detailName = "Non-animated show";
+
+                                break;
+                            }
+                        case "Extended Universe":
+                            {
+                                if (s.factorValues[i])
+                                    detailName = "Part of an Extended Universe";
+                                else
+                                    detailName = "Not part of an Extended Universe";
+
+                                break;
+                            }
+                        default:
+                            {
+                                if (s.factorValues[i])
+                                    detailName = "'" + s.factorNames[i] + "' is True";
+                                else
+                                    detailName = "'" + s.factorNames[i] + "' is False";
+
+                                break;
+                            }
+                    }
+
+                    NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+
+                    detailValue = CurrentOdds - NewOdds;
+
+                    details.Add(new DetailsContainer(detailName, detailValue));
+                }
+            }
+
+            return new DetailsCombo(details, BaseOdds, CurrentOdds);
+        }
+
+        DetailsCombo OptimizeDetails(DetailsCombo combo)
+        {
+            var details = combo.details;
+            var CurrentOdds = combo.CurrentOdds;
+            var BaseOdds = combo.BaseOdds;
+
+            double change = 0;
+            foreach (DetailsContainer d in details)
+                change += d.Value;
+
+            double multiplier = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
+
+            if (multiplier > 0)
+            {
+                double shift = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
+                if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) shift = 0;
+                double exponent = 1, increment = (Math.Abs(shift) > 1) ? 0.0001 : -0.0001;
+
+                long TrialCount = (long)(Math.Log(0.00005) / Math.Log(details.Select(x => Math.Abs(x.Value)).Max()) / 0.0001) + 1;
+
+                TrialCount = Math.Min(TrialCount, 1000000);
+
+                var Trials = new double[TrialCount];
+
+                //bool found = false;
+
+                Parallel.For(0, Math.Min(20000, TrialCount), i =>
+                {
+                    double c = 0;
+                    double ex = i * 0.0001 + 0.0001;
+
+                    foreach (DetailsContainer d in details)
+                    {
+                        if (d.Value > 0)
+                            c += Math.Pow(d.Value, ex);
+                        else
+                            c -= Math.Pow(-d.Value, ex);
+                    }
+
+                    Trials[i] = Math.Abs(c - (CurrentOdds - BaseOdds));
+                });
+
+                if (TrialCount > 20000)
+                {
+                    var First2k = Trials.Take(20000).ToArray();
+
+                    exponent = Array.IndexOf(First2k, First2k.Min()) * 0.0001 + 0.0001;
+
+                    if (exponent == 2)
+                    {
+                        Parallel.For(20000, TrialCount - 20000, i =>
+                        {
+                            double c = 0;
+                            double ex = i * 0.0001 + 0.0001;
+
+                            foreach (DetailsContainer d in details)
+                            {
+                                if (d.Value > 0)
+                                    c += Math.Pow(d.Value, ex);
+                                else
+                                    c -= Math.Pow(-d.Value, ex);
+                            }
+
+                            Trials[i] = Math.Abs(c - (CurrentOdds - BaseOdds));
+                        });
+
+                        exponent = Array.IndexOf(Trials, Trials.Min()) * 0.0001 + 0.0001;
+                    }
+                }
+                else
+                    exponent = Array.IndexOf(Trials, Trials.Min()) * 0.0001 + 0.0001;
+
+
+                change = 0;
+                foreach (DetailsContainer d in details)
+                {
+                    if (d.Value > 0)
+                        change += Math.Pow(d.Value, exponent);
+                    else
+                        change -= Math.Pow(-d.Value, exponent);
+                }
+
+                if (exponent > 0.0001 && Math.Round(change, 4) > 0)
+                    foreach (DetailsContainer d in details)
+                    {
+                        if (d.Value > 0)
+                            d.Value = Math.Pow(d.Value, exponent);
+                        else
+                            d.Value = -Math.Pow(-d.Value, exponent);
+                    }
+                else
+                    multiplier *= -1;
+            }
+
+            if (multiplier < 0)
+            {
+                double shift = change != 0 ? (CurrentOdds - BaseOdds) - change : 1;
+                if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) shift = 0;
+                double oldEx = 1, exponent = 1, increment = (shift < 0) ? 0.0001 : -0.0001;
+
+                double oldChange = change;
+
+                bool found = false;
+
+                while (!found && shift != 0)
+                {
+                    //oldEx = newEx;
+                    change = 0;
+                    oldEx = exponent;
+                    exponent += increment;
+                    foreach (DetailsContainer d in details)
+                    {
+                        change += Math.Pow((d.Value + 1) / 2, exponent) * 2 - 1;
+                    }
+
+                    if (Math.Abs(oldChange - (CurrentOdds - BaseOdds)) < Math.Abs(change - (CurrentOdds - BaseOdds)))
+                    {
+                        found = true;
+                        exponent = oldEx;
+                    }
+                    else
+                        oldChange = change;
+
+                    if (exponent == 0.0001 || Math.Round(change, 4) == 0) found = true;
+                }
+
+                if (Math.Round(change, 4) == 0) exponent = 1;
+
+                foreach (DetailsContainer d in details)
+                {
+                    d.Value = Math.Pow((d.Value + 1) / 2, exponent) * 2 - 1;
+                }
+            }
+
+            change = 0;
+            foreach (DetailsContainer d in details)
+                change += d.Value;
+
+            if (change != 0 && change != (CurrentOdds - BaseOdds))
+            {
+                multiplier = change != 0 ? (CurrentOdds - BaseOdds) / change : 1;
+                if (Math.Round(Math.Abs(CurrentOdds - BaseOdds), 4) == 0) multiplier = 0;
+
+                foreach (DetailsContainer d in details)
+                    d.Value *= multiplier;
+            }
+
+            if (details.Select(x => Math.Abs(x.Value)).Sum() == 0) BaseOdds = CurrentOdds;
+
+            return new DetailsCombo(details, BaseOdds, CurrentOdds);
+        }
+
         DetailsCombo GenerateDetails(Show s, Dictionary<int, double> Adjustments, bool AllFactors = false)
         {
             var details = new List<DetailsContainer>();
@@ -563,7 +1007,7 @@ namespace TV_Ratings_Predictions
 
             if (details.Select(x => Math.Abs(x.Value)).Sum() == 0) BaseOdds = CurrentOdds;
 
-            return new DetailsCombo(details, BaseOdds, CurrentOdds, peak);
+            return new DetailsCombo(details, BaseOdds, CurrentOdds);
         }
 
         private void ShowSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -575,7 +1019,40 @@ namespace TV_Ratings_Predictions
                 details.Clear();
 
                 var Adjustments = network.model.GetAdjustments(true);
-                var Results = GenerateDetails(s, Adjustments);
+
+                var FactorCount = network.factors.Count + 3;
+                int Iterations = (int) Math.Pow(2, FactorCount);
+
+                var AllResults = new DetailsCombo[Iterations];
+                var Random = new Random();
+
+                var Numbers = new int[FactorCount];
+                Numbers[0] = FactorCount - 1;
+                Numbers[1] = FactorCount - 3;
+                Numbers[2] = FactorCount - 2;
+
+                for (int i = 3; i < FactorCount; i++)
+                    Numbers[i] = i - 3;
+
+                AllResults[0] = GenerateDetails(s, Adjustments, Numbers);
+
+                Parallel.For(1, Iterations, i =>
+                {
+                    var OrderedNumbers = Numbers.OrderBy(x => Random.NextDouble()).ToArray();
+                    AllResults[i] = GenerateDetails(s, Adjustments, OrderedNumbers);
+                });
+
+                var FactorNames = AllResults[0].details.Select(x => x.Name).ToList();
+                var count = FactorNames.Count;
+                var FactorValues = new double[count];
+
+                Parallel.For(0, count, i => FactorValues[i] = AllResults.SelectMany(x => x.details).Where(x => x.Name == FactorNames[i]).Select(x => x.Value).Average());
+
+                var DetailsList = new List<DetailsContainer>();
+                for (int i = 0; i < count; i++)
+                    DetailsList.Add(new DetailsContainer(FactorNames[i], FactorValues[i]));
+
+                var Results = OptimizeDetails(new DetailsCombo(DetailsList, AllResults[0].BaseOdds, AllResults[0].CurrentOdds));
                 foreach (DetailsContainer d in Results.details)
                     details.Add(d);             
 
@@ -586,7 +1063,6 @@ namespace TV_Ratings_Predictions
                 ShowName.Text = s.Name;
                 Odds.Text = "Predicted Odds: " + Results.CurrentOdds.ToString("P");
                 Base.Text = "Base Odds: " + Results.BaseOdds.ToString("P");
-                Optimal.Text = "Optimal # of episodes for " + s.Name + ": " + Results.OptimalEpisodes;
 
                 if (s.Renewed || s.Canceled)
                 {
@@ -618,103 +1094,110 @@ namespace TV_Ratings_Predictions
             }
         }
 
-        private async void OptimalSearch_Click(object sender, RoutedEventArgs e)
-        {
-            var s = (Show)ShowSelector.SelectedItem;
+        //private async void OptimalSearch_Click(object sender, RoutedEventArgs e)
+        //{
+        //    var s = (Show)ShowSelector.SelectedItem;
 
-            if (s != null)
-            {
-                var Factors = new bool[s.factorNames.Count];
-                for (int i = 0; i < s.factorNames.Count; i++)
-                    Factors[i] = s.factorValues[i];
-                var HalfHour = s.Halfhour;
-                var EpisodeCount = s.Episodes;
-                var Adjustments = network.model.GetAdjustments(true);
+        //    if (s != null)
+        //    {
+        //        var Factors = new bool[s.factorNames.Count];
+        //        for (int i = 0; i < s.factorNames.Count; i++)
+        //            Factors[i] = s.factorValues[i];
+        //        var HalfHour = s.Halfhour;
+        //        var EpisodeCount = s.Episodes;
+        //        var Adjustments = network.model.GetAdjustments(true);
 
-                var NewShow = new Show(s.Name, network, s.Season, new ObservableCollection<bool>(Factors), EpisodeCount, HalfHour, s.factorNames) { ShowIndex = s.ShowIndex, year = s.year, AverageRating = s.AverageRating, AverageViewers = s.AverageViewers };
-                string TextResult = "Optimal factors for " + s.Name + "\r\n\r\n\r\n";
-                bool IsOptimal = false;
-                var hashes = new List<long>();
+        //        var NewShow = new Show(s.Name, network, s.Season, new ObservableCollection<bool>(Factors), EpisodeCount, HalfHour, s.factorNames) { ShowIndex = s.ShowIndex, year = s.year, AverageRating = s.AverageRating, AverageViewers = s.AverageViewers };
+        //        string TextResult = "Optimal factors for " + s.Name + "\r\n\r\n\r\n";
+        //        bool IsOptimal = false;
+        //        var hashes = new List<long>();
 
-                var AlreadyProcessed = new bool[s.factorNames.Count + 3];
-                while (!IsOptimal)
-                {
-                    var Results = GenerateDetails(NewShow, Adjustments, true);
-                    double minimum = 0;
-                    int minIndex = 0;
-                    IsOptimal = true;
-                    for (int i = 0; i < Results.details.Count; i++)
-                    {
-                        var d = Results.details[i];
-                        if (d.Value < 0)
-                        {
-                            IsOptimal = false;
-                            if (d.Value < minimum)
-                            {
-                                if (!(i < s.factorNames.Count &&
-                                    (s.factorNames[i] == "Syndication"
-                                    || s.factorNames[i] == "Post-Syndication"
-                                    || s.factorNames[i] == "Not Original"
-                                    || s.factorNames[i] == "Extended Universe"
-                                    || s.factorNames[i] == "New Show"
-                                    || s.factorNames[i] == "CBS Show" || s.factorNames[i] == "Animated"
-                                    || (s.factorNames[i] == "Fall" && s.factorValues[i] == true && s.factorValues[s.factorNames.IndexOf("Spring")] == false && s.factorValues[s.factorNames.IndexOf("Summer")] == false)
-                                    || (s.factorNames[i] == "Spring" && s.factorValues[i] == true && s.factorValues[s.factorNames.IndexOf("Fall")] == false && s.factorValues[s.factorNames.IndexOf("Summer")] == false)
-                                    || (s.factorNames[i] == "Summer" && s.factorValues[i] == true && s.factorValues[s.factorNames.IndexOf("Fall")] == false && s.factorValues[s.factorNames.IndexOf("Spring")] == false))))
-                                {
-                                    minimum = d.Value;
-                                    minIndex = i;
-                                }
-                            }
-                        }
-                    }
+        //        var AlreadyProcessed = new bool[s.factorNames.Count + 3];
+        //        while (!IsOptimal)
+        //        {
+        //            var Results = GenerateDetails(NewShow, Adjustments, true);
+        //            double minimum = 0;
+        //            int minIndex = 0;
+        //            IsOptimal = true;
+        //            for (int i = 0; i < Results.details.Count; i++)
+        //            {
+        //                var d = Results.details[i];
+        //                if (d.Value < 0)
+        //                {
+        //                    IsOptimal = false;
+        //                    if (d.Value < minimum)
+        //                    {
+        //                        if (!(i < s.factorNames.Count &&
+        //                            (s.factorNames[i] == "Syndication"
+        //                            || s.factorNames[i] == "Post-Syndication"
+        //                            || s.factorNames[i] == "Not Original"
+        //                            || s.factorNames[i] == "Extended Universe"
+        //                            || s.factorNames[i] == "New Show"
+        //                            || s.factorNames[i] == "CBS Show" || s.factorNames[i] == "Animated"
+        //                            || (s.factorNames[i] == "Fall" && s.factorValues[i] == true && s.factorValues[s.factorNames.IndexOf("Spring")] == false && s.factorValues[s.factorNames.IndexOf("Summer")] == false)
+        //                            || (s.factorNames[i] == "Spring" && s.factorValues[i] == true && s.factorValues[s.factorNames.IndexOf("Fall")] == false && s.factorValues[s.factorNames.IndexOf("Summer")] == false)
+        //                            || (s.factorNames[i] == "Summer" && s.factorValues[i] == true && s.factorValues[s.factorNames.IndexOf("Fall")] == false && s.factorValues[s.factorNames.IndexOf("Spring")] == false))))
+        //                        {
+        //                            minimum = d.Value;
+        //                            minIndex = i;
+        //                        }
+        //                    }
+        //                }
+        //            }
 
-                    var tempshow = new Show(s.Name, network, s.Season, new ObservableCollection<bool>(Factors), EpisodeCount, HalfHour, s.factorNames) { ShowIndex = s.ShowIndex, year = s.year, AverageRating = s.AverageRating, AverageViewers = s.AverageViewers };
-                    var hash = tempshow.FactorHash;
+        //            var tempshow = new Show(s.Name, network, s.Season, new ObservableCollection<bool>(Factors), EpisodeCount, HalfHour, s.factorNames) { ShowIndex = s.ShowIndex, year = s.year, AverageRating = s.AverageRating, AverageViewers = s.AverageViewers };
+        //            var hash = tempshow.FactorHash;
 
-                    if (!IsOptimal && !hashes.Contains(hash))
-                    {
-                        if (minIndex < s.factorNames.Count) //Factors
-                            Factors[minIndex] = !Factors[minIndex];
-                        else if (minIndex == s.factorNames.Count) //HalfHour
-                            HalfHour = !HalfHour;
-                        else //Episodes
-                            EpisodeCount = Results.OptimalEpisodes;                        
+        //            if (!IsOptimal && !hashes.Contains(hash))
+        //            {
+        //                if (minIndex < s.factorNames.Count) //Factors
+        //                    Factors[minIndex] = !Factors[minIndex];
+        //                else if (minIndex == s.factorNames.Count) //HalfHour
+        //                    HalfHour = !HalfHour;
+        //                else //Episodes
+        //                    EpisodeCount = Results.OptimalEpisodes;                        
 
-                        AlreadyProcessed[minIndex] = true;
+        //                AlreadyProcessed[minIndex] = true;
 
-                        NewShow = tempshow;
-                        hashes.Add(hash);
-                    }
-                    else
-                    {
-                        IsOptimal = true;
-                        var details = GenerateDetails(s, Adjustments).details;
-                        Results = GenerateDetails(NewShow, Adjustments);
-                        var ExistingFactors = details.Select(x => x.Name).ToList();
+        //                NewShow = tempshow;
+        //                hashes.Add(hash);
+        //            }
+        //            else
+        //            {
+        //                IsOptimal = true;
+        //                var details = GenerateDetails(s, Adjustments).details;
+        //                Results = GenerateDetails(NewShow, Adjustments);
+        //                var ExistingFactors = details.Select(x => x.Name).ToList();
 
-                        for (int i = 0; i < Results.details.Count; i++)
-                            TextResult += (ExistingFactors.Contains(Results.details[i].Name) ? "" : "* ") + Results.details[i].Name + "\r\n\r\n";
+        //                for (int i = 0; i < Results.details.Count; i++)
+        //                    TextResult += (ExistingFactors.Contains(Results.details[i].Name) ? "" : "* ") + Results.details[i].Name + "\r\n\r\n";
 
-                        TextResult += "\r\nNew Odds: " + network.model.GetOdds(NewShow, network.FactorAverages, Adjustments[s.year]).ToString("P");
-                    }
+        //                TextResult += "\r\nNew Odds: " + network.model.GetOdds(NewShow, network.FactorAverages, Adjustments[s.year]).ToString("P");
+        //            }
                         
-                }
+        //        }
 
-                ContentDialog dialog = new ContentDialog
-                {
-                    PrimaryButtonText = "OK",
-                    Content = TextResult
-                };
+        //        ContentDialog dialog = new ContentDialog
+        //        {
+        //            PrimaryButtonText = "OK",
+        //            Content = TextResult
+        //        };
 
-                await dialog.ShowAsync();
-            }
-        }
+        //        await dialog.ShowAsync();
+        //    }
+        //}
     }
 
     public class DetailsContainer : INotifyPropertyChanged
     {
+        /// <summary>
+        /// Name of the Factor
+        /// </summary>
         public String Name;
+
+        /// <summary>
+        /// Value of the Factor
+        /// </summary>
         double _value;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -758,15 +1241,13 @@ namespace TV_Ratings_Predictions
     class DetailsCombo
     {
         public List<DetailsContainer> details;
-        public int OptimalEpisodes;
         public double BaseOdds, CurrentOdds;
 
-        public DetailsCombo(List<DetailsContainer> d, double b, double c, int o)
+        public DetailsCombo(List<DetailsContainer> d, double b, double c)
         {
             details = d;
             BaseOdds = b;
             CurrentOdds = c;
-            OptimalEpisodes = o;
         }
     }
 

@@ -77,7 +77,7 @@
 
         <StackPanel Orientation="Horizontal"  Grid.Row="2" HorizontalAlignment="Center" >
             <Button x:Name="SaveImage" Content="💾 Save Image" Margin="10" Click="SaveImage_Click"/>
-            <Button x:Name="OptimalSearch" Content="Find Optimal Combination" Click="OptimalSearch_Click"/>
+            <!--<Button x:Name="OptimalSearch" Content="Find Optimal Combination" Click="OptimalSearch_Click"/>-->
         </StackPanel>
         
     </Grid>
