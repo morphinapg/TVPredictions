@@ -62,12 +62,14 @@ namespace TV_Ratings_Predictions
             bool SyndicationFinished = false, OwnedFinished = false, PremiereFinished = false, SummerFinished = false, SeasonFinished = false;
             string detailName;
 
-            double CurrentOdds = network.model.GetOdds(s, network.FactorAverages, Adjustments[s.year]), NewOdds, detailValue;
+            
 
             var tempList = network.shows.OrderBy(x => x.Episodes).ToList();
             int LowestEpisode = tempList.First().Episodes, HighestEpisode = tempList.Last().Episodes;
 
             var BaseOdds = network.model.GetOdds(s, network.FactorAverages, Adjustments[s.year], false, true, -1);
+            double CurrentOdds = BaseOdds, NewOdds, detailValue;
+
             var FactorCount = network.factors.Count;
 
 
@@ -84,12 +86,15 @@ namespace TV_Ratings_Predictions
                 {
                     if (!SeasonFinished)
                     {
-                        CurrentFactors[i] = (s.Season - network.FactorAverages[i]) / network.SeasonDeviation;
+                        CurrentFactors[FactorCount+2] = (s.Season - network.FactorAverages[FactorCount + 2]) / network.SeasonDeviation;
 
                         bool NewShow = false;
                         var NewShowIndex = network.factors.IndexOf("New Show");
-                        if (NewShowIndex > -1) NewShow = s.factorValues[NewShowIndex];
-                        if (NewShow) CurrentFactors[NewShowIndex] = 1 - network.FactorAverages[NewShowIndex];
+                        if (NewShowIndex > -1)
+                        {
+                            CurrentFactors[NewShowIndex] = (NewShow ? 1 : -1) - network.FactorAverages[NewShowIndex];
+                            NewShow = s.factorValues[NewShowIndex]; 
+                        }
 
                         var hundredpart = s.Season / 100;
                         var remainder = s.Season - hundredpart * 100;
@@ -117,7 +122,9 @@ namespace TV_Ratings_Predictions
 
                         NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
 
-                        detailValue = CurrentOdds - NewOdds;
+                        detailValue = NewOdds - CurrentOdds;
+
+                        CurrentOdds = NewOdds;
 
                         details.Add(new DetailsContainer(detailName, detailValue));
 
@@ -132,7 +139,9 @@ namespace TV_Ratings_Predictions
 
                     NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
 
-                    detailValue = CurrentOdds - NewOdds;
+                    detailValue = NewOdds - CurrentOdds;
+
+                    CurrentOdds = NewOdds;
 
                     details.Add(new DetailsContainer(detailName, detailValue));
                 }
@@ -140,11 +149,13 @@ namespace TV_Ratings_Predictions
                 {
                     detailName = s.Halfhour ? "Half Hour Show" : "Hour Long Show";
 
-                    CurrentFactors[i] = s.Halfhour ? 1 : -1 - network.FactorAverages[i];
+                    CurrentFactors[i] = (s.Halfhour ? 1 : -1) - network.FactorAverages[i];
 
                     NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
 
-                    detailValue = CurrentOdds - NewOdds;
+                    detailValue = NewOdds - CurrentOdds;
+
+                    CurrentOdds = NewOdds;
 
                     details.Add(new DetailsContainer(detailName, detailValue));
                 }
@@ -159,12 +170,12 @@ namespace TV_Ratings_Predictions
                         if (SyndicationIndex > -1)
                         { 
                             Syndication = s.factorValues[SyndicationIndex];
-                            CurrentFactors[SyndicationIndex] = Syndication ? 1 : -1 - network.FactorAverages[SyndicationIndex];
+                            CurrentFactors[SyndicationIndex] = (Syndication ? 1 : -1) - network.FactorAverages[SyndicationIndex];
                         }
                         if (PostIndex > -1) 
                         { 
                             PostSyndication = s.factorValues[PostIndex];
-                            CurrentFactors[PostIndex] = PostSyndication ? 1 : -1 - network.FactorAverages[PostIndex];
+                            CurrentFactors[PostIndex] = (PostSyndication ? 1 : -1) - network.FactorAverages[PostIndex];
                         }
 
 
@@ -177,7 +188,9 @@ namespace TV_Ratings_Predictions
 
                         NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
 
-                        detailValue = CurrentOdds - NewOdds;
+                        detailValue = NewOdds - CurrentOdds;
+
+                        CurrentOdds = NewOdds;
 
                         details.Add(new DetailsContainer(detailName, detailValue));
 
@@ -193,12 +206,12 @@ namespace TV_Ratings_Predictions
                         if (FallIndex > -1)
                         {
                             Fall = s.factorValues[FallIndex];
-                            CurrentFactors[FallIndex] = Fall ? 1 : -1 - network.FactorAverages[FallIndex];
+                            CurrentFactors[FallIndex] = (Fall ? 1 : -1) - network.FactorAverages[FallIndex];
                         }
                         if (SpringIndex > -1)
                         {
                             Spring = s.factorValues[SpringIndex];
-                            CurrentFactors[SpringIndex] = Spring ? 1 : -1 - network.FactorAverages[SpringIndex];
+                            CurrentFactors[SpringIndex] = (Spring ? 1 : -1) - network.FactorAverages[SpringIndex];
                         }                            
                         if (SummerIndex > -1)
                             Summer = s.factorValues[SummerIndex];  
@@ -220,14 +233,16 @@ namespace TV_Ratings_Predictions
 
                         NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
 
-                        detailValue = CurrentOdds - NewOdds;
+                        detailValue = NewOdds - CurrentOdds;
+
+                        CurrentOdds = NewOdds;
 
                         details.Add(new DetailsContainer(detailName, detailValue));
                     }
 
                     if (network.factors[i] == "Summer" && !SummerFinished)
                     {
-                        CurrentFactors[i] = s.factorValues[i] ? 1 : -1 - network.FactorAverages[i];
+                        CurrentFactors[i] = (s.factorValues[i] ? 1 : -1) - network.FactorAverages[i];
 
                         if (s.factorValues[i])
                             detailName = "Aired in the Summer";
@@ -237,7 +252,9 @@ namespace TV_Ratings_Predictions
                         
                         NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
 
-                        detailValue = CurrentOdds - NewOdds;
+                        detailValue = NewOdds - CurrentOdds;
+
+                        CurrentOdds = NewOdds;
 
                         details.Add(new DetailsContainer(detailName, detailValue));
 
@@ -252,8 +269,8 @@ namespace TV_Ratings_Predictions
                         {
                             int index = s.factorNames.IndexOf("Not Original"), index2 = s.factorNames.IndexOf("CBS Show");
                             bool NotOriginal = s.factorValues[index], CBSShow = s.factorValues[index2];
-                            CurrentFactors[index] = NotOriginal ? 1 : -1 - network.FactorAverages[index];
-                            CurrentFactors[index2] = CBSShow ? 1 : -1 - network.FactorAverages[index2];
+                            CurrentFactors[index] = (NotOriginal ? 1 : -1) - network.FactorAverages[index];
+                            CurrentFactors[index2] = (CBSShow ? 1 : -1) - network.FactorAverages[index2];
 
                             if (NotOriginal)
                                 detailName = "Show is not owned by the network";
@@ -266,7 +283,7 @@ namespace TV_Ratings_Predictions
                         }
                         else
                         {
-                            CurrentFactors[i] = s.factorValues[i] ? 1 : -1 - network.FactorAverages[i];
+                            CurrentFactors[i] = (s.factorValues[i] ? 1 : -1) - network.FactorAverages[i];
 
                             if (s.factorValues[i])
                                 detailName = "Show is not owned by the network";
@@ -276,14 +293,15 @@ namespace TV_Ratings_Predictions
                             NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
                         }
 
-                        detailValue = CurrentOdds - NewOdds;
+                        detailValue = NewOdds - CurrentOdds;
+                        CurrentOdds = NewOdds;
                         details.Add(new DetailsContainer(detailName, detailValue));
                         OwnedFinished = true;
                     }
                 }
                 else
                 {
-                    CurrentFactors[i] = s.factorValues[i] ? 1 : -1 - network.FactorAverages[i];
+                    CurrentFactors[i] = (s.factorValues[i] ? 1 : -1) - network.FactorAverages[i];
 
                     switch (network.factors[i])
                     {
@@ -336,7 +354,9 @@ namespace TV_Ratings_Predictions
 
                     NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
 
-                    detailValue = CurrentOdds - NewOdds;
+                    detailValue = NewOdds - CurrentOdds;
+
+                    CurrentOdds = NewOdds;
 
                     details.Add(new DetailsContainer(detailName, detailValue));
                 }
@@ -1021,7 +1041,7 @@ namespace TV_Ratings_Predictions
                 var Adjustments = network.model.GetAdjustments(true);
 
                 var FactorCount = network.factors.Count + 3;
-                int Iterations = (int) Math.Pow(2, FactorCount);
+                int Iterations = 10000; //Enough for precision within 0.01%
 
                 var AllResults = new DetailsCombo[Iterations];
                 var Random = new Random();
@@ -1052,7 +1072,7 @@ namespace TV_Ratings_Predictions
                 for (int i = 0; i < count; i++)
                     DetailsList.Add(new DetailsContainer(FactorNames[i], FactorValues[i]));
 
-                var Results = OptimizeDetails(new DetailsCombo(DetailsList, AllResults[0].BaseOdds, AllResults[0].CurrentOdds));
+                var Results = new DetailsCombo(DetailsList, AllResults[0].BaseOdds, AllResults[0].CurrentOdds);
                 foreach (DetailsContainer d in Results.details)
                     details.Add(d);             
 
