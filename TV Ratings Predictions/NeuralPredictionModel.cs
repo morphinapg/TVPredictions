@@ -141,8 +141,6 @@ namespace TV_Ratings_Predictions
 
         public double GetThreshold(Show s, double[] averages, double adjustment)
         {
-            if (s.year < NetworkDatabase.MaxYear) adjustment = 1;
-
             if (averages is null) averages = new double[InputCount + 1];
 
             var inputs = new double[InputCount + 1];
@@ -186,8 +184,6 @@ namespace TV_Ratings_Predictions
 
         public double GetModifiedThreshold(Show s, double[] averages, double adjustment, int index, int index2 = -1, int index3 = -1)
         {
-            if (s.year < NetworkDatabase.MaxYear) adjustment = 1;
-
             if (averages is null) averages = new double[InputCount + 1];
 
             var inputs = new double[InputCount + 1];
@@ -421,7 +417,7 @@ namespace TV_Ratings_Predictions
             var Adjustments = new Dictionary<int, double>();
             var years = shows.Select(x => x.year).ToList().Distinct();
             foreach (int y in years)
-                Adjustments[y] = GetAdjustment(average, GetSeasonAverageThreshold(y));
+                Adjustments[y] = (y == NetworkDatabase.MaxYear) ? GetAdjustment(average, GetSeasonAverageThreshold(y)) : 1;
 
             return Adjustments;
         }

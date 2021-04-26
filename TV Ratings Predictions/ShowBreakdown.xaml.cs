@@ -75,8 +75,8 @@ namespace TV_Ratings_Predictions
 
 
             var CurrentFactors = new double[FactorCount + 3];
-            for (int i = 0; i < FactorCount + 2; i++)
-                CurrentFactors[i] = network.FactorAverages[i];
+            //for (int i = 0; i < FactorCount + 2; i++)
+            //    CurrentFactors[i] = network.FactorAverages[i];
 
 
             foreach (int i in FactorOrder)
@@ -120,6 +120,9 @@ namespace TV_Ratings_Predictions
                                     break;
                             }
                         }
+
+                        if (s.Season == 1 && !NewShow)
+                            detailName += " (Re-aired from another network)";
 
                         NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
 
