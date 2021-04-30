@@ -102,6 +102,7 @@ namespace TV_Ratings_Predictions
             PredictionAccuracy = model.TestAccuracy() * 100;
             PredictionError = model._score;
             LowestError = model._error;
+            TargetError = GetMarginOfError();
             OnPropertyChangedAsync("PredictionAccuracy");
             OnPropertyChangedAsync("PredictionError");
             OnPropertyChangedAsync("LowestError");
@@ -141,7 +142,7 @@ namespace TV_Ratings_Predictions
             FilteredShows.Clear();
             NetworkRatings.Clear();
             NetworkViewers.Clear();
-            AlphabeticalShows.Clear();
+            AlphabeticalShows.Clear();            
             
             foreach (Show s in CustomFilter(year))          //Filter shows by year and sort by Average Rating
                 FilteredShows.Add(s);
@@ -150,6 +151,8 @@ namespace TV_Ratings_Predictions
             //UpdateIndexes();                            //Update ratings indexes, and then populate the various collections used to display the data across the app
             RefreshPredictions(true);
             RefreshAverages();
+
+            TargetError = GetMarginOfError();
 
             var tempList = FilteredShows.OrderBy(x => x.Name);
             foreach(Show s in tempList)
@@ -269,36 +272,35 @@ namespace TV_Ratings_Predictions
                     var segment = tempList.Where(x => x.ratings.Count > i);
                     var count = segment.Count();
 
-                    if (count > 1)
+                    if (count > 0)
                     {
                         double deviation = 0;
                         foreach (Show ss in segment)
                         {
-                            double variance = 0;
-                            if (ss.ratings.Count > 1)
-                            {
-                                var average = ss.ratings.Average();
-                                for (int e = 0; e < i; e++)
-                                    variance += Math.Pow(Math.Log(ss.ratings[e]) - Math.Log(average), 2);
-                            }
+                            //double variance = 0;
+                            //if (ss.ratings.Count > 1)
+                            //{
+                            //    var average = ss.ratings.Average();
+                            //    for (int e = 0; e < i; e++)
+                            //        variance += Math.Pow(Math.Log(ss.ratings[e]) - Math.Log(average), 2);
+                            //}
 
                             deviation += Math.Pow(Math.Log(ss.ratingsAverages[s] * AdjustAverage(s + 1, i + 1)) - Math.Log(ss.ratingsAverages[i]), 2);
-                            deviation += variance / (ss.ratings.Count - 1);
+                            //deviation += variance / (ss.ratings.Count - 1);
                         }
-                            
 
-                        deviations[s][i] = Math.Sqrt(deviation / (count - 1));
+                        deviations[s][i] = Math.Sqrt(deviation / count);
                     }
                 }
 
                 //fill in missing numbers
-                for (int i = 1; i < 26; i++)
-                    if (deviations[s][i] == 0 && deviations[s][i - 1] > 0)
-                        deviations[s][i] = deviations[s][i - 1];
+                //for (int i = 1; i < 26; i++)
+                //    if (deviations[s][i] == 0 && deviations[s][i - 1] > 0)
+                //        deviations[s][i] = deviations[s][i - 1];
 
-                for (int i = 24; i >= 0; i--)
-                    if (deviations[s][i] == 0 && deviations[s][i + 1] > 0)
-                        deviations[s][i] = deviations[s][i + 1];
+                //for (int i = 24; i >= 0; i--)
+                //    if (deviations[s][i] == 0 && deviations[s][i + 1] > 0)
+                //        deviations[s][i] = deviations[s][i + 1];
 
 
 
@@ -309,28 +311,31 @@ namespace TV_Ratings_Predictions
 
                     double deviation = 0;
 
-                    foreach (Show ss in segment)
+                    if (segment.Count() > 0)
                     {
-                        //calculate standard deviation
-                        double ProjectionVariance = 0;
-                        for (int i = 0; i < s; i++)
-                            ProjectionVariance += Math.Pow(Math.Log(ss.ratingsAverages[i] * ss.network.AdjustAverage(i + 1, ss.Episodes)) - Math.Log(ss.ratingsAverages[s] * ss.network.AdjustAverage(s + 1, ss.Episodes)), 2);
+                        foreach (Show ss in segment)
+                        {
+                            //calculate standard deviation
+                            double ProjectionVariance = 0;
+                            for (int i = 0; i < s; i++)
+                                ProjectionVariance += Math.Pow(Math.Log(ss.ratingsAverages[i] * ss.network.AdjustAverage(i + 1, ss.Episodes)) - Math.Log(ss.ratingsAverages[s] * ss.network.AdjustAverage(s + 1, ss.Episodes)), 2);
 
-                        deviation += ProjectionVariance / s;
-                    }
+                            deviation += ProjectionVariance / s;
+                        }
+                    }                    
 
                     typicalDeviation[s] = Math.Sqrt(deviation / segment.Count());
                 }
             });
 
             //fill in missing numbers
-            for (int i = 1; i < 26; i++)
-                if (deviations[i].Sum() == 0 && deviations[i - 1].Sum() > 0)
-                    deviations[i] = deviations[i - 1];
+            //for (int i = 1; i < 26; i++)
+            //    if (deviations[i].Sum() == 0 && deviations[i - 1].Sum() > 0)
+            //        deviations[i] = deviations[i - 1];
 
-            for (int i = 24; i >= 0; i--)
-                if (deviations[i].Sum() == 0 && deviations[i + 1].Sum() > 0)
-                    deviations[i] = deviations[i + 1];
+            //for (int i = 24; i >= 0; i--)
+            //    if (deviations[i].Sum() == 0 && deviations[i + 1].Sum() > 0)
+            //        deviations[i] = deviations[i + 1];
 
             for (int i = 1; i < 26; i++)
                 if (typicalDeviation[i] == 0 && typicalDeviation[i - 1] > 0)
@@ -341,21 +346,21 @@ namespace TV_Ratings_Predictions
                     typicalDeviation[i] = typicalDeviation[i + 1];
 
             //Determine how much target ratings deviate per year
-            var Adjustments = model.GetAdjustments(true);
-            var YearlyDeviation = new Dictionary<int, double>();
-            double devs = 0;
+            //var Adjustments = model.GetAdjustments(true);
+            //double devs = 0;
 
-            foreach (int i in yearlist)
-            {
-                var segment = tempList.AsParallel().Where(x => x.year == i).Select(x => model.GetTargetRating(i, model.GetThreshold(x, FactorAverages, Adjustments[i])));
-                var average = segment.Average();
+            //foreach (int i in yearlist)
+            //{
+            //    var segment = tempList.AsParallel().Where(x => x.year == i).Select(x => model.GetTargetRating(i, model.GetThreshold(x, FactorAverages, Adjustments[i])));
+            //    var average = segment.Average();
 
-                foreach (double d in segment)
-                    devs += Math.Pow(Math.Log(d) - Math.Log(average), 2);
-            }
+            //    foreach (double d in segment)
+            //        devs += Math.Pow(Math.Log(d) - Math.Log(average), 2);
+            //}
 
             //Standard error formula for deviation of target errors
-            TargetError = Math.Sqrt(devs / Math.Max((tempList.Count() - 1), 1)) / Math.Sqrt(Math.Max((tempList.Count() - 1), 1));
+            //TargetError = GetMarginOfError();
+            //TargetError = Math.Sqrt(devs / Math.Max((tempList.Count() - 1), 1)) / Math.Sqrt(Math.Max((tempList.Count() - 1), 1));
 
             //Factor Averages
             FactorAverages = model.GetAverages(factors);
@@ -374,6 +379,41 @@ namespace TV_Ratings_Predictions
             }
 
             SeasonDeviation = Math.Sqrt(totals / weights);
+        }
+
+        public double GetMarginOfError()
+        {
+            var Averages = model.GetAverages(factors);
+            var Adjustments = model.GetAdjustments();
+
+            var ShowErrors = shows.AsParallel().Select(x =>
+            {
+                var weight = 1.0 / NetworkDatabase.MaxYear - x.year + 1;
+                var threshold = model.GetThreshold(x, Averages, Adjustments[x.year]);
+                var TargetRating = model.GetTargetRating(x.year, threshold);
+                var Difference = Math.Abs(Math.Log(TargetRating) - Math.Log(x.AverageRating));
+                double right, wrong;
+
+                if ((x.Renewed && x.PredictedOdds > 0.5) || (x.Canceled && x.PredictedOdds < 0.5))
+                {
+                    right = 0;
+                    wrong = Difference;
+                }
+                else
+                {
+                    right = Difference;
+                    wrong = 0;
+                }
+
+                return new { Weight = weight, WrongValue = Math.Pow(wrong, 2) * weight, RightValue = Math.Pow(right, 2) * weight };
+            });
+
+            var TotalWeight = ShowErrors.Select(x => x.Weight).Sum();
+
+            var RightDeviation = Math.Sqrt(ShowErrors.Select(x => x.RightValue).Sum() / TotalWeight);
+            var WrongDeviation = Math.Sqrt(ShowErrors.Select(x => x.WrongValue).Sum() / TotalWeight) * 0.408795841;
+
+            return (RightDeviation + WrongDeviation) / 2;
         }
 
         void RefreshAverages()      //Updates the Averages collection with all of the ratings average data for every show in FilteredShows

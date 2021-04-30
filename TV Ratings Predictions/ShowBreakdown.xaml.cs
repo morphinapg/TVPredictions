@@ -399,8 +399,7 @@ namespace TV_Ratings_Predictions
                 var CompletedProgress = new int[Iterations];
 
 
-                var ProgressTimer = new Timer(100);
-                ProgressTimer.AutoReset = true;
+                var ProgressTimer = new Timer(100) { AutoReset = true };
                 ProgressTimer.Elapsed += async (se, ee) => await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => BreakdownProgress.Value = CompletedProgress.Sum());
                 ProgressTimer.Start();
 

@@ -33,7 +33,7 @@ namespace TV_Ratings_Predictions
             Adjustments = model.GetAdjustments(true);
             RatingsAverages = n.ratingsAverages;
             FactorAverages = n.FactorAverages;
-
+            
             Parallel.ForEach(shows, s => s.UpdateAverage());
 
             shows.Sort();
@@ -42,6 +42,7 @@ namespace TV_Ratings_Predictions
             //    n.UpdateIndexes(i);
 
             Parallel.ForEach(shows, s => s.PredictedOdds = model.GetOdds(s, FactorAverages, Adjustments[s.year]));
+            n.TargetError = n.GetMarginOfError();
 
             PredictionTime = DateTime.Now;
             deviations = n.deviations;
