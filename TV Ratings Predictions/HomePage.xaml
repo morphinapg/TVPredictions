@@ -55,7 +55,11 @@
                 <controls:DataGridTemplateColumn Header="%">
                     <controls:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="local:Network">
-                            <TextBlock Text="{x:Bind PredictionAccuracy, Converter={StaticResource DoubleToPercent}, Mode=OneWay}" Margin="15"/>
+                            <TextBlock Text="{x:Bind PredictionAccuracy, Converter={StaticResource DoubleToPercent}, Mode=OneWay}" Margin="15">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock Text="{x:Bind PredictionAccuracy}"/>
+                                </ToolTipService.ToolTip>
+                            </TextBlock>
                         </DataTemplate>
                     </controls:DataGridTemplateColumn.CellTemplate>
                 </controls:DataGridTemplateColumn>
