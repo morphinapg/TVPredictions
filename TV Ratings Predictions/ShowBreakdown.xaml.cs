@@ -448,7 +448,7 @@ namespace TV_Ratings_Predictions
 
                 if (s.Renewed || s.Canceled)
                 {
-                    if ((s.Renewed && Results.CurrentOdds > 0.5) || (s.Canceled && Results.CurrentOdds < 0.5))
+                    if ((s.Renewed && Results.CurrentOdds >= 0.5) || (s.Canceled && Results.CurrentOdds <= 0.5))
                         Odds.Text += " ✔";
                     else
                         Odds.Text += " ❌";

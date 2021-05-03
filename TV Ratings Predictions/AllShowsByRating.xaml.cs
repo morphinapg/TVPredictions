@@ -54,8 +54,8 @@ namespace TV_Ratings_Predictions
                     return
                     ((bool)Renewed.IsChecked && x.Renewed) ||
                     ((bool)Canceled.IsChecked && x.Canceled) ||
-                    ((bool)PredictedRenewed.IsChecked && x.PredictedOdds > 0.5) ||
-                    ((bool)PredictedCanceled.IsChecked && x.PredictedOdds < 0.5);
+                    ((bool)PredictedRenewed.IsChecked && x.PredictedOdds >= 0.5) ||
+                    ((bool)PredictedCanceled.IsChecked && x.PredictedOdds <= 0.5);
                 else
                     return true;
             }).OrderByDescending(x => x.AverageRating);

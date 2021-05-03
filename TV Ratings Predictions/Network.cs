@@ -394,7 +394,7 @@ namespace TV_Ratings_Predictions
                 var Difference = Math.Abs(Math.Log(TargetRating) - Math.Log(x.AverageRating));
                 double right, wrong;
 
-                if ((x.Renewed && x.PredictedOdds > 0.5) || (x.Canceled && x.PredictedOdds < 0.5))
+                if ((x.Renewed && x.PredictedOdds >= 0.5) || (x.Canceled && x.PredictedOdds <= 0.5))
                 {
                     right = 0;
                     wrong = Difference;

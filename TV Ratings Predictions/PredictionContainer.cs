@@ -173,9 +173,9 @@ namespace TV_Ratings_Predictions
             get
             {
                 if (show.Renewed)
-                    return (odds > 0.5) ? "✔" : "❌";
+                    return (odds >= 0.5) ? "✔" : "❌";
                 else if (show.Canceled)
-                    return (odds < 0.5) ? "✔" : "❌";
+                    return (odds <= 0.5) ? "✔" : "❌";
                 else
                     return "";
             }
