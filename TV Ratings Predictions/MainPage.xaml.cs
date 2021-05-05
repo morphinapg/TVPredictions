@@ -73,15 +73,13 @@ namespace TV_Ratings_Predictions
             {
                 NetworkDatabase.WriteSettings();
                 NetworkDatabase.pendingSave = false;
-                foreach (Network n in NetworkDatabase.NetworkList)
-                {
-                    if (n.refreshPrediction)
-                    {
-                        n.RefreshPredictions(true);
-                        n.refreshPrediction = false;
-                    }
-
-                }
+                if (NetworkDatabase.cancelEvolution)
+                    foreach (Network n in NetworkDatabase.NetworkList)
+                        if (n.refreshPrediction)
+                        {
+                            n.RefreshPredictions(true);
+                            n.refreshPrediction = false;
+                        }
             }
 
             

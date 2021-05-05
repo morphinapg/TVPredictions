@@ -98,8 +98,9 @@ namespace TV_Ratings_Predictions
 
         public void ModelUpdate(NeuralPredictionModel m)    //Update the Prediction Model with the new model, and let the UI know changes have happened
         {
-            model = new NeuralPredictionModel(m);                          
-            PredictionAccuracy = model.TestAccuracy() * 100;
+            model = new NeuralPredictionModel(m);
+            //PredictionAccuracy = model.TestAccuracy() * 100;
+            PredictionAccuracy = model._accuracy * 100;
             PredictionError = model._score;
             LowestError = model._error;
             TargetError = GetMarginOfError();

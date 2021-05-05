@@ -136,9 +136,12 @@ namespace TV_Ratings_Predictions
                 CurrentDrop = (CalculatedAverage > 0) ? CalculatedAverage / ratings[0] : 1;
             AverageRating = CalculatedAverage * network.AdjustAverage(ratings.Count, Episodes, CurrentDrop);
 
-            CalculatedAverage = CalculateAverage(viewers.Count, true);
-            CurrentDrop = (CalculatedAverage > 0) ? CalculatedAverage / viewers[0] : 1;
-            AverageViewers = CalculatedAverage * network.AdjustAverage(viewers.Count, Episodes, CurrentDrop, true);
+            if (viewers.Count > 0)
+            {
+                CalculatedAverage = CalculateAverage(viewers.Count, true);
+                CurrentDrop = (CalculatedAverage > 0) ? CalculatedAverage / viewers[0] : 1;
+                AverageViewers = CalculatedAverage * network.AdjustAverage(viewers.Count, Episodes, CurrentDrop, true);
+            }            
         }
 
         public void UpdateAllAverages(int start)

@@ -132,6 +132,10 @@ namespace TV_Ratings_Predictions
             mutationintensity = n.mutationintensity;
             neuralintensity = n.neuralintensity;
 
+            _accuracy = n._accuracy;
+            _score = n._score;
+            _error = n._error;
+
         }
 
         public void SetElite()
@@ -536,6 +540,8 @@ namespace TV_Ratings_Predictions
 
         public double TestAccuracy(bool parallel = false)
         {
+            
+
             //double average = GetAverageThreshold(parallel);
 
             //double weightAverage = Math.Max(average, 1 - average);
