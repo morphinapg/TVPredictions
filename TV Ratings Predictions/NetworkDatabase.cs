@@ -25,6 +25,10 @@ namespace TV_Ratings_Predictions
         public static bool UseOdds = false;             //This is a togglable value that informs whether to use straight 0-100% odds for predictions, or use Renewed/Canceled with a confidence % instead.
         public static DateTime StartTime;               //Defines the time when the "Start Evolution" button was pressed
         private static string locks = "";
+
+        public static bool written = false;
+
+        public static MainPage mainpage;
         public static string Locks
         {
             get
@@ -210,7 +214,30 @@ namespace TV_Ratings_Predictions
                 });
             }
         }
+
+        public static async void WriteObjectAsync<T>(object obj, string filename)
+        {
+            await DispatcherHelper.ExecuteOnUIThreadAsync(async () =>
+            {
+                var picker = new FileSavePicker { SuggestedStartLocation = PickerLocationId.Desktop, SuggestedFileName = filename };
+                picker.FileTypeChoices.Add("XML Data File", new List<string>() { ".XML" });
+
+                StorageFile file = await picker.PickSaveFileAsync();
+
+                if (file != null)
+                {
+                    using (Stream stream = await file.OpenStreamForWriteAsync())
+                    {
+                        stream.SetLength(0);
+                        var serializer = new DataContractSerializer(typeof(T));
+                        serializer.WriteObject(stream, obj);
+                    }
+                }
+            });           
+        }
     }
+
+    
 
     [Serializable]
     public class NetworkSettings

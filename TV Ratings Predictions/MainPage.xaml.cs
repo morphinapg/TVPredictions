@@ -36,6 +36,8 @@ namespace TV_Ratings_Predictions
 
         public MainPage()
         {
+            NetworkDatabase.mainpage = this;
+
             this.InitializeComponent();
             var coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = true;

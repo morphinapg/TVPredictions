@@ -484,6 +484,8 @@ namespace TV_Ratings_Predictions
 
         public double GetOdds(Show s, double[] averages, double adjustment, bool raw = false, bool modified = false, int index = -1, int index2 = -1, int index3 = -1)
         {
+            
+
             var threshold = modified ? GetModifiedThreshold(s, averages, adjustment, index, index2, index3) : GetThreshold(s, averages, adjustment);
 
             var target = GetTargetRating(s.year, threshold);

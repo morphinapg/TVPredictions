@@ -97,7 +97,23 @@ namespace TV_Ratings_Predictions
 
         public void ModelUpdate(NeuralPredictionModel m)    //Update the Prediction Model with the new model, and let the UI know changes have happened
         {
+            var acc = m._score;
+
+            
+
             model = new NeuralPredictionModel(m);
+
+            if (!NetworkDatabase.written)
+            {
+                lock (NetworkDatabase.NetworkList)
+                {
+                    NetworkDatabase.written = true;
+                    NetworkDatabase.WriteObjectAsync<NeuralPredictionModel>(m, "test1");
+                    NetworkDatabase.WriteObjectAsync<NeuralPredictionModel>(model, "test2");
+                }                                
+            }
+            
+
             //PredictionAccuracy = model.TestAccuracy() * 100;
             PredictionAccuracy = model._accuracy * 100;
             PredictionError = model._score;
