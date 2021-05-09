@@ -135,6 +135,7 @@ namespace TV_Ratings_Predictions
             _accuracy = n._accuracy;
             _score = n._score;
             _error = n._error;
+            _targeterror = n._targeterror;
 
         }
 
@@ -512,7 +513,9 @@ namespace TV_Ratings_Predictions
                 deviation = s.network.deviations[0][s.Episodes - 1];
             }
 
-            if (_targeterror == 0) GetTargetError(s.factorNames);
+            if (_targeterror == 0) 
+                GetTargetError(s.factorNames);
+
             deviation += _targeterror;
 
             var zscore = variance / deviation;
@@ -619,6 +622,8 @@ namespace TV_Ratings_Predictions
 
         public double TestAccuracy(bool parallel = false)
         {
+            if (_targeterror == 0) GetTargetError(shows[0].factorNames);
+
             //double average = GetAverageThreshold(parallel);
 
             //double weightAverage = Math.Max(average, 1 - average);
