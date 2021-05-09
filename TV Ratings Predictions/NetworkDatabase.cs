@@ -144,12 +144,12 @@ namespace TV_Ratings_Predictions
                 });
 
                 n.evolution.network = n;
-                n.PredictionAccuracy = n.model.TestAccuracy() * 100;
+                //n.PredictionAccuracy = n.model.TestAccuracy() * 100;
 
 
 
 
-                n.Filter(NetworkDatabase.CurrentYear);                                  //Once the Network is fully restored, perform a filter based on the current TV Season
+                n.Filter(CurrentYear);                                  //Once the Network is fully restored, perform a filter based on the current TV Season
 
             }
             );
@@ -157,7 +157,8 @@ namespace TV_Ratings_Predictions
             foreach (Network n in settings.NetworkList)                                 //After all networks are restored and filtered, add them to the global database
                 NetworkList.Add(n);
 
-            NetworkDatabase.SortNetworks();                                             //and sort by Network Average Renewal threshold
+            SortNetworks();                                             //and sort by Network Average Renewal threshold
+                
         }
 
         public static void WriteSettings()  //Used to write the current database to the Settings file

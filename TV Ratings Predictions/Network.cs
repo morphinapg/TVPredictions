@@ -102,7 +102,7 @@ namespace TV_Ratings_Predictions
             PredictionAccuracy = model._accuracy * 100;
             PredictionError = model._score;
             LowestError = model._error;
-            TargetError = GetMarginOfError();
+            //TargetError = GetMarginOfError();
             OnPropertyChangedAsync("PredictionAccuracy");
             OnPropertyChangedAsync("PredictionError");
             OnPropertyChangedAsync("LowestError");
@@ -123,7 +123,7 @@ namespace TV_Ratings_Predictions
             AlphabeticalShows = new ObservableCollection<Show>();
             Predictions = new ObservableCollection<PredictionContainer>();
             Averages = new ObservableCollection<AverageContainer>();
-            PredictionAccuracy = model.TestAccuracy() * 100;
+            PredictionAccuracy = model.TestAccuracy(true) * 100;
 
             model = new NeuralPredictionModel(this, 0.5);
             evolution = new EvolutionTree(this, 0.5);
@@ -147,12 +147,16 @@ namespace TV_Ratings_Predictions
             foreach (Show s in CustomFilter(year))          //Filter shows by year and sort by Average Rating
                 FilteredShows.Add(s);
 
-            
-            //UpdateIndexes();                            //Update ratings indexes, and then populate the various collections used to display the data across the app
-            RefreshPredictions(true);
-            RefreshAverages();
 
-            TargetError = GetMarginOfError();
+            //UpdateIndexes();                            //Update ratings indexes, and then populate the various collections used to display the data across the app
+            model.TestAccuracy(true);
+            PredictionAccuracy = model._accuracy * 100;
+            PredictionError = model._score;
+            LowestError = model._error;
+
+            //TargetError = GetMarginOfError();
+            RefreshPredictions(true);
+            RefreshAverages();            
 
             var tempList = FilteredShows.OrderBy(x => x.Name);
             foreach(Show s in tempList)
@@ -394,7 +398,7 @@ namespace TV_Ratings_Predictions
                 var Difference = Math.Abs(Math.Log(TargetRating) - Math.Log(x.AverageRating));
                 double right, wrong;
 
-                if ((x.Renewed && x.PredictedOdds >= 0.5) || (x.Canceled && x.PredictedOdds <= 0.5))
+                if ((x.Renewed && x.AverageRating > TargetRating) || (x.Canceled && x.AverageRating < TargetRating))
                 {
                     right = 0;
                     wrong = Difference;
@@ -445,12 +449,13 @@ namespace TV_Ratings_Predictions
 
         public void UpdateOdds(bool parallel = false)       //Calculate model accuracy, and then update the odds for every show in FilteredShows
         {
-            //PredictionAccuracy = model.TestAccuracy(parallel) * 100;
+            //PredictionAccuracy = model._accuracy * 100;
             //PredictionError = model._score;
             //LowestError = model._error;
 
             var Adjustments = model.GetAdjustments(parallel);
 
+            TargetError = GetMarginOfError();
             Parallel.ForEach(FilteredShows, s => s.PredictedOdds = model.GetOdds(s, FactorAverages, Adjustments[s.year]));
         }
 

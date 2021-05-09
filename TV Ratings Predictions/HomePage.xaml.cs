@@ -141,8 +141,8 @@ namespace TV_Ratings_Predictions
 
                 n.PredictionLocked = false;                
 
-                if (n.PredictionAccuracy != n.model.TestAccuracy() * 100)
-                    n.ModelUpdate(n.model);
+                //if (n.PredictionAccuracy != n.model.TestAccuracy() * 100)
+                //    n.ModelUpdate(n.model);
             }
                 
                 
