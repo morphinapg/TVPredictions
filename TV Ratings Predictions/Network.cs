@@ -49,7 +49,6 @@ namespace TV_Ratings_Predictions
 
         public NeuralPredictionModel model;                             //A NeuralPredictionModel is a Neural Network used for predicting renewal or cancellation of a show.
 
-        [NonSerialized]
         public double PredictionAccuracy, PredictionError, LowestError; //A value used for storing the accuracy of the current model. This value is displayed on the Home Page.
 
         public EvolutionTree evolution;                                 //This object represents a Genetic Algorithm system used to search for better prediction models.
@@ -426,6 +425,7 @@ namespace TV_Ratings_Predictions
 
         public void RefreshPredictions(bool parallel = false)   //Calculate predictions for every show in FilteredShows, and sort by odds (descending)
         {
+            //if (initialize)
             UpdateOdds(parallel);
 
             Predictions.Clear();
@@ -445,9 +445,9 @@ namespace TV_Ratings_Predictions
 
         public void UpdateOdds(bool parallel = false)       //Calculate model accuracy, and then update the odds for every show in FilteredShows
         {
-            PredictionAccuracy = model.TestAccuracy(parallel) * 100;
-            PredictionError = model._score;
-            LowestError = model._error;
+            //PredictionAccuracy = model.TestAccuracy(parallel) * 100;
+            //PredictionError = model._score;
+            //LowestError = model._error;
 
             var Adjustments = model.GetAdjustments(parallel);
 
