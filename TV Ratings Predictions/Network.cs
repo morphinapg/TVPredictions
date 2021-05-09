@@ -103,20 +103,22 @@ namespace TV_Ratings_Predictions
 
             model = new NeuralPredictionModel(m);
 
-            if (!NetworkDatabase.written)
+            
+            
+
+            PredictionAccuracy = model.TestAccuracy() * 100;
+            PredictionAccuracy = model._accuracy * 100;
+            PredictionError = model._score;
+
+            if (!NetworkDatabase.written && acc != PredictionError)
             {
                 lock (NetworkDatabase.NetworkList)
                 {
                     NetworkDatabase.written = true;
                     NetworkDatabase.WriteObjectAsync<NeuralPredictionModel>(m, "test1");
                     NetworkDatabase.WriteObjectAsync<NeuralPredictionModel>(model, "test2");
-                }                                
+                }
             }
-            
-
-            //PredictionAccuracy = model.TestAccuracy() * 100;
-            PredictionAccuracy = model._accuracy * 100;
-            PredictionError = model._score;
             LowestError = model._error;
             //TargetError = GetMarginOfError();
             OnPropertyChangedAsync("PredictionAccuracy");
