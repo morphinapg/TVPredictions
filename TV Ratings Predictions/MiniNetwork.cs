@@ -42,7 +42,7 @@ namespace TV_Ratings_Predictions
             //    n.UpdateIndexes(i);
 
             Parallel.ForEach(shows, s => s.PredictedOdds = model.GetOdds(s, FactorAverages, Adjustments[s.year]));
-            n.TargetError = n.GetMarginOfError();
+            n.TargetError = n.model.GetTargetErrorParallel(n.factors);
 
             PredictionTime = DateTime.Now;
             deviations = n.deviations;

@@ -96,29 +96,13 @@ namespace TV_Ratings_Predictions
         }
 
         public void ModelUpdate(NeuralPredictionModel m)    //Update the Prediction Model with the new model, and let the UI know changes have happened
-        {
-            var acc = m._score;
-
-            
+        {           
 
             model = new NeuralPredictionModel(m);
 
-            
-            
-
-            PredictionAccuracy = model.TestAccuracy() * 100;
+            //PredictionAccuracy = model.TestAccuracy(true) * 100;
             PredictionAccuracy = model._accuracy * 100;
             PredictionError = model._score;
-
-            if (!NetworkDatabase.written && acc != PredictionError)
-            {
-                lock (NetworkDatabase.NetworkList)
-                {
-                    NetworkDatabase.written = true;
-                    NetworkDatabase.WriteObjectAsync<NeuralPredictionModel>(m, "test1");
-                    NetworkDatabase.WriteObjectAsync<NeuralPredictionModel>(model, "test2");
-                }
-            }
             LowestError = model._error;
             //TargetError = GetMarginOfError();
             OnPropertyChangedAsync("PredictionAccuracy");
@@ -403,41 +387,6 @@ namespace TV_Ratings_Predictions
             SeasonDeviation = Math.Sqrt(totals / weights);
         }
 
-        public double GetMarginOfError()
-        {
-            var Averages = model.GetAverages(factors);
-            var Adjustments = model.GetAdjustments();
-
-            var ShowErrors = shows.AsParallel().Select(x =>
-            {
-                var weight = 1.0 / NetworkDatabase.MaxYear - x.year + 1;
-                var threshold = model.GetThreshold(x, Averages, Adjustments[x.year]);
-                var TargetRating = model.GetTargetRating(x.year, threshold);
-                var Difference = Math.Abs(Math.Log(TargetRating) - Math.Log(x.AverageRating));
-                double right, wrong;
-
-                if ((x.Renewed && x.AverageRating > TargetRating) || (x.Canceled && x.AverageRating < TargetRating))
-                {
-                    right = 0;
-                    wrong = Difference;
-                }
-                else
-                {
-                    right = Difference;
-                    wrong = 0;
-                }
-
-                return new { Weight = weight, WrongValue = Math.Pow(wrong, 2) * weight, RightValue = Math.Pow(right, 2) * weight };
-            });
-
-            var TotalWeight = ShowErrors.Select(x => x.Weight).Sum();
-
-            var RightDeviation = Math.Sqrt(ShowErrors.Select(x => x.RightValue).Sum() / TotalWeight);
-            var WrongDeviation = Math.Sqrt(ShowErrors.Select(x => x.WrongValue).Sum() / TotalWeight) * 0.408795841;
-
-            return (RightDeviation + WrongDeviation) / 2;
-        }
-
         void RefreshAverages()      //Updates the Averages collection with all of the ratings average data for every show in FilteredShows
         {
             Averages.Clear();
@@ -473,7 +422,7 @@ namespace TV_Ratings_Predictions
 
             var Adjustments = model.GetAdjustments(parallel);
 
-            TargetError = GetMarginOfError();
+            TargetError = model.GetTargetErrorParallel(factors);
             Parallel.ForEach(FilteredShows, s => s.PredictedOdds = model.GetOdds(s, FactorAverages, Adjustments[s.year]));
         }
 

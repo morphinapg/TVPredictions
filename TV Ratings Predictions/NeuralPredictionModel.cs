@@ -20,7 +20,7 @@ namespace TV_Ratings_Predictions
         public double mutationrate, mutationintensity, neuralintensity;
 
         [NonSerialized]
-        public double _accuracy, _ratingstheshold, _score, _error;
+        public double _accuracy, _ratingstheshold, _score, _error, _targeterror;
 
         [NonSerialized]
         public bool isMutated;
@@ -452,7 +452,9 @@ namespace TV_Ratings_Predictions
                 deviation = s.network.deviations[0][s.Episodes - 1];
             }
 
-            deviation += s.network.TargetError;
+            if (_targeterror == 0) GetTargetError(s.factorNames);
+
+            deviation += _targeterror;
 
             var zscore = variance / deviation;
 
@@ -510,7 +512,8 @@ namespace TV_Ratings_Predictions
                 deviation = s.network.deviations[0][s.Episodes - 1];
             }
 
-            deviation += s.network.TargetError;
+            if (_targeterror == 0) GetTargetError(s.factorNames);
+            deviation += _targeterror;
 
             var zscore = variance / deviation;
 
@@ -540,10 +543,82 @@ namespace TV_Ratings_Predictions
             }
         }
 
+        public double GetTargetErrorParallel(ObservableCollection<string> factors)
+        {
+            var Averages = GetAverages(factors);
+            var Adjustments = GetAdjustments();
+
+            var ShowErrors = shows.AsParallel().Where(x => x.AverageRating > 0).Select(x =>
+            {
+                var weight = 1.0 / (NetworkDatabase.MaxYear - x.year + 1);
+                var threshold = GetThreshold(x, Averages, Adjustments[x.year]);
+                var TargetRating = GetTargetRating(x.year, threshold);
+                var Difference = Math.Abs(Math.Log(TargetRating) - Math.Log(x.AverageRating));
+                double right, wrong;
+
+                if ((x.Renewed && x.AverageRating > TargetRating) || (x.Canceled && x.AverageRating < TargetRating))
+                {
+                    right = 0;
+                    wrong = Difference;
+                }
+                else
+                {
+                    right = Difference;
+                    wrong = 0;
+                }
+
+                return new { Weight = weight, WrongValue = Math.Pow(wrong, 2) * weight, RightValue = Math.Pow(right, 2) * weight };
+            });
+
+            var TotalWeight = ShowErrors.Select(x => x.Weight).Sum();
+
+            var RightDeviation = Math.Sqrt(ShowErrors.Select(x => x.RightValue).Sum() / TotalWeight);
+            var WrongDeviation = Math.Sqrt(ShowErrors.Select(x => x.WrongValue).Sum() / TotalWeight) * 0.408795841;
+
+
+            _targeterror = (RightDeviation + WrongDeviation) / 2;
+            return _targeterror;
+        }
+
+        public double GetTargetError(ObservableCollection<string> factors, bool parallel = false)
+        {
+            var Averages = GetAverages(factors);
+            var Adjustments = GetAdjustments();
+
+            var ShowErrors = shows.Where(x => x.AverageRating > 0).Select(x =>
+            {
+                var weight = 1.0 / (NetworkDatabase.MaxYear - x.year + 1);
+                var threshold = GetThreshold(x, Averages, Adjustments[x.year]);
+                var TargetRating = GetTargetRating(x.year, threshold);
+                var Difference = Math.Abs(Math.Log(TargetRating) - Math.Log(x.AverageRating));
+                double right, wrong;
+
+                if ((x.Renewed && x.AverageRating > TargetRating) || (x.Canceled && x.AverageRating < TargetRating))
+                {
+                    right = 0;
+                    wrong = Difference;
+                }
+                else
+                {
+                    right = Difference;
+                    wrong = 0;
+                }
+
+                return new { Weight = weight, WrongValue = Math.Pow(wrong, 2) * weight, RightValue = Math.Pow(right, 2) * weight };
+            });
+
+            var TotalWeight = ShowErrors.Select(x => x.Weight).Sum();
+
+            var RightDeviation = Math.Sqrt(ShowErrors.Select(x => x.RightValue).Sum() / TotalWeight);
+            var WrongDeviation = Math.Sqrt(ShowErrors.Select(x => x.WrongValue).Sum() / TotalWeight) * 0.408795841;
+
+
+            _targeterror = (RightDeviation + WrongDeviation) / 2;
+            return _targeterror;
+        }
+
         public double TestAccuracy(bool parallel = false)
         {
-            
-
             //double average = GetAverageThreshold(parallel);
 
             //double weightAverage = Math.Max(average, 1 - average);
