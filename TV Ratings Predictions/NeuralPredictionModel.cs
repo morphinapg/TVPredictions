@@ -622,7 +622,7 @@ namespace TV_Ratings_Predictions
 
         public double TestAccuracy(bool parallel = false)
         {
-            if (_targeterror == 0) GetTargetError(shows[0].factorNames);
+            if (_targeterror == 0) GetTargetErrorParallel(shows[0].factorNames);
 
             //double average = GetAverageThreshold(parallel);
 
