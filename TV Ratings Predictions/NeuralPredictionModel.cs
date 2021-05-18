@@ -1018,28 +1018,18 @@ namespace TV_Ratings_Predictions
 
         public static bool operator ==(NeuralPredictionModel x, NeuralPredictionModel y)
         {
-            if (x._accuracy == y._accuracy)
-            {
-                if (x._score == y._score)
-                    return true;
-                else
-                    return false;
-            }
-
-            return false;
+            if (x._accuracy == y._accuracy && x._score == y._score && x._targeterror == y._targeterror)
+                return true;
+            else
+                return false;
         }
 
         public static bool operator !=(NeuralPredictionModel x, NeuralPredictionModel y)
         {
-            if (x._accuracy == y._accuracy)
-            {
-                if (x._score == y._score)
+            if (x._accuracy == y._accuracy && x._score == y._score && x._targeterror == y._targeterror)
                     return false;
-                else
-                    return true;
-            }
-
-            return true;
+            else
+                return true;
         }
 
         public static bool operator >(NeuralPredictionModel x, NeuralPredictionModel y)
@@ -1051,6 +1041,8 @@ namespace TV_Ratings_Predictions
                 if (x._accuracy == y._accuracy)
                 {
                     if (x._score < y._score)
+                        return true;
+                    else if (x._targeterror < y._targeterror)
                         return true;
                     else
                         return false;
@@ -1069,6 +1061,8 @@ namespace TV_Ratings_Predictions
                 if (x._accuracy == y._accuracy)
                 {
                     if (x._score > y._score)
+                        return true;
+                    else if (x._targeterror > y._targeterror)
                         return true;
                     else
                         return false;

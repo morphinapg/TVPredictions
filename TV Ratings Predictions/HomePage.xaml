@@ -42,7 +42,7 @@
                             <Grid>
                                 <ToolTipService.ToolTip>
                                     <ToolTip>
-                                        <TextBlock Text="{x:Bind LowestError, Mode=OneWay}"/>
+                                        <TextBlock Text="{x:Bind ToolTip}"/>
                                     </ToolTip>
                                 </ToolTipService.ToolTip>
                                 <ProgressBar Maximum="100" Value="{x:Bind PredictionAccuracy, Mode=OneWay}" VerticalAlignment="Stretch" FontFamily="Segoe UI" Margin="5"/>

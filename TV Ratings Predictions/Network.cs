@@ -83,7 +83,16 @@ namespace TV_Ratings_Predictions
                 else
                     return " (updated " + diference.Seconds + (diference.Seconds > 1 ? " Seconds ago)" : " Second ago)");
             }
-        }        
+        }       
+        
+        public string ToolTip
+        {
+            get
+            {
+                return "Lowest Error: " + LowestError + "\r\n" +
+                    "Margin of Error: " + model._targeterror;
+            }
+        }
 
         [field:NonSerialized]
         public event PropertyChangedEventHandler PropertyChanged;   //This allows the UI to know when certain properties have changed
@@ -110,6 +119,7 @@ namespace TV_Ratings_Predictions
             OnPropertyChangedAsync("LowestError");
             _lastupdate = DateTime.Now;                         
             OnPropertyChangedAsync("LastUpdate");
+            OnPropertyChangedAsync("ToolTip");
 
             NetworkDatabase.pendingSave = true;             //This ensures that the app will save the new model to Settings within the next second
         }
