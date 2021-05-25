@@ -575,6 +575,42 @@ namespace TV_Ratings_Predictions
 
             var TotalWeight = ShowErrors.Select(x => x.Weight).Sum();
 
+            //var normal = new Normal();
+
+            //var RightZ = normal.InverseCumulativeDistribution(0.682689492);
+            //var WrongZ = normal.InverseCumulativeDistribution(0.317310508);
+
+            //var RightWeights = ShowErrors.Select(x =>
+            //{
+            //    var Percentile = ShowErrors.Where(y => y.RightValue <= x.RightValue).Select(y => y.Weight).Sum() / TotalWeight;
+
+            //    double weight = 0;
+            //    if (Percentile > 0 && Percentile < 1)
+            //    {
+            //        var CurrentZ = normal.InverseCumulativeDistribution(Percentile) - RightZ;
+            //        weight = normal.Density(CurrentZ);
+            //    }
+
+            //    return new { RightValue = x.RightValue, Weight = weight };
+            //});
+
+            //var WrongWeights = ShowErrors.Select(x =>
+            //{
+            //    var Percentile = ShowErrors.Where(y => y.WrongValue <= x.WrongValue).Select(y => y.Weight).Sum() / TotalWeight;
+
+            //    double weight = 0;
+            //    if (Percentile > 0 && Percentile < 1)
+            //    {
+            //        var CurrentZ = normal.InverseCumulativeDistribution(Percentile) - WrongZ;
+            //        weight = normal.Density(CurrentZ);
+            //    }
+
+            //    return new { WrongValue = x.WrongValue, Weight = weight };
+            //});
+
+            //var RightDeviation = RightWeights.Select(x => x.RightValue * x.Weight).Sum() / RightWeights.Select(x => x.Weight).Sum();
+            //var WrongDeviation = WrongWeights.Select(x => x.WrongValue * x.Weight).Sum() / WrongWeights.Select(x => x.Weight).Sum();
+
             var RightDeviation = Math.Sqrt(ShowErrors.Select(x => x.RightValue).Sum() / TotalWeight);
             var WrongDeviation = Math.Sqrt(ShowErrors.Select(x => x.WrongValue).Sum() / TotalWeight) * 0.408795841;
 
@@ -611,6 +647,43 @@ namespace TV_Ratings_Predictions
             });
 
             var TotalWeight = ShowErrors.Select(x => x.Weight).Sum();
+
+            //var normal = new Normal();
+
+            //var RightZ = normal.InverseCumulativeDistribution(0.682689492);
+            //var WrongZ = normal.InverseCumulativeDistribution(0.317310508);
+
+            //var RightWeights = ShowErrors.Select(x =>
+            //{
+            //    var Percentile = ShowErrors.Where(y => y.RightValue <= x.RightValue).Select(y => y.Weight).Sum() / TotalWeight;
+
+            //    double weight = 0;
+            //    if (Percentile > 0 && Percentile < 1)
+            //    {
+            //        var CurrentZ = normal.InverseCumulativeDistribution(Percentile) - RightZ;
+            //        weight = normal.Density(CurrentZ);
+            //    }
+
+            //    return new { RightValue = x.RightValue, Weight = weight };
+            //});
+
+            //var WrongWeights = ShowErrors.Select(x =>
+            //{
+            //    var Percentile = ShowErrors.Where(y => y.WrongValue <= x.WrongValue).Select(y => y.Weight).Sum() / TotalWeight;
+
+            //    double weight = 0;
+            //    if (Percentile > 0 && Percentile < 1)
+            //    {
+            //        var CurrentZ = normal.InverseCumulativeDistribution(Percentile) - WrongZ;
+            //        weight = normal.Density(CurrentZ);
+            //    }
+
+            //    return new { WrongValue = x.WrongValue, Weight = weight };
+            //});
+
+            //var RightDeviation = RightWeights.Select(x => x.RightValue * x.Weight).Sum() / RightWeights.Select(x => x.Weight).Sum();
+            //var WrongDeviation = WrongWeights.Select(x => x.WrongValue * x.Weight).Sum() / WrongWeights.Select(x => x.Weight).Sum();
+
 
             var RightDeviation = Math.Sqrt(ShowErrors.Select(x => x.RightValue).Sum() / TotalWeight);
             var WrongDeviation = Math.Sqrt(ShowErrors.Select(x => x.WrongValue).Sum() / TotalWeight) * 0.408795841;

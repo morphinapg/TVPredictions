@@ -83,8 +83,8 @@ namespace TV_Ratings_Predictions
                 else
                     return " (updated " + diference.Seconds + (diference.Seconds > 1 ? " Seconds ago)" : " Second ago)");
             }
-        }       
-        
+        }
+
         public string ToolTip
         {
             get

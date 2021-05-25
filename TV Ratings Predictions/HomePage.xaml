@@ -42,7 +42,7 @@
                             <Grid>
                                 <ToolTipService.ToolTip>
                                     <ToolTip>
-                                        <TextBlock Text="{x:Bind ToolTip}"/>
+                                        <TextBlock Text="{x:Bind ToolTip, Mode=OneWay}"/>
                                     </ToolTip>
                                 </ToolTipService.ToolTip>
                                 <ProgressBar Maximum="100" Value="{x:Bind PredictionAccuracy, Mode=OneWay}" VerticalAlignment="Stretch" FontFamily="Segoe UI" Margin="5"/>
@@ -57,7 +57,7 @@
                         <DataTemplate x:DataType="local:Network">
                             <TextBlock Text="{x:Bind PredictionAccuracy, Converter={StaticResource DoubleToPercent}, Mode=OneWay}" Margin="15">
                                 <ToolTipService.ToolTip>
-                                    <TextBlock Text="{x:Bind PredictionAccuracy}"/>
+                                    <TextBlock Text="{x:Bind PredictionAccuracy, Mode=OneWay}"/>
                                 </ToolTipService.ToolTip>
                             </TextBlock>
                         </DataTemplate>
