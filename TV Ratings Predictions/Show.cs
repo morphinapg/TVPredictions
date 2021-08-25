@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace TV_Ratings_Predictions
@@ -89,6 +90,14 @@ namespace TV_Ratings_Predictions
                 }
 
                 return hash;
+            }
+        }
+
+        public string NameWithSeason
+        {
+            get
+            {
+                return network.shows.Where(x => x.Name == Name && x.year == year).Count() > 1 ? Name + " (Season " + Season + ")" : Name;
             }
         }
 
@@ -186,7 +195,7 @@ namespace TV_Ratings_Predictions
 
         public override string ToString()
         {
-            return Name;
+            return NameWithSeason;
         }
 
         public int CompareTo(Show other)

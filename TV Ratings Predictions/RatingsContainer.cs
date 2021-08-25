@@ -46,7 +46,7 @@ namespace TV_Ratings_Predictions
 
             Ratings = Viewers ? s.viewers : s.ratings;
 
-            ShowName = s.Name;
+            ShowName = s.NameWithSeason;
 
             show = s;
         }

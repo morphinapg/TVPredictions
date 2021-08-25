@@ -81,8 +81,8 @@ namespace TV_Ratings_Predictions
             {
                 var weeks = (new DateTime(date.Year, 6, 1) - date).TotalDays / 7;
 
-                var Possibles = NetworkDatabase.NetworkList.AsParallel().SelectMany(x => x.shows).Where(x => x.factorNames.Contains("Summer") && x.year == NetworkDatabase.MaxYear && (x.Episodes - x.ratings.Count) > weeks && !x.factorValues[x.factorNames.IndexOf("Summer")]).Select(x => x.Name).ToList();
-                var Impossibles = NetworkDatabase.NetworkList.AsParallel().SelectMany(x => x.shows).Where(x => x.factorNames.Contains("Summer") && x.year == NetworkDatabase.MaxYear && (x.Episodes - x.ratings.Count) < weeks && x.factorValues[x.factorNames.IndexOf("Summer")]).Select(x => x.Name).ToList();
+                var Possibles = NetworkDatabase.NetworkList.AsParallel().SelectMany(x => x.shows).Where(x => x.factorNames.Contains("Summer") && x.year == NetworkDatabase.MaxYear && (x.Episodes - x.ratings.Count) > weeks && !x.factorValues[x.factorNames.IndexOf("Summer")]).Select(x => x.NameWithSeason).ToList();
+                var Impossibles = NetworkDatabase.NetworkList.AsParallel().SelectMany(x => x.shows).Where(x => x.factorNames.Contains("Summer") && x.year == NetworkDatabase.MaxYear && (x.Episodes - x.ratings.Count) < weeks && x.factorValues[x.factorNames.IndexOf("Summer")]).Select(x => x.NameWithSeason).ToList();
 
                 if (Possibles.Count > 0)
                 {
@@ -104,7 +104,7 @@ namespace TV_Ratings_Predictions
             }
             else if (date.Month < 9)
             {
-                var Possibles = NetworkDatabase.NetworkList.AsParallel().SelectMany(x => x.shows).Where(x => x.factorNames.Contains("Summer") && x.year == NetworkDatabase.MaxYear && (x.Episodes - x.ratings.Count) > 0 && !x.factorValues[x.factorNames.IndexOf("Summer")]).Select(x => x.Name).ToList();
+                var Possibles = NetworkDatabase.NetworkList.AsParallel().SelectMany(x => x.shows).Where(x => x.factorNames.Contains("Summer") && x.year == NetworkDatabase.MaxYear && (x.Episodes - x.ratings.Count) > 0 && !x.factorValues[x.factorNames.IndexOf("Summer")]).Select(x => x.NameWithSeason).ToList();
 
                 if (Possibles.Count > 0)
                 {

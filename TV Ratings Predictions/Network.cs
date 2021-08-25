@@ -170,7 +170,7 @@ namespace TV_Ratings_Predictions
             RefreshPredictions(true);
             RefreshAverages();            
 
-            var tempList = FilteredShows.OrderBy(x => x.Name);
+            var tempList = FilteredShows.OrderBy(x => x.NameWithSeason);
             foreach(Show s in tempList)
             {
                 AlphabeticalShows.Add(s);
@@ -197,7 +197,7 @@ namespace TV_Ratings_Predictions
 
         public void UpdateIndexes(int year)                             //Update Indexes for a custom year
         {
-            var tempList = shows.Where(x => x.year == year && x.ratings.Count > 0).OrderBy(x => x.AverageRating).ThenBy(x => x.Name).ToList();
+            var tempList = shows.Where(x => x.year == year && x.ratings.Count > 0).OrderBy(x => x.AverageRating).ThenBy(x => x.NameWithSeason).ToList();
 
             double total = 0;
             var totals = new double[tempList.Count];
@@ -220,7 +220,7 @@ namespace TV_Ratings_Predictions
             if (duplicate)  //If there are duplicate rating scores, then perform the process again with the duplicates reverssed, then average the indexes
             {
                 cumulativeTotal = 0;
-                tempList = tempList.OrderBy(x => x.AverageRating).ThenByDescending(x => x.Name).ToList();
+                tempList = tempList.OrderBy(x => x.AverageRating).ThenByDescending(x => x.NameWithSeason).ToList();
 
                 foreach (Show s in tempList)
                 {

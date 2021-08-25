@@ -51,7 +51,7 @@ namespace TV_Ratings_Predictions
         {
             network = n;
             show = s;
-            Show = s.Name;
+            Show = s.NameWithSeason;
             _rating = 0;
             foreach (double r in s.ratings)
                 _rating += r;

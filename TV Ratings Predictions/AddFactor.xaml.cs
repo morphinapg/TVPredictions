@@ -74,7 +74,7 @@ namespace TV_Ratings_Predictions
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             network = e.Parameter as Network;
-            var tempList = network.shows.OrderBy(x => x.year).ThenBy(x => x.Name);
+            var tempList = network.shows.OrderBy(x => x.year).ThenBy(x => x.NameWithSeason);
             var yearList = new List<int>();
 
             foreach (Show s in tempList)
@@ -107,7 +107,7 @@ namespace TV_Ratings_Predictions
         {
             get
             {
-                return show.Name;
+                return show.NameWithSeason;
             }
         }
 

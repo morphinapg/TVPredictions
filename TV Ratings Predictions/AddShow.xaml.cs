@@ -56,7 +56,7 @@ namespace TV_Ratings_Predictions
             var notExist = true;          
 
             foreach (Show s in network.shows)
-                if (s.Name == name && s.year == NetworkDatabase.CurrentYear) notExist = false;
+                if (s.Name == name && s.year == NetworkDatabase.CurrentYear && s.Season == season) notExist = false;
 
             var settings = new ObservableCollection<bool>();
 

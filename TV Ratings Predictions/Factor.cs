@@ -39,7 +39,7 @@ namespace TV_Ratings_Predictions
 
         public FactorContainer(Show s, bool AllYears = false)
         {
-            Show = s.Name;
+            Show = s.NameWithSeason;
             if (AllYears)
                 Show += " (" + s.year + "-" + (s.year + 1) + ")";
             Index = s.ShowIndex;

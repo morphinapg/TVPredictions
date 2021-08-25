@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Linq;
 
 namespace TV_Ratings_Predictions
 {
@@ -185,7 +186,7 @@ namespace TV_Ratings_Predictions
         {
             network = n;
             show = s;
-            Show = s.Name;
+            Show = s.NameWithSeason;
             odds = s.PredictedOdds;
             _rating = s.AverageRating;
             _viewers = s.AverageViewers;

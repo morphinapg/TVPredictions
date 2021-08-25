@@ -442,7 +442,7 @@ namespace TV_Ratings_Predictions
                     }
                         
 
-                ShowName.Text = s.Name;
+                ShowName.Text = s.NameWithSeason;
                 Odds.Text = "Predicted Odds: " + Results.CurrentOdds.ToString("P");
                 Base.Text = "Base Odds: " + Results.BaseOdds.ToString("P");
 
@@ -461,7 +461,7 @@ namespace TV_Ratings_Predictions
 
         private async void SaveImage_Click(object sender, RoutedEventArgs e)
         {
-            var picker = new FileSavePicker { SuggestedStartLocation = PickerLocationId.Desktop, SuggestedFileName = ((Show)ShowSelector.SelectedItem).Name };
+            var picker = new FileSavePicker { SuggestedStartLocation = PickerLocationId.Desktop, SuggestedFileName = ((Show)ShowSelector.SelectedItem).NameWithSeason };
             picker.FileTypeChoices.Add("PNG Image", new List<string>() { ".png" });
 
             StorageFile file = await picker.PickSaveFileAsync();
