@@ -167,7 +167,7 @@ namespace TV_Ratings_Predictions
             for (int i = 0; i < NeuronCount; i++)
                 SecondLayerOutputs[i] = SecondLayer[i].GetOutput(FirstLayerOutputs);
 
-            s._calculatedThreshold = Math.Pow((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, adjustment);
+            s._calculatedThreshold = Math.Max(Math.Pow((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, adjustment), 0.000001);
 
             return s._calculatedThreshold;
         }
@@ -184,7 +184,7 @@ namespace TV_Ratings_Predictions
             for (int i = 0; i < NeuronCount; i++)
                 SecondLayerOutputs[i] = SecondLayer[i].GetOutput(FirstLayerOutputs);
 
-            return Math.Pow((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, adjustment);
+            return Math.Max(Math.Pow((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, adjustment), 0.000001);
         }
 
         public double GetModifiedThreshold(Show s, double[] averages, double adjustment, int index, int index2 = -1, int index3 = -1)
@@ -243,9 +243,9 @@ namespace TV_Ratings_Predictions
 
                 if (index < factors.Count)
                 {
-                    var RenewedScore = (RenewedShows.Where(x => x.factorValues[index]).Count() * 1.0 + RenewedShows.Where(x => !x.factorValues[index]).Count() * -1.0);
-                    var CanceledScore = (CanceledShows.Where(x => x.factorValues[index]).Count() * 1.0 + CanceledShows.Where(x => !x.factorValues[index]).Count() * -1.0);
-                    var NoStatusScore = (NoStatus.Where(x => x.factorValues[index]).Count() * 1.0 + NoStatus.Where(x => !x.factorValues[index]).Count() * -1.0);
+                    var RenewedScore = RenewedShows.Count(x => x.factorValues[index]) * 1.0 + RenewedShows.Count(x => !x.factorValues[index]) * -1.0;
+                    var CanceledScore = CanceledShows.Count(x => x.factorValues[index]) * 1.0 + CanceledShows.Count(x => !x.factorValues[index]) * -1.0;
+                    var NoStatusScore = NoStatus.Count(x => x.factorValues[index]) * 1.0 + NoStatus.Count(x => !x.factorValues[index]) * -1.0;
 
                     if (RenewedShows.Count() > 0 && CanceledShows.Count() > 0)
                     {
@@ -370,6 +370,10 @@ namespace TV_Ratings_Predictions
                     count += weight;
                 }
 
+            int z = 0;
+            if (total / count == 0)
+                z = 1;
+
             return total / count;
         }
 
@@ -413,6 +417,9 @@ namespace TV_Ratings_Predictions
 
         private double GetAdjustment(double NetworkAverage, double SeasonAverage)
         {
+            if (NetworkAverage * SeasonAverage == 0)
+                return 1;
+
             return Math.Log(NetworkAverage) / Math.Log(SeasonAverage);
         }
 
@@ -453,12 +460,12 @@ namespace TV_Ratings_Predictions
                 deviation = s.network.deviations[0][s.Episodes - 1];
             }
 
-            if (_targeterror == 0) GetTargetError(s.factorNames);
+            if (_targeterror == 0 || Double.IsNaN(_targeterror)) GetTargetError(s.factorNames);
 
             //The more overlap there is, the less confidence you can have in the prediction
             var Overlap = AreaOfOverlap(Math.Log(s.AverageRating), deviation, Math.Log(target), _targeterror);
 
-            //deviation += _targeterror;
+            deviation = _targeterror;
 
             var zscore = variance / deviation;
 
@@ -517,13 +524,13 @@ namespace TV_Ratings_Predictions
                 deviation = s.network.deviations[0][s.Episodes - 1];
             }
 
-            if (_targeterror == 0) 
+            if (_targeterror == 0 || Double.IsNaN(_targeterror)) 
                 GetTargetError(s.factorNames);
 
             //The more overlap there is, the less confidence you can have in the prediction
             var Overlap = AreaOfOverlap(Math.Log(s.AverageRating), deviation, Math.Log(target), _targeterror);
 
-            //deviation += _targeterror;
+            deviation = _targeterror;
 
             var zscore = variance / deviation;
 
@@ -558,7 +565,7 @@ namespace TV_Ratings_Predictions
 
         public double GetTargetErrorParallel(ObservableCollection<string> factors)
         {
-            var Averages = GetAverages(factors);
+            var Averages = shows[0].network.FactorAverages; //GetAverages(factors);
             var Adjustments = GetAdjustments();
 
             var ShowErrors = shows.AsParallel().Where(x => x.AverageRating > 0).Select(x =>
@@ -631,7 +638,7 @@ namespace TV_Ratings_Predictions
 
         public double GetTargetError(ObservableCollection<string> factors, bool parallel = false)
         {
-            var Averages = GetAverages(factors);
+            var Averages = shows[0].network.FactorAverages; // GetAverages(factors);
             var Adjustments = GetAdjustments();
 
             var ShowErrors = shows.Where(x => x.AverageRating > 0).Select(x =>
@@ -639,7 +646,8 @@ namespace TV_Ratings_Predictions
                 var weight = 1.0 / (NetworkDatabase.MaxYear - x.year + 1);
                 var threshold = GetThreshold(x, Averages, Adjustments[x.year]);
                 var TargetRating = GetTargetRating(x.year, threshold);
-                var Difference = Math.Abs(Math.Log(TargetRating) - Math.Log(x.AverageRating));
+                var Difference = Math.Abs(Math.Log(TargetRating) - Math.Log(x.AverageRating));         
+
                 double right, wrong;
 
                 if ((x.Renewed && x.AverageRating > TargetRating) || (x.Canceled && x.AverageRating < TargetRating))
@@ -697,7 +705,6 @@ namespace TV_Ratings_Predictions
 
             var RightDeviation = Math.Sqrt(ShowErrors.Select(x => x.RightValue).Sum() / TotalWeight);
             var WrongDeviation = Math.Sqrt(ShowErrors.Select(x => x.WrongValue).Sum() / TotalWeight) * 0.408795841;
-
 
             _targeterror = (RightDeviation + WrongDeviation) / 2;
             return _targeterror;

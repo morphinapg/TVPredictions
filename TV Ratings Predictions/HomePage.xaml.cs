@@ -195,7 +195,7 @@ namespace TV_Ratings_Predictions
                 //        };
                 //        ContentDialogResult result;
                 //        result = await dialog.ShowAsync();
-                //    });                    
+                //    });
                 //}
 
             }
