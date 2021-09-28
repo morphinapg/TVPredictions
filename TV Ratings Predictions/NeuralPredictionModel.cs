@@ -370,10 +370,6 @@ namespace TV_Ratings_Predictions
                     count += weight;
                 }
 
-            int z = 0;
-            if (total / count == 0)
-                z = 1;
-
             return total / count;
         }
 
@@ -881,7 +877,10 @@ namespace TV_Ratings_Predictions
         public double GetTargetRating(int year, double targetindex)
         {
 
-            var tempShows = shows.Where(x => x.year == year && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
+            var tempShows = (shows[0].network.ShowsPerYear is null) ? 
+                shows.Where(x => x.year == year && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList() : 
+                shows[0].network.ShowsPerYear[year];
+            //var tempShows = shows.Where(x => x.year == year && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
             if (tempShows.Count == 0)
             {
                 //var yearList = shows.Where(x => x.ratings.Count > 0).Select(x => x.year).ToList();

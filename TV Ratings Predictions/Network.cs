@@ -39,6 +39,9 @@ namespace TV_Ratings_Predictions
         public ObservableCollection<AverageContainer> Averages;         //An AverageContainer includes information used to display the current ratings averages for a show
                                                                         //This collection includes an AverageContainer for each Show in FilteredShows        
 
+        [NonSerialized]
+        public Dictionary<int, List<Show>> ShowsPerYear;
+
         public double[] ratingsAverages;                                //Typically throughout a TV season, ratings will start out higher and fall throughout the season.
         public double[] FactorAverages;                                 //This array describes that pattern for the network, based on ratings data for all shows ever tracked on the network.
         
@@ -154,7 +157,8 @@ namespace TV_Ratings_Predictions
             FilteredShows.Clear();
             NetworkRatings.Clear();
             NetworkViewers.Clear();
-            AlphabeticalShows.Clear();            
+            AlphabeticalShows.Clear();
+            
             
             foreach (Show s in CustomFilter(year))          //Filter shows by year and sort by Average Rating
                 FilteredShows.Add(s);
@@ -177,6 +181,11 @@ namespace TV_Ratings_Predictions
                 NetworkRatings.Add(new RatingsContainer(this, s));
                 NetworkViewers.Add(new RatingsContainer(this, s, true));
             }
+
+            ShowsPerYear = new Dictionary<int, List<Show>>();
+            var years = shows.Select(x => x.year).Distinct();
+            foreach(int y in years)
+                ShowsPerYear[y] = shows.Where(x => x.year == y && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
         }
 
         public List<Show> CustomFilter(int year)            //Returns a filtered list representing every show for a custom chosen year, sorted by rating
