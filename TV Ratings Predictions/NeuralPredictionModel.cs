@@ -167,7 +167,7 @@ namespace TV_Ratings_Predictions
             for (int i = 0; i < NeuronCount; i++)
                 SecondLayerOutputs[i] = SecondLayer[i].GetOutput(FirstLayerOutputs);
 
-            s._calculatedThreshold = Math.Max(Math.Pow((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, adjustment), 0.000001);
+            s._calculatedThreshold = Math.Min(Math.Max(Math.Pow((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, adjustment), 0.000001), 0.999999);
 
             return s._calculatedThreshold;
         }
@@ -184,7 +184,7 @@ namespace TV_Ratings_Predictions
             for (int i = 0; i < NeuronCount; i++)
                 SecondLayerOutputs[i] = SecondLayer[i].GetOutput(FirstLayerOutputs);
 
-            return Math.Max(Math.Pow((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, adjustment), 0.000001);
+            return Math.Min(Math.Max(Math.Pow((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, adjustment), 0.000001), 0.999999);
         }
 
         public double GetModifiedThreshold(Show s, double[] averages, double adjustment, int index, int index2 = -1, int index3 = -1)
@@ -370,6 +370,10 @@ namespace TV_Ratings_Predictions
                     count += weight;
                 }
 
+            int z = 0;
+            if (total / count == 1)
+                z = 1;
+
             return total / count;
         }
 
@@ -413,7 +417,7 @@ namespace TV_Ratings_Predictions
 
         private double GetAdjustment(double NetworkAverage, double SeasonAverage)
         {
-            if (NetworkAverage * SeasonAverage == 0)
+            if (NetworkAverage * SeasonAverage == 0 || NetworkAverage == SeasonAverage)
                 return 1;
 
             return Math.Log(NetworkAverage) / Math.Log(SeasonAverage);
@@ -425,7 +429,10 @@ namespace TV_Ratings_Predictions
             var Adjustments = new Dictionary<int, double>();
             var years = shows.Select(x => x.year).ToList().Distinct();
             foreach (int y in years)
+            {
                 Adjustments[y] = (y == NetworkDatabase.MaxYear) ? GetAdjustment(average, GetSeasonAverageThreshold(y)) : 1;
+            }
+                
 
             return Adjustments;
         }
@@ -520,7 +527,7 @@ namespace TV_Ratings_Predictions
                 deviation = s.network.deviations[0][s.Episodes - 1];
             }
 
-            if (_targeterror == 0 || Double.IsNaN(_targeterror)) 
+            if (_targeterror == 0) 
                 GetTargetError(s.factorNames);
 
             //The more overlap there is, the less confidence you can have in the prediction
@@ -642,7 +649,7 @@ namespace TV_Ratings_Predictions
                 var weight = 1.0 / (NetworkDatabase.MaxYear - x.year + 1);
                 var threshold = GetThreshold(x, Averages, Adjustments[x.year]);
                 var TargetRating = GetTargetRating(x.year, threshold);
-                var Difference = Math.Abs(Math.Log(TargetRating) - Math.Log(x.AverageRating));         
+                var Difference = Math.Abs(Math.Log(TargetRating) - Math.Log(x.AverageRating));
 
                 double right, wrong;
 
@@ -700,7 +707,7 @@ namespace TV_Ratings_Predictions
 
 
             var RightDeviation = Math.Sqrt(ShowErrors.Select(x => x.RightValue).Sum() / TotalWeight);
-            var WrongDeviation = Math.Sqrt(ShowErrors.Select(x => x.WrongValue).Sum() / TotalWeight) * 0.408795841;
+            var WrongDeviation = Math.Sqrt(ShowErrors.Select(x => x.WrongValue).Sum() / TotalWeight) * 0.408795841;                
 
             _targeterror = (RightDeviation + WrongDeviation) / 2;
             return _targeterror;
@@ -995,7 +1002,6 @@ namespace TV_Ratings_Predictions
                     minIndex = 0;
                     minRating = 0;
                 }
-
 
                 return (targetindex - minIndex) / (maxIndex - minIndex) * (maxRating - minRating) + minRating;
             }
