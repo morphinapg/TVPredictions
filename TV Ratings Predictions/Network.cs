@@ -439,10 +439,10 @@ namespace TV_Ratings_Predictions
             //PredictionError = model._score;
             //LowestError = model._error;
 
-            var Adjustments = model.GetAdjustments(parallel);
+            //var Adjustments = model.GetAdjustments(parallel);
 
             TargetError = model.GetTargetErrorParallel(factors);
-            Parallel.ForEach(FilteredShows, s => s.PredictedOdds = model.GetOdds(s, FactorAverages, Adjustments[s.year]));
+            Parallel.ForEach(FilteredShows, s => s.PredictedOdds = model.GetOdds(s, FactorAverages));
         }
 
         public double AdjustAverage(int currentEpisode, int finalEpisode, double currentDrop = -1, bool viewers = false)   //This applies the typical ratings falloff values to the current weighted ratings average for a show

@@ -52,7 +52,7 @@ namespace TV_Ratings_Predictions
             NetworkDatabase.canGoBack = false;
         }
 
-        DetailsCombo GenerateDetails(Show s, Dictionary<int, double> Adjustments, int[] FactorOrder, bool AllFactors = false) //Generate Factor details, but change the order of the search
+        DetailsCombo GenerateDetails(Show s, int[] FactorOrder, bool AllFactors = false) //Generate Factor details, but change the order of the search
         {
             //Needed: Code needs to start with a blank slate of average factor values, and one by one, modify that to the actual values, following the order given by FactorOrder
 
@@ -66,12 +66,12 @@ namespace TV_Ratings_Predictions
             var tempList = network.shows.OrderBy(x => x.Episodes).ToList();
             int LowestEpisode = tempList.First().Episodes, HighestEpisode = tempList.Last().Episodes;
 
-            var BaseOdds = network.model.GetOdds(s, network.FactorAverages, Adjustments[s.year], false, true, -1);
+            var BaseOdds = network.model.GetOdds(s, network.FactorAverages, false, true, -1);
             double CurrentOdds = BaseOdds, NewOdds, detailValue;
 
             var FactorCount = network.factors.Count;
 
-            var RealOdds = network.model.GetOdds(s, network.FactorAverages, Adjustments[s.year]);
+            var RealOdds = network.model.GetOdds(s, network.FactorAverages);
 
 
             var CurrentFactors = new double[FactorCount + 3];
@@ -124,7 +124,7 @@ namespace TV_Ratings_Predictions
                         if (s.Season == 1 && !NewShow)
                             detailName += " (Re-aired from another network)";
 
-                        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+                        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
 
                         detailValue = NewOdds - CurrentOdds;
 
@@ -141,7 +141,7 @@ namespace TV_Ratings_Predictions
 
                     CurrentFactors[i] = s.Episodes / 26.0 * 2 - 1 - network.FactorAverages[i];
 
-                    NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+                    NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
 
                     detailValue = NewOdds - CurrentOdds;
 
@@ -155,7 +155,7 @@ namespace TV_Ratings_Predictions
 
                     CurrentFactors[i] = (s.Halfhour ? 1 : -1) - network.FactorAverages[i];
 
-                    NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+                    NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
 
                     detailValue = NewOdds - CurrentOdds;
 
@@ -190,7 +190,7 @@ namespace TV_Ratings_Predictions
                         else
                             detailName = "Not syndicated yet";
 
-                        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+                        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
 
                         detailValue = NewOdds - CurrentOdds;
 
@@ -235,7 +235,7 @@ namespace TV_Ratings_Predictions
 
                         PremiereFinished = true;
 
-                        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+                        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
 
                         detailValue = NewOdds - CurrentOdds;
 
@@ -254,7 +254,7 @@ namespace TV_Ratings_Predictions
                             detailName = "Did not air in the Summer";
 
                         
-                        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+                        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
 
                         detailValue = NewOdds - CurrentOdds;
 
@@ -283,7 +283,7 @@ namespace TV_Ratings_Predictions
                             else
                                 detailName = "Show is owned by WB";
 
-                            NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+                            NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
                         }
                         else
                         {
@@ -294,7 +294,7 @@ namespace TV_Ratings_Predictions
                             else
                                 detailName = "Show is owned by the network";
 
-                            NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+                            NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
                         }
 
                         detailValue = NewOdds - CurrentOdds;
@@ -356,7 +356,7 @@ namespace TV_Ratings_Predictions
                             }
                     }
 
-                    NewOdds = network.model.GetModifiedOdds(s, CurrentFactors, Adjustments[s.year]);
+                    NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
 
                     detailValue = NewOdds - CurrentOdds;
 
@@ -377,7 +377,7 @@ namespace TV_Ratings_Predictions
             {
                 details.Clear();
 
-                var Adjustments = network.model.GetAdjustments(true);
+                //var Adjustments = network.model.GetAdjustments(true);
 
                 var FactorCount = network.factors.Count + 3;
                 int Iterations = 20000; //Enough for precision within 0.01%
@@ -405,13 +405,13 @@ namespace TV_Ratings_Predictions
 
                 await Task.Run(() =>
                 {
-                    AllResults[0] = GenerateDetails(s, Adjustments, Numbers);
+                    AllResults[0] = GenerateDetails(s, Numbers);
                     CompletedProgress[0] = 1;
 
                     Parallel.For(1, Iterations, i =>
                     {
                         var OrderedNumbers = Numbers.OrderBy(x => Random.NextDouble()).ToArray();
-                        AllResults[i] = GenerateDetails(s, Adjustments, OrderedNumbers);
+                        AllResults[i] = GenerateDetails(s, OrderedNumbers);
                         CompletedProgress[i] = 1;
                     });
                 });

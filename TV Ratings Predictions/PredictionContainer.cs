@@ -192,9 +192,9 @@ namespace TV_Ratings_Predictions
             _viewers = s.AverageViewers;
             Status = s.RenewalStatus;
 
-            var Adjustments = n.model.GetAdjustments(true);
+            //var Adjustments = n.model.GetAdjustments(true);
 
-            _targetrating = n.model.GetTargetRating(s.year, n.model.GetThreshold(s, n.FactorAverages, Adjustments[s.year]));
+            _targetrating = n.model.GetTargetRating(s.year, n.model.GetThreshold(s, n.FactorAverages));
             TargetRating = Math.Round(_targetrating, 2).ToString("F2");
             showAll = a;
         }
