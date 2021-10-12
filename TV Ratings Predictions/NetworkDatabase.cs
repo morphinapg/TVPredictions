@@ -155,6 +155,22 @@ namespace TV_Ratings_Predictions
 
                 n.Filter(CurrentYear);                                  //Once the Network is fully restored, perform a filter based on the current TV Season
 
+                n.model.FactorBias = n.model.GetAverages(n.factors);
+                n.model.SeasonDeviation = n.SeasonDeviation;
+                foreach (NeuralPredictionModel m in n.evolution.Primary)
+                {
+                    m.shows = n.shows;
+                    m.FactorBias = m.GetAverages(n.factors);
+                    m.SeasonDeviation = m.GetSeasonDeviation(n.factors);
+                }
+
+                foreach (NeuralPredictionModel m in n.evolution.Randomized)
+                {
+                    m.shows = n.shows;
+                    m.FactorBias = m.GetAverages(n.factors);
+                    m.SeasonDeviation = m.GetSeasonDeviation(n.factors);
+                }
+
             }
             );
 

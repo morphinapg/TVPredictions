@@ -66,12 +66,12 @@ namespace TV_Ratings_Predictions
             var tempList = network.shows.OrderBy(x => x.Episodes).ToList();
             int LowestEpisode = tempList.First().Episodes, HighestEpisode = tempList.Last().Episodes;
 
-            var BaseOdds = network.model.GetOdds(s, network.FactorAverages, false, true, -1);
+            var BaseOdds = network.model.GetOdds(s, false, true, -1);
             double CurrentOdds = BaseOdds, NewOdds, detailValue;
 
             var FactorCount = network.factors.Count;
 
-            var RealOdds = network.model.GetOdds(s, network.FactorAverages);
+            var RealOdds = network.model.GetOdds(s);
 
 
             var CurrentFactors = new double[FactorCount + 3];

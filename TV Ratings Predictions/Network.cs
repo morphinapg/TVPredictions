@@ -112,6 +112,9 @@ namespace TV_Ratings_Predictions
 
             model = new NeuralPredictionModel(m);
 
+            FactorAverages = model.FactorBias;
+            SeasonDeviation = model.SeasonDeviation;
+
             //PredictionAccuracy = model.TestAccuracy(true) * 100;
             PredictionAccuracy = model._accuracy * 100;
             PredictionError = model._score;
@@ -388,22 +391,23 @@ namespace TV_Ratings_Predictions
             //TargetError = Math.Sqrt(devs / Math.Max((tempList.Count() - 1), 1)) / Math.Sqrt(Math.Max((tempList.Count() - 1), 1));
 
             //Factor Averages
-            FactorAverages = model.GetAverages(factors);
+            FactorAverages = (model.FactorBias is null) ? new double[factors.Count] : model.FactorBias;
 
             //Find Standard Deviation For Season #
-            var SeasonAverage = model.GetSeasonAverage(factors);
-            double weights = 0;
-            double totals = 0;
+            //var SeasonAverage = model.GetSeasonAverage(factors);
+            //double weights = 0;
+            //double totals = 0;
 
-            foreach (int i in yearlist)
-            {
-                var segment = tempList.Where(x => x.year == i);
-                var w = 1.0 / (NetworkDatabase.MaxYear - i + 1);
-                totals += segment.AsParallel().Select(x => Math.Pow(x.Season - SeasonAverage, 2)).Sum() * w;
-                weights += segment.Count() * w;
-            }
+            //foreach (int i in yearlist)
+            //{
+            //    var segment = tempList.Where(x => x.year == i);
+            //    var w = 1.0 / (NetworkDatabase.MaxYear - i + 1);
+            //    totals += segment.AsParallel().Select(x => Math.Pow(x.Season - SeasonAverage, 2)).Sum() * w;
+            //    weights += segment.Count() * w;
+            //}
 
-            SeasonDeviation = Math.Sqrt(totals / weights);
+            //SeasonDeviation = Math.Sqrt(totals / weights);
+            SeasonDeviation = model.SeasonDeviation;
         }
 
         void RefreshAverages()      //Updates the Averages collection with all of the ratings average data for every show in FilteredShows
@@ -442,7 +446,7 @@ namespace TV_Ratings_Predictions
             //var Adjustments = model.GetAdjustments(parallel);
 
             TargetError = model.GetTargetErrorParallel(factors);
-            Parallel.ForEach(FilteredShows, s => s.PredictedOdds = model.GetOdds(s, FactorAverages));
+            Parallel.ForEach(FilteredShows, s => s.PredictedOdds = model.GetOdds(s));
         }
 
         public double AdjustAverage(int currentEpisode, int finalEpisode, double currentDrop = -1, bool viewers = false)   //This applies the typical ratings falloff values to the current weighted ratings average for a show

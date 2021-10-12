@@ -194,7 +194,7 @@ namespace TV_Ratings_Predictions
 
             //var Adjustments = n.model.GetAdjustments(true);
 
-            _targetrating = n.model.GetTargetRating(s.year, n.model.GetThreshold(s, n.FactorAverages));
+            _targetrating = n.model.GetTargetRating(s.year, n.model.GetThreshold(s));
             TargetRating = Math.Round(_targetrating, 2).ToString("F2");
             showAll = a;
         }

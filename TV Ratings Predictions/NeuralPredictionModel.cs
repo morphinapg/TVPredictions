@@ -17,13 +17,15 @@ namespace TV_Ratings_Predictions
         Neuron[] FirstLayer, SecondLayer;
         Neuron Output;
 
-        public double mutationrate, mutationintensity, neuralintensity;
+        public double mutationrate, mutationintensity, neuralintensity, SeasonDeviation;
 
         [NonSerialized]
         public double _accuracy, _ratingstheshold, _score, _error, _targeterror;
 
         [NonSerialized]
         public bool isMutated;
+
+        public double[] FactorBias;
 
 
         public NeuralPredictionModel(Network n) //New Random Prediction Model
@@ -49,6 +51,28 @@ namespace TV_Ratings_Predictions
             mutationrate = r.NextDouble();
             mutationintensity = r.NextDouble();
             neuralintensity = r.NextDouble();
+
+            FactorBias = GetAverages(n.factors);
+            SeasonDeviation = GetSeasonDeviation(n.factors);
+        }
+
+        public double GetSeasonDeviation(ObservableCollection<string> factors)
+        {
+            var yearlist = shows.Select(x => x.year).Distinct();
+            var tempList = shows.Where(x => x.ratings.Count > 0).ToList();
+            var SeasonAverage = GetSeasonAverage(factors);
+            double weights = 0;
+            double totals = 0;
+
+            foreach (int i in yearlist)
+            {
+                var segment = tempList.Where(x => x.year == i);
+                var w = 1.0 / (NetworkDatabase.MaxYear - i + 1);
+                totals += segment.AsParallel().Select(x => Math.Pow(x.Season - SeasonAverage, 2)).Sum() * w;
+                weights += segment.Count() * w;
+            }
+
+            return Math.Sqrt(totals / weights);
         }
 
         public NeuralPredictionModel(Network n, double midpoint) //New Prediction Model based on midpoint
@@ -74,6 +98,9 @@ namespace TV_Ratings_Predictions
             mutationrate = r.NextDouble();
             mutationintensity = r.NextDouble();
             neuralintensity = r.NextDouble();
+
+            FactorBias = GetAverages(n.factors);
+            SeasonDeviation = GetSeasonDeviation(n.factors);
         }
 
         private double Breed(double x, double y, Random r)
@@ -108,6 +135,12 @@ namespace TV_Ratings_Predictions
             mutationrate = Breed(x.mutationrate, y.mutationrate, r);
             mutationintensity = Breed(x.mutationintensity, y.mutationintensity, r);
             neuralintensity = Breed(x.neuralintensity, y.neuralintensity, r);
+
+            FactorBias = new double[InputCount + 1];
+            for (int i = 0; i < InputCount + 1; i++)
+                FactorBias[i] = Breed(x.FactorBias[i], y.FactorBias[i], r);
+
+            SeasonDeviation = Breed(x.SeasonDeviation, y.SeasonDeviation, r);
         }
 
         public NeuralPredictionModel(NeuralPredictionModel n)
@@ -137,6 +170,8 @@ namespace TV_Ratings_Predictions
             _error = n._error;
             _targeterror = n._targeterror;
 
+            FactorBias = n.FactorBias;
+            SeasonDeviation = n.SeasonDeviation;
         }
 
         public void SetElite()
@@ -144,9 +179,11 @@ namespace TV_Ratings_Predictions
             _accuracy = 0;
         }
 
-        public double GetThreshold(Show s, double[] averages)
+        public double GetThreshold(Show s)
         {
-            if (averages is null) averages = new double[InputCount + 1];
+            //if (averages is null) averages = new double[InputCount + 1];
+
+            var averages = (FactorBias is null) ? new double[InputCount + 1] : FactorBias;
 
             var inputs = new double[InputCount + 1];
 
@@ -187,9 +224,11 @@ namespace TV_Ratings_Predictions
             return Math.Min(Math.Max((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, 0.000001), 0.999999);
         }
 
-        public double GetModifiedThreshold(Show s, double[] averages, int index, int index2 = -1, int index3 = -1)
+        public double GetModifiedThreshold(Show s,int index, int index2 = -1, int index3 = -1)
         {
-            if (averages is null) averages = new double[InputCount + 1];
+            //if (averages is null) averages = new double[InputCount + 1];
+
+            var averages = (FactorBias is null) ? new double[InputCount + 1] : FactorBias;
 
             var inputs = new double[InputCount + 1];
             double[]
@@ -344,7 +383,7 @@ namespace TV_Ratings_Predictions
 
             //var tempList = shows.Where(x => x.ratings.Count > 0 && (x.Renewed || x.Canceled)).ToList();
             var tempList = shows.ToList();
-            var averages = tempList.First().network.FactorAverages;
+            //if (averages is null) averages = new double[InputCount + 1];
 
             if (parallel)
             {
@@ -355,7 +394,7 @@ namespace TV_Ratings_Predictions
                 Parallel.For(0, tempList.Count, i =>
                 {
                     double weight = 1.0 / (year - tempList[i].year + 1);
-                    totals[i] = GetThreshold(tempList[i], averages) * weight;
+                    totals[i] = GetThreshold(tempList[i]) * weight;
                     counts[i] = weight;
                 });
 
@@ -366,7 +405,7 @@ namespace TV_Ratings_Predictions
                 foreach (Show s in tempList)
                 {
                     double weight = 1.0 / (year - s.year + 1);
-                    total += GetThreshold(s, averages) * weight;
+                    total += GetThreshold(s) * weight;
                     count += weight;
                 }
 
@@ -382,9 +421,8 @@ namespace TV_Ratings_Predictions
             var tempList = shows.Where(x => x.year == year && x.ratings.Count > 0).ToList();
             var count = tempList.Count;
             var totals = new double[count];
-            var averages = tempList.First().network.FactorAverages;
 
-            Parallel.For(0, count, i => totals[i] = GetThreshold(tempList[i], averages));
+            Parallel.For(0, count, i => totals[i] = GetThreshold(tempList[i]));
 
             total = totals.Sum();
 
@@ -495,11 +533,9 @@ namespace TV_Ratings_Predictions
             }
         }
 
-        public double GetOdds(Show s, double[] averages, bool raw = false, bool modified = false, int index = -1, int index2 = -1, int index3 = -1)
+        public double GetOdds(Show s, bool raw = false, bool modified = false, int index = -1, int index2 = -1, int index3 = -1)
         {
-            
-
-            var threshold = modified ? GetModifiedThreshold(s, averages, index, index2, index3) : GetThreshold(s, averages);
+            var threshold = modified ? GetModifiedThreshold(s, index, index2, index3) : GetThreshold(s);
 
             var target = GetTargetRating(s.year, threshold);
             var variance = Math.Log(s.AverageRating) - Math.Log(target);
@@ -570,7 +606,7 @@ namespace TV_Ratings_Predictions
             var ShowErrors = shows.AsParallel().Where(x => x.AverageRating > 0).Select(x =>
             {
                 var weight = 1.0 / (NetworkDatabase.MaxYear - x.year + 1);
-                var threshold = GetThreshold(x, Averages);
+                var threshold = GetThreshold(x);
                 var TargetRating = GetTargetRating(x.year, threshold);
                 var Difference = Math.Abs(Math.Log(TargetRating) - Math.Log(x.AverageRating));
                 double right, wrong;
@@ -637,13 +673,15 @@ namespace TV_Ratings_Predictions
 
         public double GetTargetError(ObservableCollection<string> factors, bool parallel = false)
         {
-            var Averages = shows[0].network.FactorAverages; // GetAverages(factors);
+            //if (averages is null) averages = new double[InputCount + 1];
+
+            var averages = (FactorBias is null) ? new double[InputCount + 1] : FactorBias;
             //var Adjustments = GetAdjustments();
 
             var ShowErrors = shows.Where(x => x.AverageRating > 0).Select(x =>
             {
                 var weight = 1.0 / (NetworkDatabase.MaxYear - x.year + 1);
-                var threshold = GetThreshold(x, Averages);
+                var threshold = GetThreshold(x);
                 var TargetRating = GetTargetRating(x.year, threshold);
                 var Difference = Math.Abs(Math.Log(TargetRating) - Math.Log(x.AverageRating));
 
@@ -724,7 +762,6 @@ namespace TV_Ratings_Predictions
 
 
             //var Adjustments = GetAdjustments(parallel);
-            var averages = shows.First().network.FactorAverages;
 
             var tempList = shows.Where(x => x.Renewed || x.Canceled).ToList();
 
@@ -741,9 +778,9 @@ namespace TV_Ratings_Predictions
                 Parallel.For(0, tempList.Count, i =>
                 {
                     Show s = tempList[i];
-                    double threshold = GetThreshold(s, averages);
+                    double threshold = GetThreshold(s);
                     int prediction = (s.ShowIndex > threshold) ? 1 : 0;
-                    double odds = GetOdds(s, averages, true);
+                    double odds = GetOdds(s, true);
 
                     if (s.Renewed)
                     {
@@ -802,9 +839,9 @@ namespace TV_Ratings_Predictions
             {
                 foreach (Show s in tempList)
                 {
-                    double threshold = GetThreshold(s, averages);
+                    double threshold = GetThreshold(s);
                     int prediction = (s.ShowIndex > threshold) ? 1 : 0;
-                    double odds = GetOdds(s, averages, true);
+                    double odds = GetOdds(s, true);
 
                     if (s.Renewed)
                     {
@@ -867,13 +904,14 @@ namespace TV_Ratings_Predictions
 
         public double GetNetworkRatingsThreshold(int year, bool parallel)
         {
+
             //_ratingstheshold = GetTargetRating(year, GetAverageThreshold(parallel));
             var s = shows.First();
 
             year = CheckYear(year);
 
             //var Adjustment = GetAdjustments(parallel)[year];
-            _ratingstheshold = GetTargetRating(year, GetModifiedThreshold(s, s.network.FactorAverages, -1));
+            _ratingstheshold = GetTargetRating(year, GetModifiedThreshold(s, -1));
             return _ratingstheshold;
         }
 
@@ -1052,6 +1090,15 @@ namespace TV_Ratings_Predictions
 
                 if (FirstLayer[i].isMutated || SecondLayer[i].isMutated)
                     isMutated = true;
+            }
+
+            for (int i = 0; i < InputCount + 1; i++)
+            {
+                if (r.NextDouble() < mutationrate)
+                {
+                    FactorBias[i] += neuralintensity * (r.NextDouble() * 2 - 1);
+                    isMutated = true;
+                }
             }
 
             Output.isMutated = false;

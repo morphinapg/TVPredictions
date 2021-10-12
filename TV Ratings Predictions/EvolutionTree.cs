@@ -7,7 +7,7 @@ namespace TV_Ratings_Predictions
     [Serializable]
     public class EvolutionTree
     {
-        List<NeuralPredictionModel> Primary, Randomized;
+        public List<NeuralPredictionModel> Primary, Randomized;
         public long Generations, CleanGenerations, RandomGenerations;
 
         [NonSerialized]
