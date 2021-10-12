@@ -196,7 +196,7 @@ namespace TV_Ratings_Predictions
 
             inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 2];
             inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 1];
-            inputs[InputCount] = (s.Season - averages[InputCount]) / s.network.SeasonDeviation;
+            inputs[InputCount] = (s.Season - averages[InputCount]) / SeasonDeviation;
 
             for (int i = 0; i < NeuronCount; i++)
                 FirstLayerOutputs[i] = FirstLayer[i].GetOutput(inputs);
@@ -242,7 +242,7 @@ namespace TV_Ratings_Predictions
 
                 inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 2];
                 inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 1];
-                inputs[InputCount] = (s.Season - averages[InputCount]) / s.network.SeasonDeviation;
+                inputs[InputCount] = (s.Season - averages[InputCount]) / SeasonDeviation;
 
                 inputs[index] = 0;  //GetScaledAverage(s, index);
                 if (index2 > -1)
@@ -600,7 +600,7 @@ namespace TV_Ratings_Predictions
 
         public double GetTargetErrorParallel(ObservableCollection<string> factors)
         {
-            var Averages = shows[0].network.FactorAverages; //GetAverages(factors);
+            var Averages = FactorBias; //GetAverages(factors);
             //var Adjustments = GetAdjustments();
 
             var ShowErrors = shows.AsParallel().Where(x => x.AverageRating > 0).Select(x =>
@@ -1099,6 +1099,12 @@ namespace TV_Ratings_Predictions
                     FactorBias[i] += neuralintensity * (r.NextDouble() * 2 - 1);
                     isMutated = true;
                 }
+            }
+
+            if (r.NextDouble() < mutationrate)
+            {
+                SeasonDeviation += neuralintensity * (r.NextDouble() * 2 - 1);
+                isMutated = true;
             }
 
             Output.isMutated = false;
