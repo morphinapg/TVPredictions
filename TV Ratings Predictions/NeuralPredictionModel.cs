@@ -475,6 +475,9 @@ namespace TV_Ratings_Predictions
         {
             var threshold = GetModifiedThreshold(ModifiedFactors);
 
+            //if (s.year == NetworkDatabase.MaxYear && !(s.Renewed || s.Canceled))
+            //    threshold = Math.Pow(threshold, s.network.Adjustment);
+
             var target = GetTargetRating(s.year, threshold);
             var variance = Math.Log(s.AverageRating) - Math.Log(target);
             double deviation;
@@ -536,6 +539,9 @@ namespace TV_Ratings_Predictions
         public double GetOdds(Show s, bool raw = false, bool modified = false, int index = -1, int index2 = -1, int index3 = -1)
         {
             var threshold = modified ? GetModifiedThreshold(s, index, index2, index3) : GetThreshold(s);
+
+            //if (s.year == NetworkDatabase.MaxYear && !(s.Renewed || s.Canceled))
+            //    threshold = Math.Pow(threshold, s.network.Adjustment);
 
             var target = GetTargetRating(s.year, threshold);
             var variance = Math.Log(s.AverageRating) - Math.Log(target);
@@ -600,6 +606,7 @@ namespace TV_Ratings_Predictions
 
         public double GetTargetErrorParallel(ObservableCollection<string> factors)
         {
+            GetAdjustment();
             var Averages = FactorBias; //GetAverages(factors);
             //var Adjustments = GetAdjustments();
 
@@ -669,6 +676,66 @@ namespace TV_Ratings_Predictions
 
             _targeterror = (RightDeviation + WrongDeviation) / 2;
             return _targeterror;
+        }
+
+        public double GetAdjustment()
+        {
+            var ThisYear = shows.Where(x => x.year == NetworkDatabase.MaxYear).OrderBy(x => x.AverageRating).ToList();
+            if (ThisYear.Count == 0)
+                return 1;
+            else
+            {
+                var tempList = shows.Where(x => x.Renewed || x.Canceled);
+                var years = tempList.Select(x => x.year).Distinct();
+
+                double total, weight, midpoint, maximum, currentweight;
+                total = 0;
+                weight = 0;
+
+                foreach (int year in years)
+                {
+                    midpoint = GetNetworkRatingsThreshold(year, true);
+                    maximum = GetTargetRating(year, 1);
+
+                    currentweight = 1.0 / (NetworkDatabase.MaxYear - year + 1) * tempList.Where(x => x.year == year && (x.Renewed || x.Canceled)).Count();
+                    total += midpoint / maximum * currentweight;
+                    weight += currentweight;
+                }
+
+                maximum = GetTargetRating(NetworkDatabase.MaxYear, 1);
+                var TargetRating = total / weight * maximum;
+
+                double PreviousIndex = 0, CurrentTotal = 0, GrandTotal = ThisYear.Select(x => x.AverageRating * (x.Halfhour ? 0.5 : 1)).Sum(), NewIndex, PreviousRating = 0, CurrentRating, TargetIndex = -1, CurrentSegment;
+
+                for (int i = 0; TargetIndex == -1 && i < ThisYear.Count; i++)
+                {
+                    CurrentRating = ThisYear[i].AverageRating;
+                    CurrentSegment = CurrentRating * (ThisYear[i].Halfhour ? 0.5 : 1);
+
+                    CurrentTotal += CurrentSegment / 2;
+
+                    NewIndex = CurrentTotal / GrandTotal;
+
+                    if (CurrentRating > TargetRating)
+                        TargetIndex = (TargetRating - PreviousRating) / (CurrentRating - PreviousRating) * (NewIndex - PreviousIndex) + PreviousIndex;
+
+                    CurrentTotal += CurrentSegment / 2;
+
+                    PreviousIndex = CurrentTotal / GrandTotal;
+                    PreviousRating = CurrentRating;
+                }
+
+                var OriginalIndex = GetModifiedThreshold(shows.First(), -1);
+
+                var adjustment = Math.Log(TargetIndex) / Math.Log(OriginalIndex);
+
+
+                var decided = ThisYear.Where(x => x.Renewed || x.Canceled).Count();
+                var undecided = ThisYear.Where(x => !(x.Renewed || x.Canceled) && x.RenewalStatus == "").Count();
+
+                var percentage = (undecided + decided > 0) ? undecided / (decided + undecided) : 0;
+                return adjustment * percentage + (1 - percentage);
+            }
         }
 
         public double GetTargetError(ObservableCollection<string> factors, bool parallel = false)
@@ -911,7 +978,12 @@ namespace TV_Ratings_Predictions
             year = CheckYear(year);
 
             //var Adjustment = GetAdjustments(parallel)[year];
-            _ratingstheshold = GetTargetRating(year, GetModifiedThreshold(s, -1));
+            var threshold = GetModifiedThreshold(s, -1);
+
+            //if (year == NetworkDatabase.MaxYear)
+            //    threshold = Math.Pow(threshold, s.network.Adjustment);
+
+            _ratingstheshold = GetTargetRating(year, threshold);
             return _ratingstheshold;
         }
 

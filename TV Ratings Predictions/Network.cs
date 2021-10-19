@@ -49,6 +49,7 @@ namespace TV_Ratings_Predictions
         public double[] typicalDeviation;                               //as well as how the projected ratings vary week-to-week.
         public double TargetError;                                      //These statistics drive a Normal Distribution used to calculate odds
         public double SeasonDeviation;
+        public double Adjustment;
 
         public NeuralPredictionModel model;                             //A NeuralPredictionModel is a Neural Network used for predicting renewal or cancellation of a show.
 
@@ -408,6 +409,8 @@ namespace TV_Ratings_Predictions
 
             //SeasonDeviation = Math.Sqrt(totals / weights);
             SeasonDeviation = model.SeasonDeviation;
+
+            Adjustment = model.GetAdjustment();
         }
 
         void RefreshAverages()      //Updates the Averages collection with all of the ratings average data for every show in FilteredShows

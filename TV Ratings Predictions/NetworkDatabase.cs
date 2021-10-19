@@ -171,6 +171,8 @@ namespace TV_Ratings_Predictions
                 //    m.SeasonDeviation = m.GetSeasonDeviation(n.factors);
                 //}
 
+                n.Adjustment = n.model.GetAdjustment();
+
             }
             );
 
