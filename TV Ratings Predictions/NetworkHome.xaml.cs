@@ -55,6 +55,7 @@ namespace TV_Ratings_Predictions
             //network.SortPredictions();
             NetworkName.Text = network.name;
             HeaderThreshold.Text = "Typical Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear, true), 2);
+            Adjustment.Text = (NetworkDatabase.CurrentYear == NetworkDatabase.MaxYear) ? "Current Adjustment: " + network.Adjustment : "";
             Predictions = network.Predictions;
             ShowsList.ItemsSource = Predictions;
             Predictions.CollectionChanged += Predictions_CollectionChanged;
@@ -71,6 +72,7 @@ namespace TV_Ratings_Predictions
         private void Predictions_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             HeaderThreshold.Text = "Typical Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear, true), 2);
+            Adjustment.Text = (NetworkDatabase.CurrentYear == NetworkDatabase.MaxYear) ? "Current Adjustment: " + network.Adjustment : "";
         }
 
         private void AddShow_Click(object sender, RoutedEventArgs e)
