@@ -688,22 +688,22 @@ namespace TV_Ratings_Predictions
                 var tempList = shows.Where(x => x.Renewed || x.Canceled);
                 var years = tempList.Select(x => x.year).Distinct();
 
-                double total, weight, midpoint, maximum, currentweight;
+                double total, weight, midpoint, median, currentweight;
                 total = 0;
                 weight = 0;
 
                 foreach (int year in years)
                 {
                     midpoint = GetNetworkRatingsThreshold(year, true);
-                    maximum = GetTargetRating(year, 1);
+                    median = GetTargetRating(year, 0.5);
 
                     currentweight = 1.0 / (NetworkDatabase.MaxYear - year + 1) * tempList.Where(x => x.year == year && (x.Renewed || x.Canceled)).Count();
-                    total += midpoint / maximum * currentweight;
+                    total += midpoint / median * currentweight;
                     weight += currentweight;
                 }
 
-                maximum = GetTargetRating(NetworkDatabase.MaxYear, 1);
-                var TargetRating = total / weight * maximum;
+                median = GetTargetRating(NetworkDatabase.MaxYear, 1);
+                var TargetRating = total / weight * median;
 
                 double PreviousIndex = 0, CurrentTotal = 0, GrandTotal = ThisYear.Select(x => x.AverageRating * (x.Halfhour ? 0.5 : 1)).Sum(), NewIndex, PreviousRating = 0, CurrentRating, TargetIndex = -1, CurrentSegment;
 

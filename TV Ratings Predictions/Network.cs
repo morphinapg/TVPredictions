@@ -115,6 +115,7 @@ namespace TV_Ratings_Predictions
 
             FactorAverages = model.FactorBias;
             SeasonDeviation = model.SeasonDeviation;
+            Adjustment = model.GetAdjustment();
 
             //PredictionAccuracy = model.TestAccuracy(true) * 100;
             PredictionAccuracy = model._accuracy * 100;
