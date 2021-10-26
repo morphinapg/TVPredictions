@@ -74,7 +74,13 @@ namespace TV_Ratings_Predictions
             var RealOdds = network.model.GetOdds(s);
 
 
-            var CurrentFactors = new double[FactorCount + 3];
+            var CurrentFactors = network.RealAverages;
+            for (int i = 0; i < CurrentFactors.Length; i++)
+                CurrentFactors[i] -= network.FactorAverages[i];
+
+            CurrentFactors[FactorCount+2] = (CurrentFactors[FactorCount+2] - network.FactorAverages[FactorCount + 2]) / network.SeasonDeviation;
+
+
             //for (int i = 0; i < FactorCount + 2; i++)
             //    CurrentFactors[i] = network.FactorAverages[i];
 

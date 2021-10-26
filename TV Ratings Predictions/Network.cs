@@ -43,7 +43,7 @@ namespace TV_Ratings_Predictions
         public Dictionary<int, List<Show>> ShowsPerYear;
 
         public double[] ratingsAverages;                                //Typically throughout a TV season, ratings will start out higher and fall throughout the season.
-        public double[] FactorAverages;                                 //This array describes that pattern for the network, based on ratings data for all shows ever tracked on the network.
+        public double[] FactorAverages, RealAverages;                   //This array describes that pattern for the network, based on ratings data for all shows ever tracked on the network.
         
         public double[][] deviations;                                   //The deviation arrays collect statistics on how much the current projected rating deviates from the final rating
         public double[] typicalDeviation;                               //as well as how the projected ratings vary week-to-week.
@@ -393,7 +393,9 @@ namespace TV_Ratings_Predictions
             //TargetError = Math.Sqrt(devs / Math.Max((tempList.Count() - 1), 1)) / Math.Sqrt(Math.Max((tempList.Count() - 1), 1));
 
             //Factor Averages
-            FactorAverages = (model.FactorBias is null) ? new double[factors.Count] : model.FactorBias;
+            RealAverages = model.GetAverages(factors);
+            FactorAverages = (model.FactorBias is null) ? RealAverages : model.FactorBias;
+            
 
             //Find Standard Deviation For Season #
             //var SeasonAverage = model.GetSeasonAverage(factors);

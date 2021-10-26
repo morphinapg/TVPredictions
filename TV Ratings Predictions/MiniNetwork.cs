@@ -14,7 +14,7 @@ namespace TV_Ratings_Predictions
         public List<Show> shows;
         public NeuralPredictionModel model;
         public Dictionary<int, double> Adjustments;
-        public double[] RatingsAverages, FactorAverages;
+        public double[] RatingsAverages, FactorAverages, RealAverages;
         public DateTime PredictionTime;
 
         public double[][] deviations;
@@ -36,6 +36,7 @@ namespace TV_Ratings_Predictions
                 Adjustments[y] = 1;
             RatingsAverages = n.ratingsAverages;
             FactorAverages = n.FactorAverages;
+            RealAverages = n.RealAverages;
             
             Parallel.ForEach(shows, s => s.UpdateAverage());
 

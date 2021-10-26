@@ -230,7 +230,8 @@ namespace TV_Ratings_Predictions
 
             var averages = (FactorBias is null) ? GetAverages(s.factorNames) : FactorBias;
 
-            var inputs = new double[InputCount + 1];
+            var inputs = s.network.RealAverages;
+
             double[]
                 FirstLayerOutputs = new double[NeuronCount],
                 SecondLayerOutputs = new double[NeuronCount];
@@ -247,9 +248,16 @@ namespace TV_Ratings_Predictions
                 inputs[index] = 0;  //GetScaledAverage(s, index);
                 if (index2 > -1)
                 {
-                    inputs[index2] = 0; // GetScaledAverage(s, index2);
-                    if (index3 > -1) inputs[index3] = 0; // GetScaledAverage(s, index3);
+                    inputs[index2] = (index2 == InputCount) ? (inputs[InputCount] - averages[InputCount]) / SeasonDeviation : s.network.RealAverages[index2] - averages[index2] ; // GetScaledAverage(s, index2);
+                    if (index3 > -1) inputs[index3] = (index3 == InputCount) ? (inputs[InputCount] - averages[InputCount]) / SeasonDeviation : s.network.RealAverages[index3] - averages[index3]; // GetScaledAverage(s, index3);
                 }
+            }
+            else
+            {
+                for (int i = 0; i < InputCount; i++)
+                    inputs[i] -= averages[i];
+
+                inputs[InputCount] = (inputs[InputCount] - averages[InputCount]) / SeasonDeviation;
             }
 
 
