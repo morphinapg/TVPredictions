@@ -1,23 +1,37 @@
-This week, CBS premiered The Equalizer, NCIS: Los Angeles, B Positive, and SEAL Team. The Equalizer starts out as a likely renewal, while NCIS: Los Angeles is leaning towards cancellation and B Positive is likely to be canceled. SEAL Team is only airing as a promotion to Paramount+, so we will not be tracking it, but if it weren't, its ratings would have resulted in a certain cancellation prediction. Perhaps it will do better on the streaming platform. Another CBS show I missed last week was Ghosts, which has started out to good ratings, earning it a likely renewal prediction.
+As you might have seen in my Facebook post last week, I modified the way the prediction AI works when it's earlier in the season. Networks have a tendency to start airing their best rated shows first in the fall, which has a tendency of impacting the reliability of my predictions earlier on. To remedy this, I have modified my prediction algorithm for current year shows to take into account where the typical renewal threshold would normally be, compared to the top rated shows on the network right now. An adjustment is made so that the calculated typical renewal threshold for the network in the current year matches the percentage of maximum ratings that we normally see in previous years. As more shows become renewed or canceled throughout the year, this adjustment will be reduced. As you might see in the results below, this has considerably changed the predictions from last week. I'm confident that these changes are more realistically reflective of the show's status than these predictions typically have been at this point in the TV season. 
 
-CW premiered Legends of Tomorrow, Batwoman, and Legacies. Legends of Tomorrow starts  out leaning towards renewal, but the other two start out leaning towards cancellation. Once again, the list of shows on CW is pretty small so far, so take these predictions with a grain of salt, although they should be better than last week's. 
+This week, CW canceled Pandora. We had this predicted as a certain cancellation, so this is no surprise. For fans of the show, they may be happy to hear that the production of the next season still seems to be happening, so it's likely that another channel will be picking it up for that season.
 
-NBC has a similar issue, as it seems heavily loaded with shows performing better than most network shows out there right now, which could be overestimating the renewal requirements. I do expect that Ordinary Joe will probably stay under the renewal threshold even after more shows start airing on NBC, but it's possible La Brea's rating may be high enough for renewal once more lower rated shows start airing. 
+Also this week, NBC premiered The Blacklist, to underwhelming ratings. It starts out leaning towards cancellation.
 
-This week, I've also made some modifications to the episode counts of some shows on the database. The biggest problem here is that early in the season it can be difficult to know how many episodes have been ordered for the show. However, having a low episode order is often an indication of lower chances of renewal. For many shows, I default this at 13 episodes if the number is not known, but I've decided that for returning shows, if the exact number is not yet known, I will default the episode count at the number of episodes the previous season had. Once the episode count is known, I will update the entry, but I feel like assuming the season length will be the same as last year will improve predictions early on. 
+ABC premiered Queens, to okay ratings. It starts out leaning towards renewal.
 
-Nancy Drew and The Resident both drop from certain renewals to just likely renewed.
+Now for the large list of changes to predictions this week after the prediction engine overhaul:
 
-NCIS: Hawai'i and NCIS both drop from likely renewals to just leaning renewed.
+The Resident, The Equalizer, Station 19, S.W.A.T., The Neighborhood, and Ghosts all upgrade from likely renewed to certain renewals.
 
-The Goldbergs, FBI: Most Wanted, and The Conners all upgrade from likely renewed to a certain renewals.
+Nancy Drew drops from a likely renewal to just leaning renewed.
 
-Our Kind of People drops all the way from a likely renewal to a likely cancellation.
+Magnum P.I. upgrades from leaning renewed to a certain renewal.
 
-S.W.A.T. upgrades from leaning towards renewal to likely renewed.
+Bob ♥️ Abishola, NCIS: Hawai'i, Big Sky, Law & Order: Organized Crime, The Good Doctor, The Wonder Years, and NCIS all upgrade from leaning towards renewal to likely renewed.
 
-The Wonder Years upgrades from leaning towards cancellation to leaning towards renewal.
+NCIS: Los Angeles upgrades from leaning towards cancellation to a certain renewal.
 
-United States of Al upgrades from a likely cancellation to just leaning canceled.
+Batwoman upgrades from leaning towards cancellation to leaning towards renewal.
 
-Blue Bloods, Bull, and Home Economics all drop from likely canceled to a certain cancellations.
+Legacies upgrades from leaning towards cancellation to a certain renewal.
+
+CSI: Vegas upgrades from leaning towards cancellation to a likely renewal.
+
+United States of Al drops from leaning towards cancellation to likely canceled.
+
+Out Kind of People drops from likely cancelled to a certain cancellation.
+
+The Rookie upgrades from a likely cancellation to a likely renewal.
+
+Bull and Home Economics both upgrade from certain cancellations to leaning towards renewal.
+
+A Million Little Things upgrades from a certain cancellation to just leaning canceled.
+
+Blue Bloods upgrades from a certain cancellation to a certain renewal.

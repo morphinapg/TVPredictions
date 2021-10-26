@@ -183,7 +183,7 @@ namespace TV_Ratings_Predictions
         {
             //if (averages is null) averages = new double[InputCount + 1];
 
-            var averages = (FactorBias is null) ? new double[InputCount + 1] : FactorBias;
+            var averages = (FactorBias is null) ? GetAverages(s.factorNames) : FactorBias;
 
             var inputs = new double[InputCount + 1];
 
@@ -228,7 +228,7 @@ namespace TV_Ratings_Predictions
         {
             //if (averages is null) averages = new double[InputCount + 1];
 
-            var averages = (FactorBias is null) ? new double[InputCount + 1] : FactorBias;
+            var averages = (FactorBias is null) ? GetAverages(s.factorNames) : FactorBias;
 
             var inputs = new double[InputCount + 1];
             double[]
@@ -259,7 +259,7 @@ namespace TV_Ratings_Predictions
             for (int i = 0; i < NeuronCount; i++)
                 SecondLayerOutputs[i] = SecondLayer[i].GetOutput(FirstLayerOutputs);
 
-            s._calculatedThreshold = (Output.GetOutput(SecondLayerOutputs, true) + 1) / 2;
+            s._calculatedThreshold = Math.Min(Math.Max((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, 0.000001), 0.999999);
 
             return s._calculatedThreshold;
         }
@@ -610,7 +610,7 @@ namespace TV_Ratings_Predictions
             var Averages = FactorBias; //GetAverages(factors);
             //var Adjustments = GetAdjustments();
 
-            var ShowErrors = shows.AsParallel().Where(x => x.AverageRating > 0).Select(x =>
+            var ShowErrors = shows.AsParallel().Where(x => (x.Renewed || x.Canceled) && x.AverageRating > 0).Select(x =>
             {
                 var weight = 1.0 / (NetworkDatabase.MaxYear - x.year + 1);
                 var threshold = GetThreshold(x);
@@ -736,7 +736,10 @@ namespace TV_Ratings_Predictions
                 var decided = ThisYear.Where(x => x.Renewed || x.Canceled).Count();
                 var undecided = ThisYear.Where(x => !(x.Renewed || x.Canceled) && x.RenewalStatus == "").Count();
 
-                var percentage = (undecided + decided > 0) ? undecided / (decided + undecided) : 0;
+                var percentage = (undecided + decided > 0) ? undecided / (double)(decided + undecided) : 0;
+
+                if (decided > 1)
+                    percentage = Math.Pow(percentage, Math.Sqrt(decided)); ///The more shows have been decided, the less important the adjustment should be, to an exponential level
 
                 int z = 0;
                 if (double.IsNaN(adjustment * percentage + (1 - percentage)))
@@ -754,7 +757,7 @@ namespace TV_Ratings_Predictions
             var averages = (FactorBias is null) ? new double[InputCount + 1] : FactorBias;
             //var Adjustments = GetAdjustments();
 
-            var ShowErrors = shows.Where(x => x.AverageRating > 0).Select(x =>
+            var ShowErrors = shows.Where(x => (x.Renewed || x.Canceled) && x.AverageRating > 0).Select(x =>
             {
                 var weight = 1.0 / (NetworkDatabase.MaxYear - x.year + 1);
                 var threshold = GetThreshold(x);
@@ -1002,6 +1005,7 @@ namespace TV_Ratings_Predictions
             var tempShows = (shows[0].network.ShowsPerYear is null) ? 
                 shows.Where(x => x.year == year && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList() : 
                 shows[0].network.ShowsPerYear[year];
+
             //var tempShows = shows.Where(x => x.year == year && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
             if (tempShows.Count == 0)
             {

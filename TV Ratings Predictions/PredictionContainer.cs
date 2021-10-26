@@ -193,8 +193,11 @@ namespace TV_Ratings_Predictions
             Status = s.RenewalStatus;
 
             //var Adjustments = n.model.GetAdjustments(true);
+            var threshold = n.model.GetThreshold(s);
+            if (s.year == NetworkDatabase.MaxYear && !(s.Renewed || s.Canceled))
+                threshold = Math.Pow(threshold, s.network.Adjustment);
 
-            _targetrating = n.model.GetTargetRating(s.year, n.model.GetThreshold(s));
+            _targetrating = n.model.GetTargetRating(s.year, threshold);
             TargetRating = Math.Round(_targetrating, 2).ToString("F2");
             showAll = a;
         }
