@@ -151,8 +151,8 @@ namespace TV_Ratings_Predictions
                 //n.PredictionAccuracy = n.model.TestAccuracy() * 100;
 
 
-                n.RealAverages = n.model.GetAverages(n.factors);
-                n.Adjustment = n.model.GetAdjustment();
+                //n.RealAverages = n.model.GetAverages(n.factors);
+                //n.Adjustment = n.model.GetAdjustment();
                 n.Filter(CurrentYear);                                  //Once the Network is fully restored, perform a filter based on the current TV Season
 
                 //n.model.FactorBias = n.model.GetAverages(n.factors);

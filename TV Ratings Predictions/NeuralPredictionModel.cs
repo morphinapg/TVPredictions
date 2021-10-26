@@ -732,7 +732,7 @@ namespace TV_Ratings_Predictions
 
                     CurrentTotal += CurrentSegment / 2;
 
-                    PreviousIndex = CurrentTotal / GrandTotal;
+                    PreviousIndex = NewIndex;
                     PreviousRating = CurrentRating;
                 }
 

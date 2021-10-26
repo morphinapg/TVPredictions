@@ -74,7 +74,7 @@ namespace TV_Ratings_Predictions
             var RealOdds = network.model.GetOdds(s);
 
 
-            var CurrentFactors = network.RealAverages;
+            var CurrentFactors = (double[]) network.RealAverages.Clone();
             for (int i = 0; i < CurrentFactors.Length; i++)
                 CurrentFactors[i] -= network.FactorAverages[i];
 
