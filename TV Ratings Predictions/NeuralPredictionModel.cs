@@ -750,7 +750,7 @@ namespace TV_Ratings_Predictions
                 var percentage = (undecided + decided > 0) ? undecided / (double)(decided + undecided) : 0;
 
                 if (decided > 1)
-                    percentage = Math.Pow(percentage, Math.Sqrt(decided)); ///The more shows have been decided, the less important the adjustment should be, to an exponential level
+                    percentage = Math.Pow(percentage, Math.Sqrt(decided+1)); ///The more shows have been decided, the less important the adjustment should be, to an exponential level
 
                 int z = 0;
                 if (double.IsNaN(adjustment * percentage + (1 - percentage)))
