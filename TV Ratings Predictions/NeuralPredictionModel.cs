@@ -230,7 +230,7 @@ namespace TV_Ratings_Predictions
 
             var averages = (FactorBias is null) ? GetAverages(s.factorNames) : FactorBias;
 
-            var inputs = s.network.RealAverages;
+            var inputs = (double[])s.network.RealAverages.Clone();
 
             double[]
                 FirstLayerOutputs = new double[NeuronCount],
@@ -735,6 +735,9 @@ namespace TV_Ratings_Predictions
                     PreviousIndex = CurrentTotal / GrandTotal;
                     PreviousRating = CurrentRating;
                 }
+
+                if (TargetIndex == -1)
+                    TargetIndex = (TargetRating - PreviousRating) / (maximum - PreviousRating) * (1 - PreviousIndex) + PreviousIndex;
 
                 var OriginalIndex = GetModifiedThreshold(shows.First(), -1);
 
