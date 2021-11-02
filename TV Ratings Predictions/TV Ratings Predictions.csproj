@@ -155,6 +155,7 @@
     <Compile Include="DeleteFactor.xaml.cs">
       <DependentUpon>DeleteFactor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DetailsContainer.cs" />
     <Compile Include="EditRatings.xaml.cs">
       <DependentUpon>EditRatings.xaml</DependentUpon>
     </Compile>
@@ -163,6 +164,9 @@
     </Compile>
     <Compile Include="EvolutionTree.cs" />
     <Compile Include="Factor.cs" />
+    <Compile Include="FindSimilar.xaml.cs">
+      <DependentUpon>FindSimilar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="HomePage.xaml.cs">
       <DependentUpon>HomePage.xaml</DependentUpon>
@@ -290,6 +294,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="EditViewers.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FindSimilar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

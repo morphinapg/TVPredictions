@@ -183,20 +183,23 @@ namespace TV_Ratings_Predictions
         {
             //if (averages is null) averages = new double[InputCount + 1];
 
-            var averages = (FactorBias is null) ? GetAverages(s.factorNames) : FactorBias;
+            //var averages = (FactorBias is null) ? GetAverages(s.factorNames) : FactorBias;
 
-            var inputs = new double[InputCount + 1];
+            //var inputs = new double[InputCount + 1];
+
+            var inputs = GetInputs(s);
 
             double[]
                 FirstLayerOutputs = new double[NeuronCount],
                 SecondLayerOutputs = new double[NeuronCount];
 
-            for (int i = 0; i < InputCount - 2; i++)
-                inputs[i] = (s.factorValues[i] ? 1 : -1) - averages[i];
+            //for (int i = 0; i < InputCount - 2; i++)
+            //    inputs[i] = (s.factorValues[i] ? 1 : -1) - averages[i];
 
-            inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 2];
-            inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 1];
-            inputs[InputCount] = (s.Season - averages[InputCount]) / SeasonDeviation;
+            //inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 2];
+            //inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 1];
+            //inputs[InputCount] = (s.Season - averages[InputCount]) / SeasonDeviation;
+
 
             for (int i = 0; i < NeuronCount; i++)
                 FirstLayerOutputs[i] = FirstLayer[i].GetOutput(inputs);
@@ -207,6 +210,49 @@ namespace TV_Ratings_Predictions
             s._calculatedThreshold = Math.Min(Math.Max((Output.GetOutput(SecondLayerOutputs, true) + 1) / 2, 0.000001), 0.999999);
 
             return s._calculatedThreshold;
+        }
+
+        public double[] GetInputsPlusIndex(Show s)
+        {
+            var BaseInputs = GetInputs(s);
+            var Size = BaseInputs.Length;
+            var NewInputs = new double[Size + 1];
+            for (int i = 0; i < Size; i++)
+                NewInputs[i] = BaseInputs[i];
+
+            NewInputs[Size] = s.ShowIndex * 2 - 1;
+
+            return NewInputs;
+        }
+
+        public double[] GetInputs(Show s)
+        {
+            var averages = (FactorBias is null) ? GetAverages(s.factorNames) : FactorBias;
+
+            var inputs = new double[InputCount + 1];
+
+            for (int i = 0; i < InputCount - 2; i++)
+                inputs[i] = (s.factorValues[i] ? 1 : -1) - averages[i];
+
+            inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 2];
+            inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 1];
+            inputs[InputCount] = (s.Season - averages[InputCount]) / SeasonDeviation;
+
+            return inputs;
+        }
+
+
+        public double[] GetBaseInputs()
+        {
+            var inputs = (double[])shows[0].network.RealAverages.Clone();
+            var averages = (FactorBias is null) ? GetAverages(shows[0].factorNames) : FactorBias;
+
+            for (int i = 0; i < InputCount; i++)
+                inputs[i] -= averages[i];
+
+            inputs[InputCount] = (inputs[InputCount] - averages[InputCount]) / SeasonDeviation;
+
+            return inputs;
         }
 
         public double GetModifiedThreshold(double[] inputs)
@@ -230,7 +276,7 @@ namespace TV_Ratings_Predictions
 
             var averages = (FactorBias is null) ? GetAverages(s.factorNames) : FactorBias;
 
-            var inputs = (double[])s.network.RealAverages.Clone();
+            var inputs = GetBaseInputs();
 
             double[]
                 FirstLayerOutputs = new double[NeuronCount],
@@ -238,12 +284,13 @@ namespace TV_Ratings_Predictions
 
             if (index > -1)
             {
-                for (int i = 0; i < InputCount - 2; i++)
-                    inputs[i] = (s.factorValues[i] ? 1 : -1) - averages[i];
+                inputs = GetInputs(s);
+                //for (int i = 0; i < InputCount - 2; i++)
+                //    inputs[i] = (s.factorValues[i] ? 1 : -1) - averages[i];
 
-                inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 2];
-                inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 1];
-                inputs[InputCount] = (s.Season - averages[InputCount]) / SeasonDeviation;
+                //inputs[InputCount - 2] = (s.Episodes / 26.0 * 2 - 1) - averages[InputCount - 2];
+                //inputs[InputCount - 1] = (s.Halfhour ? 1 : -1) - averages[InputCount - 1];
+                //inputs[InputCount] = (s.Season - averages[InputCount]) / SeasonDeviation;
 
                 inputs[index] = 0;  //GetScaledAverage(s, index);
                 if (index2 > -1)
@@ -251,13 +298,6 @@ namespace TV_Ratings_Predictions
                     inputs[index2] = (index2 == InputCount) ? (inputs[InputCount] - averages[InputCount]) / SeasonDeviation : s.network.RealAverages[index2] - averages[index2] ; // GetScaledAverage(s, index2);
                     if (index3 > -1) inputs[index3] = (index3 == InputCount) ? (inputs[InputCount] - averages[InputCount]) / SeasonDeviation : s.network.RealAverages[index3] - averages[index3]; // GetScaledAverage(s, index3);
                 }
-            }
-            else
-            {
-                for (int i = 0; i < InputCount; i++)
-                    inputs[i] -= averages[i];
-
-                inputs[InputCount] = (inputs[InputCount] - averages[InputCount]) / SeasonDeviation;
             }
 
 
