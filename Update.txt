@@ -13,3 +13,5 @@ B Positive upgrades from leaning towards cancellation to a likely renewal.
 Batwoman upgrades from a likely cancellation to leaning towards renewal.
 
 CSI: Vegas upgrades from a certain cancellation to just likely canceled.
+
+There was some reporting that Our Kind of People and The Big Leap may have been canceled behind the scenes, as the network has chosen not to order more episodes for those shows, and most of the time, this means the show will not get a second season. However, until someone involved with the show confirms that the show is canceled, I will not be counting them as such. That being said, cancellations from either show would hardly be surprising, as the prediction model has both shows as certain cancellations, with the model being 84% confident of Our Kind of People's cancellation, and 100% confident that The Big Leap will be canceled. 
