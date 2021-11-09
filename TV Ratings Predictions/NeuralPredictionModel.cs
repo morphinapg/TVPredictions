@@ -736,10 +736,10 @@ namespace TV_Ratings_Predictions
                 return 1;
             else
             {
-                var tempList = shows.Where(x => x.Renewed || x.Canceled);
+                var tempList = shows.Where(x => x.year != NetworkDatabase.MaxYear);
                 var years = tempList.Select(x => x.year).Distinct();
 
-                double total, weight, midpoint, maximum, currentweight;
+                double total, weight, midpoint, average, maximum, currentweight;
                 total = 0;
                 weight = 0;
 
@@ -747,7 +747,8 @@ namespace TV_Ratings_Predictions
 
                 foreach (int year in years)
                 {
-                    midpoint = GetNetworkRatingsThreshold(year, true);
+                    average = tempList.AsParallel().Where(x => x.year == year).Select(x => GetThreshold(x)).Average();
+                    midpoint = GetTargetRating(year, average);
                     maximum = GetTargetRating(year, 1);
 
                     currentweight = 1.0 / (NetworkDatabase.MaxYear - year + 1) * tempList.Where(x => x.year == year && (x.Renewed || x.Canceled)).Count();
@@ -781,7 +782,7 @@ namespace TV_Ratings_Predictions
                 if (TargetIndex == -1)
                     TargetIndex = (TargetRating - PreviousRating) / (maximum - PreviousRating) * (1 - PreviousIndex) + PreviousIndex;
 
-                var OriginalIndex = GetModifiedThreshold(shows.First(), -1);
+                var OriginalIndex = ThisYear.AsParallel().Select(x => GetThreshold(x)).Average();
 
                 var adjustment = Math.Log(TargetIndex) / Math.Log(OriginalIndex);
 
@@ -813,10 +814,6 @@ namespace TV_Ratings_Predictions
 
                 if (decided > 1)
                     percentage = Math.Pow(percentage, decided+1); ///The more shows have been decided, the less important the adjustment should be, to an exponential level
-
-                int z = 0;
-                if (double.IsNaN(adjustment * percentage + (1 - percentage)))
-                    z = 1;
 
 
                 return adjustment * percentage + (1 - percentage);
