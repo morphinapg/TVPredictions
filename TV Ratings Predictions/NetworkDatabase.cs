@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
+using System.Linq;
+
 namespace TV_Ratings_Predictions
 {
     static class NetworkDatabase //This class is used to store the database of all TVNetworks, Shows, etc, as well as additional global properties that are needed throughout the app

@@ -743,6 +743,8 @@ namespace TV_Ratings_Predictions
                 total = 0;
                 weight = 0;
 
+                ///First, adjust so that typical renewal threshold gives a target rating similar to the weighted average target rating / maximum rating for that network
+
                 foreach (int year in years)
                 {
                     midpoint = GetNetworkRatingsThreshold(year, true);
@@ -783,6 +785,26 @@ namespace TV_Ratings_Predictions
 
                 var adjustment = Math.Log(TargetIndex) / Math.Log(OriginalIndex);
 
+                ///Then, adjust index so that the average index for the network is equivalent to the weighted average index for all years
+                ///
+
+                //total = 0;
+                //weight = 0;
+
+                //foreach (int year in years)
+                //{
+                //    var average = tempList.AsParallel().Where(x => x.year == year).Select(x => GetThreshold(x)).Average();
+                //    currentweight = 1.0 / (NetworkDatabase.MaxYear - year + 1) * tempList.Where(x => x.year == year && (x.Renewed || x.Canceled)).Count();
+
+                //    total += average * currentweight;
+                //    weight += currentweight;
+                //}
+
+                //var TypicalThreshold = total / weight;
+                //var CurrentAverage = ThisYear.AsParallel().Select(x => GetThreshold(x)).Average();
+
+                //adjustment *= Math.Log(TypicalThreshold) / Math.Log(CurrentAverage);
+
 
                 var decided = ThisYear.Where(x => x.Renewed || x.Canceled).Count();
                 var undecided = ThisYear.Where(x => !(x.Renewed || x.Canceled) && x.RenewalStatus == "").Count();
@@ -790,7 +812,7 @@ namespace TV_Ratings_Predictions
                 var percentage = (undecided + decided > 0) ? undecided / (double)(decided + undecided) : 0;
 
                 if (decided > 1)
-                    percentage = Math.Pow(percentage, Math.Sqrt(decided+1)); ///The more shows have been decided, the less important the adjustment should be, to an exponential level
+                    percentage = Math.Pow(percentage, decided+1); ///The more shows have been decided, the less important the adjustment should be, to an exponential level
 
                 int z = 0;
                 if (double.IsNaN(adjustment * percentage + (1 - percentage)))
