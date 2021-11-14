@@ -523,7 +523,7 @@ namespace TV_Ratings_Predictions
         {
             var threshold = GetModifiedThreshold(ModifiedFactors);
 
-            if (s.year == NetworkDatabase.MaxYear && !(s.Renewed || s.Canceled))
+            if (s.year == NetworkDatabase.MaxYear)
                 threshold = Math.Pow(threshold, s.network.Adjustment);
 
             var target = GetTargetRating(s.year, threshold);
@@ -588,7 +588,7 @@ namespace TV_Ratings_Predictions
         {
             var threshold = modified ? GetModifiedThreshold(s, index, index2, index3) : GetThreshold(s);
 
-            if (s.year == NetworkDatabase.MaxYear && !(s.Renewed || s.Canceled))
+            if (s.year == NetworkDatabase.MaxYear && (!(s.Renewed || s.Canceled) || (modified && index == -1)))
                 threshold = Math.Pow(threshold, s.network.Adjustment);
 
             var target = GetTargetRating(s.year, threshold);
@@ -654,7 +654,6 @@ namespace TV_Ratings_Predictions
 
         public double GetTargetErrorParallel(ObservableCollection<string> factors)
         {
-            GetAdjustment();
             var Averages = FactorBias; //GetAverages(factors);
             //var Adjustments = GetAdjustments();
 
@@ -812,7 +811,7 @@ namespace TV_Ratings_Predictions
 
                 var percentage = (undecided + decided > 0) ? undecided / (double)(decided + undecided) : 0;
 
-                if (decided > 1)
+                if (decided > 0)
                     percentage = Math.Pow(percentage, decided+1); ///The more shows have been decided, the less important the adjustment should be, to an exponential level
 
 

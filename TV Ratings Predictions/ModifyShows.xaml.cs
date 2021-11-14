@@ -164,6 +164,7 @@ namespace TV_Ratings_Predictions
                         itemSelected = false;
                     }
 
+                    network.Adjustment = network.model.GetAdjustment();
                     network.Filter(NetworkDatabase.CurrentYear);
                     NetworkDatabase.pendingSave = true;
 
