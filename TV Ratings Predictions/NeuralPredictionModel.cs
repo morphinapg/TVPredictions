@@ -522,6 +522,7 @@ namespace TV_Ratings_Predictions
         public double GetModifiedOdds(Show s, double[] ModifiedFactors, bool raw = false)
         {
             var threshold = GetModifiedThreshold(ModifiedFactors);
+            var OriginalTarget = GetTargetRating(s.year, threshold);
 
             if (s.year == NetworkDatabase.MaxYear)
                 threshold = Math.Pow(threshold, s.network.Adjustment);
@@ -550,10 +551,12 @@ namespace TV_Ratings_Predictions
 
             if (_targeterror == 0 || Double.IsNaN(_targeterror)) GetTargetError(s.factorNames);
 
-            //The more overlap there is, the less confidence you can have in the prediction
-            var Overlap = AreaOfOverlap(Math.Log(s.AverageRating), deviation, Math.Log(target), _targeterror);
+            double ErrorAdjustment = (s.year == NetworkDatabase.MaxYear) ? Math.Abs(Math.Log(target) - Math.Log(OriginalTarget)) : 0;
 
-            deviation = _targeterror;
+            //The more overlap there is, the less confidence you can have in the prediction
+            var Overlap = AreaOfOverlap(Math.Log(s.AverageRating), deviation, Math.Log(target), _targeterror + ErrorAdjustment);
+
+            deviation = _targeterror + ErrorAdjustment;
 
             var zscore = variance / deviation;
 
@@ -586,7 +589,8 @@ namespace TV_Ratings_Predictions
 
         public double GetOdds(Show s, bool raw = false, bool modified = false, int index = -1, int index2 = -1, int index3 = -1)
         {
-            var threshold = modified ? GetModifiedThreshold(s, index, index2, index3) : GetThreshold(s);
+            var threshold = GetThreshold(s);
+            var OriginalTarget = GetTargetRating(s.year, threshold);
 
             if (s.year == NetworkDatabase.MaxYear && (!(s.Renewed || s.Canceled) || (modified && index == -1)))
                 threshold = Math.Pow(threshold, s.network.Adjustment);
@@ -616,10 +620,12 @@ namespace TV_Ratings_Predictions
             if (_targeterror == 0) 
                 GetTargetError(s.factorNames);
 
-            //The more overlap there is, the less confidence you can have in the prediction
-            var Overlap = AreaOfOverlap(Math.Log(s.AverageRating), deviation, Math.Log(target), _targeterror);
+            double ErrorAdjustment = (s.year == NetworkDatabase.MaxYear) ? Math.Abs(Math.Log(target) - Math.Log(OriginalTarget)) : 0;
 
-            deviation = _targeterror;
+            //The more overlap there is, the less confidence you can have in the prediction
+            var Overlap = AreaOfOverlap(Math.Log(s.AverageRating), deviation, Math.Log(target), _targeterror + ErrorAdjustment);
+
+            deviation = _targeterror + ErrorAdjustment;
 
             var zscore = variance / deviation;
 

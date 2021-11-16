@@ -231,6 +231,7 @@ namespace TV_Ratings_Predictions
                         if (s.RenewalStatus == "")
                             s.FinalPrediction = s.OldOdds;
                     }
+                    n.UpdateOdds(true);
                 });
             }
         }

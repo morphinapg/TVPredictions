@@ -45,7 +45,7 @@ namespace TV_Ratings_Predictions
             //foreach (int i in yearlist)
             //    n.UpdateIndexes(i);
 
-            Parallel.ForEach(shows, s => s.PredictedOdds = model.GetOdds(s));
+            Parallel.ForEach(shows, s => s.PredictedOdds = model.GetOdds(s, false, true, -1));
             n.TargetError = n.model.GetTargetErrorParallel(n.factors);
 
             PredictionTime = DateTime.Now;
@@ -54,6 +54,7 @@ namespace TV_Ratings_Predictions
             TargetError = n.TargetError;
             SeasonDeviation = n.SeasonDeviation;
             Adjustment = n.Adjustment;
+            
         }
     }
 }

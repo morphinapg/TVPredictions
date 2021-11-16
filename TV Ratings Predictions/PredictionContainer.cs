@@ -182,12 +182,12 @@ namespace TV_Ratings_Predictions
             }
         }
 
-        public PredictionContainer(Show s, Network n, bool a = false)
+        public PredictionContainer(Show s, Network n, bool a = false, bool RawOdds = false)
         {
             network = n;
             show = s;
             Show = s.NameWithSeason;
-            odds = s.PredictedOdds;
+            odds = (RawOdds || s.year != NetworkDatabase.MaxYear) ? s.PredictedOdds : network.model.GetOdds(s, false, true, -1);
             _rating = s.AverageRating;
             _viewers = s.AverageViewers;
             Status = s.RenewalStatus;
@@ -200,16 +200,6 @@ namespace TV_Ratings_Predictions
             _targetrating = n.model.GetTargetRating(s.year, threshold);
             TargetRating = Math.Round(_targetrating, 2).ToString("F2");
             showAll = a;
-        }
-
-        public void UpdateOdds()
-        {
-            odds = show.PredictedOdds;
-            OnPropertyChanged("Rating");
-            OnPropertyChanged("RatingDifference");
-            OnPropertyChanged("Status");
-            OnPropertyChanged("Prediction");
-            OnPropertyChanged("Category");
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

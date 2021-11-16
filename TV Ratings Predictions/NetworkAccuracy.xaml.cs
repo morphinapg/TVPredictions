@@ -62,7 +62,7 @@ namespace TV_Ratings_Predictions
             foreach (Show s in network.FilteredShows.OrderBy(x => x.PredictedOdds).Reverse())
                 if (s.Renewed || s.Canceled)
                 {
-                    var container = new PredictionContainer(s, network, true);
+                    var container = new PredictionContainer(s, network, true, true);
                     Predictions.Add(container);
                     if (container.Accuracy == "✔")
                         total++;
