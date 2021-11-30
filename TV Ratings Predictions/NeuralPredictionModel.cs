@@ -744,7 +744,7 @@ namespace TV_Ratings_Predictions
                 var tempList = shows.Where(x => x.year != NetworkDatabase.MaxYear);
                 var years = tempList.Select(x => x.year).Distinct();
 
-                double total, weight, midpoint, average, maximum, currentweight;
+                double total, weight, midpoint, maximum, currentweight;
                 total = 0;
                 weight = 0;
 
@@ -752,8 +752,9 @@ namespace TV_Ratings_Predictions
 
                 foreach (int year in years)
                 {
-                    average = tempList.AsParallel().Where(x => x.year == year).Select(x => GetThreshold(x)).Average();
-                    midpoint = GetTargetRating(year, average);
+                    //average = tempList.AsParallel().Where(x => x.year == year).Select(x => GetThreshold(x)).Average();
+                    //midpoint = GetTargetRating(year, average);
+                    midpoint = GetNetworkRatingsThreshold(year, true);
                     maximum = GetTargetRating(year, 1);
 
                     currentweight = 1.0 / (NetworkDatabase.MaxYear - year + 1) * tempList.Where(x => x.year == year && (x.Renewed || x.Canceled)).Count();

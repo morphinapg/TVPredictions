@@ -1,15 +1,15 @@
-This week, CW premiered The Flash and Riverdale. The Flash starts out as a certain renewal, and Riverdale starts out just leaning towards renewal.
+This week, The Flash and The Resident both drop from certain renewals to just likely renewed.
 
-This week I've also modified how the confidence calculation is done for the predictions, better taking into account an adjustment that is made to account for the differences we see earlier in the season when less shows have premiered on the network. This means that many predictions will be considered less confident this week than they were last week, but I'd say this does a better job representing the reliability of the predictions earlier in the season vs later. It expands the margin of error based on how much of an adjustment has been made to the "target rating" calculation, and then performs the same confidence calculation as before, just based on the higher margin of error now instead of the original.
+The Good Doctor upgrades from a likely to certain renewal.
 
-That being said, the main changes to predictions this week are:
+Queens drops from leaning towards renewal to leaning towards cancellation.
 
-Bob ♥️ Abishola, NCIS Hawai'i, Legends of Tomorrow, FBI: Most Wanted, The Good Doctor, Blue Bloods, S.W.A.T., NCIS: Los Angeles, Magnum P.I., Big Sky, United States of Al, The Wonder Years, B Positive, and FBI: International all drop from certain renewals to just likely renewed.
+Batwoman upgrades from leaning towards renewal to likely renewed.
 
-The Resident upgrades from a likely to certain renewal.
+A Million Little Things upgrades from leaning towards cancellation to leaning towards renewal.
 
-Nancy Drew and Batwoman both drop from likely renewals to just leaning renewed.
+CSI: Vegas upgrades from a likely cancellation to just leaning canceled.
 
-4400 upgrades from a likely cancellation to just leaning canceled.
+Our Kind of People upgrades all the way from a certain cancellation to leaning towards renewal.
 
-CSI: Vegas upgrades from a certain cancellation to just likely canceled.
+The Big Leap upgrades from a certain cancellation to just likely canceled.
