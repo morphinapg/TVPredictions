@@ -1,9 +1,5 @@
-Sorry about the delay for this update, I was pretty busy yesterday as it was my birthday, and I've also been having some insomnia issues, screwing up my schedule, so I wasn't able to get to it until now. You might notice on the facebook page and on the Windows app that the checkmarks representing renewal predictions are now purple. I preferred the green checkmarks, but Microsoft has chosen to change the color of their emojis for some reason, so that's what I'm dealing with lol. Should still be green on the Android app.
+This week, CW premiered Dynasty. While the ratings alone would normally have been just barely enough for a renewal, the prediction model appears to think that a premiere this late for this show reduces its chances for renewal considerably, so it starts out predicted as a certain cancellation.
 
-This week, NBC premiered Young Rock, Kenan, Mr. Mayor, and Grand Crew. Young Rock started out well enough to earn a likely renewal prediction, but the others did not, with Kenan and Mr. Mayor leaning towards cancellation, although they're close enough that a renewal wouldn't be surprising, but the brand new Grand Crew show starts out predicted as a likely cancellation. 
+The Resident drops from a certain renewal to just likely renewed.
 
-Also this week, CBS renewed CSI: Vegas. While we had previously predicted a cancellation for this show, last week the prediction model for CBS shifted and bumped this show up to a likely renewal prediction, so we got this one right! If I hadn't modified the prediction calculation to adjust for the differences you see in the schedule in the fall vs later in the spring, it looks like this would have actually been a miss, so that's the first win for the changes I made to the calculation this year.
-
-FBI: Most Wanted upgrades from a likely to certain renewal.
-
-Big Sky, The Rookie, and Queens all drop from likely renewals to just leaning renewed.
+4400 upgrades from leaning towards cancellation to leaning towards renewal.
