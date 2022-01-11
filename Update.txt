@@ -1,5 +1,25 @@
-This week, CW premiered Dynasty. While the ratings alone would normally have been just barely enough for a renewal, the prediction model appears to think that a premiere this late for this show reduces its chances for renewal considerably, so it starts out predicted as a certain cancellation.
+This week, we got some pretty major news that CBS and WB are planning to sell the CW network. The news also came with the information that the network has almost never been profitable on its own, implying that they relied heavily on syndication to make their money back, especially with streaming networks recently. With Netflix pulling their support for CW shows recently, it's not surprising that CW's business model is falling apart. 
 
-The Resident drops from a certain renewal to just likely renewed.
+However, what does this mean for renewals? Well, the news is not good. While nothing has been announced yet regarding the status of existing shows, I don't see a lot of good options here. With the news that CW shows don't really make a profit, I think there's a good chance the network just doesn't get sold at all, and just shuts down instead. If someone actually does manage to buy the network, I don't see why they would want to keep funding the production of shows that are apparently not making any profit. I think the likelihood of the CW turning into one of those networks that just airs reruns of old shows sounds pretty likely right now. 
 
-4400 upgrades from leaning towards cancellation to leaning towards renewal.
+If this sale happens before May, this could mean there could be a very high likelihood that every single current CW show gets canceled. If anything gets saved, it might be a few shows that could stand a chance being picked up by a streaming network. Riverdale and Nancy Drew might stand a chance, as Netflix produced the recent Sabrina show, from the same creators. Likewise, Superman & Lois might be saved by HBO Max, as they helped out with production of that show. Stargirl may be another that could potentially be saved by HBO Max, as it began production on DC Universe, and their other DC Show Titans is being produced by HBO Max now. Reality shows are cheaper, and so may continue, or may move to other streaming networks as well. 
+
+At this point, it's impossible to say with certainty what's going to happen with the CW and its shows. It's possible no decisions may even happen before May, meaning nothing would really change about the network before next season, but if a decision is made, there's a very good chance every single show gets canceled, or at the very least moved to a streaming network. Unfortunately, my prediction models are based on previous year statistics, so there's no way to modify the prediction models in any way to account for this, so my predictions for the CW will continue as if this news never happened. Just know that there's a good chance most of my CW predictions will be wrong, if a decision on the fate of the network happens before the end of this season. 
+
+In other news, ABC renewed Grey's Anatomy and Station 19. These were previously predicted as 100% and 99% certain of renewal, so this is no surprise.
+
+This week, NBC premiered This is Us. This is the final season, so we won't be tracking this show, but if we were, the rating would have earned it a likely renewal prediction. I also noticed that I missed a show that premiered its first episode in December, American Auto. This is likely because the title of the show made me think it was a reality show, rather than a comedy. So far, after 3 episodes, American Auto has low enough ratings to suggest it will likely be canceled.
+
+FOX premiered 9-1-1: Lone Star and The Cleaning Lady. 9-1-1 Lone Star just barely performed good enough to be leaning towards renewal, while The Cleaning Lady came out lower than it needed. It starts out as a likely cancellation.
+
+ABC premiered Black-ish and Women of the Movement. Black-ish is in its final season, but if it weren't, it would have earned a likely renewal prediction. Women of the Movement has been described as a limited series, but its ratings are good enough to suggest it could be likely renewed. When it comes to shows that get described as limited series, the logic is always that if the show performs well enough, the network will probably want to renew it, regardless of the original intention of the show's creators.
+
+CBS premiered Good Sam. The ratings were not strong, as it is currently expected to be the lowest rated show on CBS, but something about the way the CBS prediction model is working right now is suggesting that Good Sam is leaning towards renewal regardless. Most likely, the model is expecting that even lower rated shows will be premiering later in the spring, especially since the model is not currently predicting cancellation for any shows on CBS yet.
+
+The Good Doctor drops from a certain renewal to just likely renewed.
+
+FBI: International, Abbott Elementary, and The Equalizer all upgrade from likely to certain renewals.
+
+The Rookie, The Wonder Years, Bull, and 4400 all upgrade from leaning towards renewal to likely renewed.
+
+Our Kind of People upgrades from a certain cancellation to just leaning canceled.
