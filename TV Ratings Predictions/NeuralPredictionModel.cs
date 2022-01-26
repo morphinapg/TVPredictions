@@ -755,14 +755,14 @@ namespace TV_Ratings_Predictions
                     //average = tempList.AsParallel().Where(x => x.year == year).Select(x => GetThreshold(x)).Average();
                     //midpoint = GetTargetRating(year, average);
                     midpoint = GetNetworkRatingsThreshold(year, true);
-                    maximum = GetTargetRating(year, 1);
+                    maximum = GetTargetRating(year, 0.75);
 
                     currentweight = 1.0 / (NetworkDatabase.MaxYear - year + 1) * tempList.Where(x => x.year == year && (x.Renewed || x.Canceled)).Count();
                     total += midpoint / maximum * currentweight;
                     weight += currentweight;
                 }
 
-                maximum = GetTargetRating(NetworkDatabase.MaxYear, 1);
+                maximum = GetTargetRating(NetworkDatabase.MaxYear, 0.75);
                 var TargetRating = total / weight * maximum;
 
                 double PreviousIndex = 0, CurrentTotal = 0, GrandTotal = ThisYear.Select(x => x.AverageRating * (x.Halfhour ? 0.5 : 1)).Sum(), NewIndex, PreviousRating = 0, CurrentRating, TargetIndex = -1, CurrentSegment;

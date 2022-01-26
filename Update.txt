@@ -1,11 +1,35 @@
-This week, FOX premiered Pivoting and Call Me Kat. Both shows performed quite poorly, dropping considerably on their second episodes, so both start out predicted as certain cancellations.
+This week, CBS renewed Ghosts, The Neighborhood, and Bob ♥️ Abishola. Ghosts and The Neighborhood were predicted as certain renewals, and Bob ♥️ Abishola was predicted as a likely renewal, so no surprises there. CBS also canceled Bull. We did get this one wrong, as we had it predicted as a likely renewal, but given some of the news that has come out about the show lately, it's not too surprising.
 
-The CW premiered Superman & Lois, and Naomi. Superman & Lois started strong enough that it will start out predicted as a certain renewal, and Naomi starts out as a likely renewal. Remember though, as we're still waiting to hear what happens with the sale of the network, any CW predictions should be taken with a grain of salt.
+CW premiered Two Sentence Horror Stories. Its ratings are just barely high enough to earn a renewal, but it would not take much for it to drop into cancellation territory, so it starts out leaning towards renewal. Remember though, while we wait for the news about CW's sale, take any CW predictions with a grain of salt.
 
-S.W.A.T. and The Resident both upgrade from likely to certain renewals.
+This week I've also made a modification to the adjustment calculation that is intended to account for the differences in the earlier season vs the later season ratings. It originally adjusted the renewal thresholds based on the average renewal level vs the highest rated show. While this was mostly a good idea, I figured that if there's a large outlier for a season, it could throw this calculation off. So I instead, adjusted it to the level that represents the 75% point of the cumulative ratings. Based on the way I weigh the calculation, this usually ends up anywhere from 1-3 shows from the top, but will be a better representation of "high" ratings for the network, without being affected by outliers.
 
-American Auto, Kenan, and Our Kind of People all upgrade from leaning towards cancellation to leaning towards renewal.
+The more renewals or cancellations a network has, the less this adjustment affects that network anyway, but some networks were still being affected to a larger degree by the old calculation than they are with the new calculation, so you may see some major changes in some predictions.
 
-Grand Crew upgrades from a likely cancellation to just leaning canceled.
+Magnum P.I. drops from a certain renewal to just leaning renewed.
 
-The Big Leap and Ordinary Joe both upgrade from certain cancellations to just likely canceled.
+FBI: Most Wanted drops from a certain renewal to just likely renewed.
+
+S.W.A.T. drops all the way from a certain renewal to leaning towards cancellation.
+
+Blue Bloods, NCIS, and The Rookie all drop from likely renewals to just leaning renewed.
+
+NCIS: Hawai'i upgrades from a likely to certain renewal.
+
+Batwoman and 4400 both drop all the way from likely renewals to likely cancellations.
+
+NCIS: Los Angeles and Young Rock both drop from likely renewals to leaning towards cancellation.
+
+Home Economics, B Positive, Kenan, and Riverdale all drop from leaning towards renewal to leaning towards cancellation.
+
+Good Sam drops all the way from leaning towards renewal to a certain cancellation.
+
+Nancy Drew upgrades from leaning towards renewal to likely renewed.
+
+Our Kind of People, Queens, and American Auto all drop from leaning towards renewal to a likely cancellation.
+
+A Million Little Things and Mr. Mayor both drop from leaning towards cancellation to likely canceled.
+
+Grand Crew drops from leaning canceled to a certain cancellation.
+
+Ordinary Joe and The Big Leap both drop from likely to certain cancellations.
