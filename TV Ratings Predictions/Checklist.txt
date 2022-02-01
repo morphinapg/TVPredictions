@@ -1,0 +1,27 @@
+﻿How to implement Viewer numbers alongside ratings:
+
+1. Make sure viewer numbers are calculated the same way rating numbers are. Same projections. Same array of accumulated weighted averages, etc.
+
+2. We're going to create an "adjusted rating" which takes the original projected rating, and adjusts it up/down slightly, based on viewer numbers.
+
+3. The way we figure this out how much adjustment is made will be determined with the neural network.
+
+4. The Neural Network will need an additional output node. 
+
+5. Because we have a new output node, the code will need to change somewhat for GetOutput, as will the number of hidden layer nodes.
+
+6. GetOutput will now return an array of two numbers. The first will be the renewal index, the second will be the percentage of viewer contribution.
+
+7. Once we have our adjustment, this is how it will work:
+
+8. Find the average projected rating for all shows, and the average projected viewer numbers for all shows. This should be done when ratings are changed, and stored in the network.
+
+9. Adjusted rating will = Math.Pow(10, Math.Log10(ProjectedRating) + (Math.Log10(ProjectedViewers / AverageViewers) - Math.Log10(ProjectedRating / AverageRating)) * RatingsAdjustment)
+
+10. This will give us a new AdjustedRating for each show. Indexes should be recalculated after this is determined. 
+
+11. Testing accuracy of the model will require that updated AdjustedRating and Indexes are calculated before testing. It may be needed to create a temporary list of indexes and ratings during the evolution phase.
+
+12. TargetRating should now be calculated based on the new AdjustedRating
+
+13. Margin of Error calculation should also be based on the new AdjustedRating
