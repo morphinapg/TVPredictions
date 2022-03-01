@@ -187,7 +187,15 @@ namespace TV_Ratings_Predictions
 
         public static void WriteSettings()  //Used to write the current database to the Settings file
         {
-            WriteToBinaryFile<NetworkSettings>(ApplicationData.Current.LocalFolder.Path + "\\Settings", new NetworkSettings());
+            var settings = new NetworkSettings(); //Full clone of all database data
+
+            WriteToBinaryFile<NetworkSettings>(ApplicationData.Current.LocalFolder.Path + "\\Settings", settings);
+
+            //var folder = ApplicationData.Current.LocalFolder;
+            //var file = await folder.FileExistsAsync("Settings2") ? await folder.GetFileAsync("Settings2") : await folder.CreateFileAsync("Settings2");
+            
+
+            //await WriteToDataFileAsync<NetworkSettings>(file, settings);
         }
 
         static void WriteToBinaryFile<T>(string filePath, T objectToWrite, bool append = false)
@@ -196,8 +204,35 @@ namespace TV_Ratings_Predictions
             {
                 var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 binaryFormatter.Serialize(stream, objectToWrite);
-
             }
+        }
+
+        static async Task WriteToDataFileAsync<T>(StorageFile file, T objectToWrite)
+        {
+            if (file != null)
+            {
+                using (Stream stream = await file.OpenStreamForWriteAsync())
+                {
+                    stream.SetLength(0);
+                    var serializer = new DataContractSerializer(typeof(T));
+                    serializer.WriteObject(stream, objectToWrite);
+                }
+            }
+        }
+
+        static async Task<T> ReadDataFileAsync<T>(StorageFile file)
+        {
+            if (file != null)
+            {
+                using (Stream stream = await file.OpenStreamForReadAsync())
+                {
+                    stream.SetLength(0);
+                    var serializer = new DataContractSerializer(typeof(T));
+                    return (T)serializer.ReadObject(stream);
+                }
+            }
+            else
+                return default(T);
         }
 
         public static async Task WritePredictionsAsync()    //Similar to WriteSettings, but using a condensed version of each Network for use in the mobile app
@@ -267,7 +302,9 @@ namespace TV_Ratings_Predictions
 
         public NetworkSettings()
         {
-            NetworkList = NetworkDatabase.NetworkList;
+            NetworkList = new ObservableCollection<Network>();
+            foreach (Network n in NetworkDatabase.NetworkList)
+                NetworkList.Add(new Network(n));
         }
     }
 }

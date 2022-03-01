@@ -79,6 +79,22 @@ namespace TV_Ratings_Predictions
             RandomGenerations = 1;
         }
 
+        public EvolutionTree(EvolutionTree e, Network n)
+        {
+            network = n;
+
+            Primary = new List<NeuralPredictionModel>();
+            foreach (NeuralPredictionModel m in e.Primary.ToArray())
+                Primary.Add(new NeuralPredictionModel(m));
+            Randomized = new List<NeuralPredictionModel>();
+            foreach (NeuralPredictionModel m in e.Randomized.ToArray())
+                Randomized.Add(new NeuralPredictionModel(m));
+
+            Generations = e.Generations;
+            CleanGenerations = e.CleanGenerations;
+            RandomGenerations = e.RandomGenerations;
+        }
+
         public void NextGeneration()
         {
             var r = new Random();

@@ -157,6 +157,55 @@ namespace TV_Ratings_Predictions
             typicalDeviation = new double[26];
         }
 
+        public Network(Network n)
+        {
+            name = n.name;
+            factors = new ObservableCollection<string>(n.factors.ToList());
+
+            shows = new List<Show>();
+            foreach (Show s in n.shows)
+            {
+                var NewShow = new Show
+                {
+                    ratingsAverages = s.ratingsAverages.ToArray(),
+                    Name = s.Name,
+                    factorValues = new ObservableCollection<bool>(s.factorValues.ToList()),
+                    year = s.year,
+                    ratings = s.ratings.ToList(),
+                    viewers = s.viewers.ToList(),
+                    AverageRating = s.AverageRating,
+                    ShowIndex = s.ShowIndex,
+                    PredictedOdds = s.PredictedOdds,
+                    AverageViewers = s.AverageViewers,
+                    OldRating = s.OldRating,
+                    OldOdds = s.OldOdds,
+                    FinalPrediction = s.FinalPrediction,
+                    OldViewers = s.OldViewers,
+                    RenewalStatus = s.RenewalStatus,
+                    Renewed = s.Renewed,
+                    Canceled = s.Canceled,
+                    Episodes = s.Episodes,
+                    Halfhour = s.Halfhour,
+                    Season = s.Season
+                };
+                shows.Add(NewShow);
+            }
+            ratingsAverages = n.ratingsAverages.ToArray();
+            FactorAverages = n.FactorAverages.ToArray();
+            RealAverages = n.RealAverages.ToArray();
+            deviations = n.deviations.ToArray();
+            typicalDeviation = n.typicalDeviation.ToArray();
+            TargetError = n.TargetError;
+            SeasonDeviation = n.SeasonDeviation;
+            Adjustment = n.Adjustment;
+            model = new NeuralPredictionModel(n.model);
+            PredictionAccuracy = n.PredictionAccuracy;
+            PredictionError = n.PredictionError;
+            LowestError = n.LowestError;
+            evolution = new EvolutionTree(n.evolution, this);
+            _lastupdate = n._lastupdate;
+        }
+
         public void Filter(int year)                        //The Filter method, as mentioned earlier, is a very important part of this app's functionality
         {                                                   
             FilteredShows.Clear();
