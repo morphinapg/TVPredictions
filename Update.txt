@@ -1,7 +1,13 @@
-This week, ABC canceled Promised Land. This comes as no surprise, as its ratings were considerably lower than anything else on the network, and we had it listed as a certain cancellation, with 82% confidence that it would be canceled.
+This week, NBC premiered Law & Order and The Endgame. Law & Order performed well enough to start out predicted as a certain renewal, but The Endgame started out considerably lower than the model predicts it would need to be renewed, so it starts out predicted as a certain cancellation. NBC also renewed The Blacklist, which we had just barely leaning towards renewal, so while it was close, we did get this one right. This show has proven difficult to predict in the past, so it seems the adjustments I've made to the prediction models this year have helped.
 
-9-1-1: Lone Star drops from a certain renewal to just likely renewed.
+CW premiered All American: Homecoming, which started out considerably higher than the prediction model expects it would need to be to be renewed, so it starts out with a certain renewal prediction. Of course, as I've said before, all CW predictions should be taken with a grain of salt as we wait for news about the potential sale of the network.
 
-The Rookie drops from a likely renewal to just leaning renewed.
+Superman & Lois upgrades from a likely to certain renewal.
 
-Queens drops from a likely to certain cancellation.
+The Wonder Years drops from a likely renewal to just leaning renewed.
+
+Magnum P.I. upgrades from leaning towards renewal to likely renewed.
+
+Batwoman, Young Rock, and Riverdale all upgrade from leaning towards cancellation to leaning towards renewal.
+
+The Cleaning Lady and Home Economics both drop from leaning towards cancellation to likely canceled.
