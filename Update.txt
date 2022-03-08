@@ -1,13 +1,7 @@
-This week, NBC premiered Law & Order and The Endgame. Law & Order performed well enough to start out predicted as a certain renewal, but The Endgame started out considerably lower than the model predicts it would need to be renewed, so it starts out predicted as a certain cancellation. NBC also renewed The Blacklist, which we had just barely leaning towards renewal, so while it was close, we did get this one right. This show has proven difficult to predict in the past, so it seems the adjustments I've made to the prediction models this year have helped.
+This week, NBC canceled Ordinary Joe. We had this predicted as a certain cancellation, at 100% confidence, so this is no surprise. FOX also canceled The Big Leap, which again, was predicted as a certain cancellation, although not as high of a confidence level at 84% for this one.
 
-CW premiered All American: Homecoming, which started out considerably higher than the prediction model expects it would need to be to be renewed, so it starts out with a certain renewal prediction. Of course, as I've said before, all CW predictions should be taken with a grain of salt as we wait for news about the potential sale of the network.
+FBI: Most Wanted upgrades from a likely to certain renewal.
 
-Superman & Lois upgrades from a likely to certain renewal.
+United States of Al and Magnum P.I. both drop from likely renewals to just leaning renewed.
 
-The Wonder Years drops from a likely renewal to just leaning renewed.
-
-Magnum P.I. upgrades from leaning towards renewal to likely renewed.
-
-Batwoman, Young Rock, and Riverdale all upgrade from leaning towards cancellation to leaning towards renewal.
-
-The Cleaning Lady and Home Economics both drop from leaning towards cancellation to likely canceled.
+A Million Little Things and Good Sam both drop from likely to certain cancellations.
