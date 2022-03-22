@@ -1,21 +1,19 @@
-This week, ABC renewed Abbott Elementary, as expected. We had this predicted as a certain renewal, with 97% confidence that it would be renewed.
+This week, CW renewed a bunch of shows: All American, Walker, Superman & Lois, The Flash, Kung Fu, Riverdale, and Nancy Drew. Personally, I wasn't expecting this, due to the fact that CW is selling its network, and recent news showed that the network has almost never made a profit. Based on that information, I would expect that any potential buyer would not be continuing CW's business model, and would either make their own shows, or mostly show repeats of older shows. As such, I was expecting nearly all of CW's content to be canceled, aside from maybe a show or two that might be picked up for streaming purposes. This news to me suggests that the CW is either not making a sale any time soon, or if they are, then the sale won't go into full effect until at least partway through next season, meaning the shows would already be in production by then. Either way, despite my own opinions on this, the prediction model (which is unable to account for the sale) had indeed correctly predicted all of these shows!
 
-While New Amsterdam was already renewed before the season began, NBC announced that the next season would be the last. While normally we do not track shows that were pre-decided before the season began, if the network does something to alter its fate, that can be reflective of how the network viewed the show's performance this year. As such, for the purposes of this  prediction model, we consider this the same as if it were canceled. Because of its pre-renewal status, we didn't discuss predictions for New Amsterdam's renewal or cancellation before, but looking at the data, last week it would have been predicted as leaning towards cancellation, so while it was close, we did predict this one correctly.
+Also this week, FOX premiered Welcome to Flatch. The ratings were considerably lower than they would need to be for renewal, so this starts out predicted to be a certain cancellation.
 
-Also this week, NBC premiered The Thing About Pam and Transplant. While NBC claims The Thing About Pam is designed as a single season limited series, we still track these type of shows, because if they rate high enough, networks will usually be interested in continuing them in some way, even if that means using a different story for the next entry in that series. However, this show started out with lower ratings than the network would realistically need to renew it, so it starts out as a likely cancellation. Transplant had even lower ratings, which would normally have resulted in a certain cancellation prediction, but fortunately for fans of that show, it was already renewed before the season began.
+Two Sentence Horror Stories drops from a likely renewal to just leaning renewed.
 
-CW also premiered Kung Fu and Charmed. Kung Fu rated high enough to earn it a certain renewal prediction, but charmed rated low enough to start out predicted as a certain cancellation. Note however, that the potential sale of the CW could mean that more shows could be canceled than these predictions suggest.
+4400 drops all the way from a likely renewal to a likely cancellation.
 
-Superman & Lois drops from a certain renewal to just likely renewed.
+The Good Doctor upgrades from leaning towards renewal to likely renewed.
 
-9-1-1: Lone Star and Legends of Tomorrow both upgrade from likely to certain renewals.
+The Cleaning Lady drops from leaning towards cancellation to likely canceled.
 
-The Good Doctor drops from a likely renewal to just leaning renewed.
+Our Kind of People upgrades from a likely cancellation to just leaning canceled.
 
-Two Sentence Horror Stories, 4400, and Batwoman all upgrade from leaning towards renewal to likely renewed.
+NCIS: Los Angeles upgrades from a likely cancellation to leaning towards renewal.
 
-The Wonder Years and Blue Bloods both drop from leaning towards renewal to leaning towards cancellation.
+The Thing About Pam drops from a likely to certain cancellation.
 
-The Cleaning Lady upgrades from a likely cancellation to just leaning canceled.
-
-Home Economics drops from a likely to certain cancellation.
+Mr. Mayor upgrades from a certain cancellation to just likely canceled.
