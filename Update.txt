@@ -1,23 +1,11 @@
-This weekend, CBS renewed NCIS, NCIS: Hawai'i, and NCIS: Los Angeles. While the previous predictions had considered NCIS: Hawaii as a sure bet for renewal, NCIS: Los Angeles was only predicted as leaning towards renewal, and the main NCIS was actually listed as leaning towards cancellation. So that one is a miss. Not a surprising one, as the cancellation prediction didn't have a high confidence level, but I believe this was the first time NCIS was actually predicted to be canceled, so it's possible it may not last much longer, with the main factor there being the cost of production rising as the number of seasons gets high.
+This week, CBS renewed S.W.A.T. This one does come as somewhat of a surprise, as we did have that one predicted as a likely cancellation. While the show was rated above where CBS normally has been renewing shows, the model had assumed there were other factors that meant CBS would likely want a higher rating than that from S.W.A.T. 
 
-ABC also renewed The Good Doctor and The Rookie. We had both of these listed as likely renewals, so no surprises there.
+FOX renewed The Cleaning Lady. This one on the other hand, we got right, although it was close as we had this show predicted canceled for a while, and it was expected to be very close to the renewal threshold.
 
-This week also saw the premiere of How We Roll on CBS. Its ratings started out much lower than CBS would likely want them to be for renewal, so this show starts out predicted to be a certain cancellation.
+Charmed drops all the way from a certain renewal to a certain cancellation. Looking at the breakdown, it seems the model is now much more strongly factoring in how airing on friday and premiering in the spring impact renewal requirements for this show, which increased it's projected renewal threshold from 0.04 to 0.09. It's currently projected to end the season around a 0.06 rating.
 
-Charmed upgrades from a likely to certain renewal.
+Magnum P.I. upgrades from leaning towards renewal to likely renewed.
 
-Young Rock drops from a likely renewal to just leaning renewed.
+Young Rock drops from leaning towards renewal to leaning towards cancellation.
 
-Legacies upgrades from leaning towards renewal to likely renewed.
-
-Legends of Tomorrow drops from leaning towards renewal to a likely cancellation.
-
-United States of Al, Big Sky, and Our Kind of People all drop from leaning towards renewal to leaning towards cancellation.
-
-Batwoman upgrades from leaning renewed to a certain renewal.
-
-Blue Bloods upgrades from leaning towards cancellation to leaning towards renewal.
-
-B Positive and The Wonder Years both drop from leaning towards cancellation to likely canceled.
-
-Mr. Mayor and Home Economics both drop from likely to certain cancellations.
+Our Kind of People and United States of Al both drop from leaning towards cancellation to likely canceled.
