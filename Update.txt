@@ -1,15 +1,9 @@
-This will most likely be the last week of predictions for many shows, as I expect most shows to be decided within the next week. 
+This was the big week. Nearly every show that had not yet been renewed or canceled was decided this week. Only 4 shows remain undecided: Duncanville, The Thing About Pam, Women of the Movement, and Two Sentence Horror Stories. The Thing About Pam and Women of the Movement were both advertised as limited series, so most people would just assume that's the end of it, but there is always the chance that a limited series could get enough ratings to warrant another season. In this case, Women of the Movement had high enough ratings that the prediction model suggested it was a likely renewal. While at this point, the chances do seem less likely since an announcement hasn't been made, sometimes with shows that weren't planning for another season, it can take longer to come up with a good idea to continue it, so we shall see. On the other hand, The Thing About Pam did poorly enough that there's practically no chance it could have been renewed anyway. The other two shows, Duncanville and Two Sentence Horror Stories are more likely to be announced later this year. I expect Two Sentence Horror Stories to be renewed, but Duncanville is predicted to be a certain cancellation.
 
-This week, ABC canceled Queens. This comes as no surprise, as we were 100% confident in this cancellation.
+As for all the decided shows this week, there are too many to go into detail about every single one, but there were a few major surprises. Grand Crew, American Auto, A Million Little Things, Call Me Kat, Home Economics, and Welcome to Flatch were all very surprising renewals. Every one of those shows was predicted to be a certain cancellation. Other missed renewals were The Wonder Years and Big Sky. The Wonder Years was predicted to be a likely cancellation, and Big Sky is less surprising, as it was only leaning towards cancellation.
 
-CBS renewed The Equalizer, FBI, FBI: International, and FBI: Most Wanted. Again, all 4 of these come as no surprise as we had them predicted as certain renewals.
+On the cancellation side, the most surprising miss was Magnum P.I. The prediction model had most recently settled on predicting this show as a certain renewal. That being said, less than a month ago, we were suggesting that it was only leaning towards renewal, so perhaps the AI model was being overly confident in the prediction. Another surprising cancellation is Legacies, which we had as a likely renewal. 
 
-NBC renewed Law & Order, and Law & Order: Organized Crime. We were 100% confident in renewal for both of these shows as well. 
+The rest of the news went about as expected. In total this year we have predicted 53 out of 68 shows correctly, or 78% correct. Better than last year's 73%, although I think the model can get even better with the training it will do on this new data. In fact, so far, just with training a few hours, it's been able to come up with a model that predicts every show correctly, except for Welcome to Flatch, which remains probably the most surprising result of the year, and will take quite some time for the model to figure out, if it even can. 
 
-FOX also premiered the new season of Duncanville, to much lower ratings than that show would likely have wanted. It starts out predicted as a certain cancellation.
-
-Wommen of the Movement drops from a certain renewal to just likely renewed.
-
-All American: Homecoming and Magnum P.I. both upgrade from likely to certain renewals.
-
-How We Roll and Mr. Mayor both drop from likely to certain cancellations.
+I will continue to monitor the 4 remaining shows and post new updates about them when they are available, as well as track any new shows that premiere during the summer. 
