@@ -86,7 +86,7 @@
         </StackPanel>
 
         <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="5,5,20,5">
-            <Button x:Name="SummerAlert" Background="Yellow" Padding="5" Visibility="Collapsed" Click="SummerAlert_Click">
+            <Button x:Name="SummerAlert" Background="#52FFC90E" Padding="5" Visibility="Collapsed" Click="SummerAlert_Click">
                 <Button.Flyout>
                     <Flyout>
                         <ListView x:Name="SummerList"/>
@@ -94,7 +94,7 @@
                 </Button.Flyout>
                 Possible Summer Shows
             </Button>
-            <Button x:Name="SummerAlert2" Background="Yellow" Padding="5" Visibility="Collapsed">
+            <Button x:Name="SummerAlert2" Background="#52FFC90E" Padding="5" Visibility="Collapsed">
                 <Button.Flyout>
                     <Flyout>
                         <ListView x:Name="SummerList2"/>
