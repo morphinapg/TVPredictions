@@ -59,14 +59,19 @@ namespace TV_Ratings_Predictions
         {
             RenewalStatus.IsEnabled = !((bool)Renewed.IsChecked || (bool)Canceled.IsChecked);
 
-            if ((bool)Renewed.IsChecked && (bool)Canceled.IsChecked)
-                RenewalStatus.Text = "Renewed for Final Season";
-            else if ((bool)Renewed.IsChecked)
-                RenewalStatus.Text = "Renewed";
-            else if ((bool)Canceled.IsChecked)
-                RenewalStatus.Text = "Canceled";
-            else
-                RenewalStatus.Text = "";
+            var PresetStatus = new string[] { "", "Renewed for Final Season", "Renewed", "Canceled" };
+
+            if (PresetStatus.Contains(show.RenewalStatus))
+            {
+                if ((bool)Renewed.IsChecked && (bool)Canceled.IsChecked)
+                    RenewalStatus.Text = PresetStatus[1];
+                else if ((bool)Renewed.IsChecked)
+                    RenewalStatus.Text = PresetStatus[2];
+                else if ((bool)Canceled.IsChecked)
+                    RenewalStatus.Text = PresetStatus[3];
+                else
+                    RenewalStatus.Text = PresetStatus[0];
+            }            
 
             if (!RenewalStatus.IsEnabled)
                 EditStatus.Visibility = Visibility.Visible;
