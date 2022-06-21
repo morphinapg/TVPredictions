@@ -1,5 +1,1 @@
-Sorry about the delay. My schedule has been a bit awkward the last few days so I wasn't able to get to working on these predictions until now. 
-
-This week, CW premiered Roswell, New Mexico, Tom Swift, and In the Dark. Roswell and In the Dark have both already been announced that this season will be their last. Tom Swift on the other hand started out with ratings that were lower than what the prediction model expects the network would want for the show, so it starts out predicted as a likely cancellation. However, the ratings are close enough that it wouldn't take much to bump it to a renewal prediction.
-
-No other major changes to predictions this week.
+This week, due to additional training improving the accuracy of the CW prediction model, the prediction for Tom Swift upgrades all the way from a likely cancellation to a certain renewal.
