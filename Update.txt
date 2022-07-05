@@ -1,3 +1,5 @@
-This week, Wellington Paranormal premiered its third season. The fourth (and final) season has already aired in New Zealand, so I'm marking this as Pre-renewed. Whether CW will air that season or not, I don't know. The show doesn't get good enough ratings where I would have expected a renewal otherwise, so it's possible CW may not decide to air season 4. 
+This week, Duncanville was canceled on FOX. This is not a surprise, as the AI was 100% confident in this show's cancellation.
 
-Tom Swift drops from a certain renewal to just likely renewed.
+Tom Swift was canceled on CW. While we originally had this as a cancellation, with further training, the prediction model changed to predicting it as a likely renewal. However, again, with the CW's current situation, it can be hard to use older data to predict what they will be doing next, since ownership is changing, and may want to do things differently.
+
+NBC decided to renew Magnum P.I. for 2 more seasons after CBS canceled it. After adding Magnum P.I. to the NBC database for this season, it's not surprising, as the prediction model would have predicted it as a renewal on NBC, although it is surprising that it got two seasons, as the current prediction model suggests it rated just barely above where a renewal would be possible, which usually means it will only get one more season. NBC may regret giving it two more seasons instead of one, but I'm sure the fans will be happy.
