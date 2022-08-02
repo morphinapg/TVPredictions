@@ -106,7 +106,7 @@ namespace TV_Ratings_Predictions
                 bool found = false;
 
                 for (int i = 0; i < network.shows.Count && !found; i++)
-                    if (network.shows[i].Name == nochanges.Name && network.shows[i].year == nochanges.year)
+                    if (network.shows[i].Name == nochanges.Name && network.shows[i].year == nochanges.year && network.shows[i].Season == nochanges.Season)
                     {
                         found = true;
                         index = i;
