@@ -224,6 +224,11 @@ namespace TV_Ratings_Predictions
             PredictionError = model._score;
             LowestError = model._error;
 
+            ShowsPerYear = new Dictionary<int, List<Show>>();
+            var years = shows.Select(x => x.year).Distinct();
+            foreach (int y in years)
+                ShowsPerYear[y] = shows.Where(x => x.year == y && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
+
             //TargetError = GetMarginOfError();
             RefreshPredictions(true);
             RefreshAverages();            
@@ -234,12 +239,7 @@ namespace TV_Ratings_Predictions
                 AlphabeticalShows.Add(s);
                 NetworkRatings.Add(new RatingsContainer(this, s));
                 NetworkViewers.Add(new RatingsContainer(this, s, true));
-            }
-
-            ShowsPerYear = new Dictionary<int, List<Show>>();
-            var years = shows.Select(x => x.year).Distinct();
-            foreach(int y in years)
-                ShowsPerYear[y] = shows.Where(x => x.year == y && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
+            }            
         }
 
         public List<Show> CustomFilter(int year)            //Returns a filtered list representing every show for a custom chosen year, sorted by rating
