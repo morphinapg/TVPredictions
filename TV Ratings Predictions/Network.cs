@@ -501,12 +501,14 @@ namespace TV_Ratings_Predictions
             //var Adjustments = model.GetAdjustments(parallel);
 
             TargetError = model.GetTargetErrorParallel(factors);
-            Parallel.ForEach(FilteredShows, s => s.PredictedOdds = model.GetOdds(s));
+            Parallel.ForEach(FilteredShows, s => { if (s.ratings.Count > 0) s.PredictedOdds = model.GetOdds(s); });
         }
 
         public double AdjustAverage(int currentEpisode, int finalEpisode, double currentDrop = -1, bool viewers = false)   //This applies the typical ratings falloff values to the current weighted ratings average for a show
         {                                                                   //The result is a prediction for where the show's weighted ratings average will be at the end of the season
                                                                             //This allows for more of a fair comparison between shows at different points in their seasons            
+            if (currentEpisode == 0) return 1;
+
 
             try
             {

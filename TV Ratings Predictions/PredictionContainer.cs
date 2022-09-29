@@ -187,7 +187,7 @@ namespace TV_Ratings_Predictions
             network = n;
             show = s;
             Show = s.NameWithSeason;
-            odds = (RawOdds || s.year != NetworkDatabase.MaxYear) ? s.PredictedOdds : network.model.GetOdds(s, false, true, -1);
+            odds = (s.ratings.Count == 0 || RawOdds || s.year != NetworkDatabase.MaxYear) ? s.PredictedOdds : network.model.GetOdds(s, false, true, -1);
             _rating = s.AverageRating;
             _viewers = s.AverageViewers;
             Status = s.RenewalStatus;
