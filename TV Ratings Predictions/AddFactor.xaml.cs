@@ -137,6 +137,51 @@ namespace TV_Ratings_Predictions
         }
     }
 
+    public class EpisodeFactor : INotifyPropertyChanged
+    {
+        Show show;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        public string Name
+        {
+            get
+            {
+                return "Season " + show.Season;
+            }
+        }
+
+        int _previousepisodes;
+        public int PreviousEpisodes
+        {
+            get
+            {
+                return _previousepisodes;
+            }
+            set
+            {
+                _previousepisodes = value;
+                OnPropertyChanged("PreviousEpisodes");
+            }
+        }
+
+
+        public EpisodeFactor(Show s)
+        {
+            show = s;
+            PreviousEpisodes = 0;
+        }
+
+        public void SetPrevious()
+        {
+            
+        }
+    }
+
     public class GroupedAddingFactor : List<AddingFactor>
     {
         public int _year;
@@ -157,6 +202,29 @@ namespace TV_Ratings_Predictions
                 ListOfAddFactor.Add(new AddingFactor(s));
 
             _year = year;
+        }
+    }
+
+    public class GroupedPreviousEpisodes : List<EpisodeFactor>
+    {
+        public string _show;
+        public string Show
+        {
+            get
+            {
+                return _show;
+            }
+        }
+        public List<EpisodeFactor> ListOfEpisodes => this;
+
+        public GroupedPreviousEpisodes(IOrderedEnumerable<Show> shows, string Show)
+        {
+            var tempList = shows.Where(x => x.Name == Show);
+
+            foreach (Show s in tempList)
+                ListOfEpisodes.Add(new EpisodeFactor(s));
+
+            _show = Show;
         }
     }
 }

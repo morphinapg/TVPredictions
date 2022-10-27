@@ -191,6 +191,9 @@
     <Compile Include="PredictionContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RatingsContainer.cs" />
+    <Compile Include="SetPrevious.xaml.cs">
+      <DependentUpon>SetPrevious.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Show.cs" />
     <Compile Include="ShowBreakdown.xaml.cs">
       <DependentUpon>ShowBreakdown.xaml</DependentUpon>
@@ -319,6 +322,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="NetworkHome.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SetPrevious.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
