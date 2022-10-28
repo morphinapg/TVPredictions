@@ -35,7 +35,15 @@ namespace TV_Ratings_Predictions
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            
+            AllShows.AsParallel().SelectMany(x => x).ForAll(x => x.SetPrevious());
+
+
+            //var midpoint = network.GetMidpoint();
+            //network.model = new NeuralPredictionModel(network, midpoint);
+            //network.evolution = new EvolutionTree(network, midpoint);
+
+            NetworkDatabase.pendingSave = true;
+            Frame.GoBack();
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)

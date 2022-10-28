@@ -186,7 +186,8 @@ namespace TV_Ratings_Predictions
                     Canceled = s.Canceled,
                     Episodes = s.Episodes,
                     Halfhour = s.Halfhour,
-                    Season = s.Season
+                    Season = s.Season,
+                    PreviousEpisodes = s.PreviousEpisodes
                 };
                 shows.Add(NewShow);
             }

@@ -35,7 +35,7 @@ namespace TV_Ratings_Predictions
 
         [NonSerialized]
         public ObservableCollection<string> factorNames;
-        public int year;
+        public int year, PreviousEpisodes;
         public List<double> ratings, viewers;
         public double AverageRating, ShowIndex, PredictedOdds, AverageViewers;
         public double OldRating, OldOdds, FinalPrediction, OldViewers;
@@ -116,7 +116,7 @@ namespace TV_Ratings_Predictions
 
         }
 
-        public Show(string ShowName, Network n, int season, ObservableCollection<bool> FactorList, int EpisodeCount, bool isHalfHour, ObservableCollection<string> names, double avgR = 0, double index = 1, string status = "", bool ren = false, bool can = false, double avgV = 0)
+        public Show(string ShowName, Network n, int season, int previousepisodes, ObservableCollection<bool> FactorList, int EpisodeCount, bool isHalfHour, ObservableCollection<string> names, double avgR = 0, double index = 1, string status = "", bool ren = false, bool can = false, double avgV = 0)
         {
             Name = ShowName;
             factorValues = FactorList;
@@ -137,6 +137,7 @@ namespace TV_Ratings_Predictions
             network = n;
             ratingsAverages = new double[26];
             Season = season;
+            PreviousEpisodes = previousepisodes;
         }
 
         public void UpdateAverage()

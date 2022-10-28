@@ -20,7 +20,16 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock Text="Season #:" Margin="10,0" VerticalAlignment="Center"/>
-            <WinUI:NumberBox x:Name="SeasonNumber" Grid.Column="1" Value="{x:Bind show.Season, Mode=TwoWay}" Minimum="0" SpinButtonPlacementMode="Inline" SmallChange="1"/>
+            <WinUI:NumberBox x:Name="SeasonNumber" Grid.Column="1" Value="{x:Bind show.Season, Mode=TwoWay}" Minimum="1" SpinButtonPlacementMode="Inline" SmallChange="1"/>
+        </Grid>
+        <Grid Margin="0,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Previously Aired Episodes:" Margin="10,0" VerticalAlignment="Center"/>
+            <WinUI:NumberBox x:Name="PreviousEpisodes" Grid.Column="1" Value="{x:Bind show.PreviousEpisodes, Mode=TwoWay}" Minimum="0" SpinButtonPlacementMode="Inline" SmallChange="1"/>
         </Grid>
         <TextBlock Text="Number of Episodes:" Margin="10"/>
 

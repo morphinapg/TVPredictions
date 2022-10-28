@@ -28,6 +28,7 @@ namespace TV_Ratings_Predictions
         bool halfhour = true;
         int episodes = 13;
         int season = 1;
+        int previousepisodes = 0;
 
         public AddShow()
         {
@@ -65,7 +66,7 @@ namespace TV_Ratings_Predictions
 
             if (name!="" && notExist)
             {
-                network.shows.Add(new Show(name, network, season, settings, episodes, !halfhour, network.factors));
+                network.shows.Add(new Show(name, network, season, previousepisodes, settings, episodes, !halfhour, network.factors));
                 ShowName.Text = "";
                 HalfHour.IsOn = true;
 
@@ -94,6 +95,17 @@ namespace TV_Ratings_Predictions
         {
             _30Mins.Opacity = HalfHour.IsOn ? 0.3 : 1;
             _60Mins.Opacity = HalfHour.IsOn ? 1 : 0.3;
+        }
+
+        private void SeasonNumber_ValueChanged(Microsoft.UI.Xaml.Controls.NumberBox sender, Microsoft.UI.Xaml.Controls.NumberBoxValueChangedEventArgs args)
+        {
+            if (args.NewValue == 1)
+            {
+                PreviousEpisodes.Value = 0;
+                PreviousEpisodes.IsEnabled = false;
+            }
+            else
+                PreviousEpisodes.IsEnabled = true;
         }
     }
 }

@@ -173,12 +173,12 @@ namespace TV_Ratings_Predictions
         public EpisodeFactor(Show s)
         {
             show = s;
-            PreviousEpisodes = 0;
+            PreviousEpisodes = s.PreviousEpisodes;
         }
 
         public void SetPrevious()
         {
-            
+            show.PreviousEpisodes = PreviousEpisodes;
         }
     }
 
