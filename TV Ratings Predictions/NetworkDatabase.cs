@@ -140,6 +140,7 @@ namespace TV_Ratings_Predictions
 
                 //n.model = new NeuralPredictionModel(n, n.GetMidpoint());                               //This commented code is here if I ever need to test
                 //n.evolution = new EvolutionTree(n, n.GetMidpoint());                                   //changes to the predictions with a fresh model
+                //n.RealAverages = n.model.GetAverages(n.factors);
 
                 n.model.shows = n.shows;
                 Parallel.ForEach(n.shows, s =>

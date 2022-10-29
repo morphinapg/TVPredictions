@@ -19,7 +19,7 @@ namespace TV_Ratings_Predictions
 
         public double[][] deviations;
         public double[] typicalDeviation;
-        public double TargetError, SeasonDeviation, Adjustment;
+        public double TargetError, SeasonDeviation, PreviousEpisodeDeviation, YearDeviation, Adjustment;
 
         public MiniNetwork(Network n)
         {
@@ -53,6 +53,8 @@ namespace TV_Ratings_Predictions
             typicalDeviation = n.typicalDeviation;
             TargetError = n.TargetError;
             SeasonDeviation = n.SeasonDeviation;
+            PreviousEpisodeDeviation = n.PreviousEpisodeDeviation;
+            YearDeviation = n.YearDeviation;
             Adjustment = n.Adjustment;
             
         }

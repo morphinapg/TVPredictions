@@ -48,7 +48,7 @@ namespace TV_Ratings_Predictions
         public double[][] deviations;                                   //The deviation arrays collect statistics on how much the current projected rating deviates from the final rating
         public double[] typicalDeviation;                               //as well as how the projected ratings vary week-to-week.
         public double TargetError;                                      //These statistics drive a Normal Distribution used to calculate odds
-        public double SeasonDeviation;
+        public double SeasonDeviation, PreviousEpisodeDeviation, YearDeviation;
         public double Adjustment;
 
         public NeuralPredictionModel model;                             //A NeuralPredictionModel is a Neural Network used for predicting renewal or cancellation of a show.
@@ -115,6 +115,8 @@ namespace TV_Ratings_Predictions
 
             FactorAverages = model.FactorBias;
             SeasonDeviation = model.SeasonDeviation;
+            YearDeviation = model.YearDeviation;
+            PreviousEpisodeDeviation = model.PreviousEpisodeDeviation;
             Adjustment = model.GetAdjustment();
 
             //PredictionAccuracy = model.TestAccuracy(true) * 100;
@@ -198,6 +200,8 @@ namespace TV_Ratings_Predictions
             typicalDeviation = n.typicalDeviation.ToArray();
             TargetError = n.TargetError;
             SeasonDeviation = n.SeasonDeviation;
+            PreviousEpisodeDeviation = n.PreviousEpisodeDeviation;
+            YearDeviation = n.YearDeviation;
             Adjustment = n.Adjustment;
             model = new NeuralPredictionModel(n.model);
             PredictionAccuracy = n.PredictionAccuracy;
@@ -462,6 +466,8 @@ namespace TV_Ratings_Predictions
 
             //SeasonDeviation = Math.Sqrt(totals / weights);
             SeasonDeviation = model.SeasonDeviation;
+            PreviousEpisodeDeviation = model.PreviousEpisodeDeviation;
+            YearDeviation = model.YearDeviation;
 
             Adjustment = model.GetAdjustment();
         }

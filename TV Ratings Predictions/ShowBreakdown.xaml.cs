@@ -71,6 +71,7 @@ namespace TV_Ratings_Predictions
             var FactorCount = network.factors.Count;
 
             var CurrentFactors = network.model.GetBaseInputs();
+            CurrentFactors[FactorCount + 4] = (s.year - network.FactorAverages[FactorCount + 4]) / network.YearDeviation; //We want to compare the factors, but not compare how previous years affect the odds
 
             var BaseOdds = network.model.GetModifiedOdds(s, CurrentFactors);
             double CurrentOdds = BaseOdds, NewOdds, detailValue;
@@ -164,43 +165,58 @@ namespace TV_Ratings_Predictions
 
                     details.Add(new DetailsContainer(detailName, detailValue));
                 }
-                else if ((network.factors[i] == "Syndication" || network.factors[i] == "Post-Syndication") && !AllFactors)
+                //else if ((network.factors[i] == "Syndication" || network.factors[i] == "Post-Syndication") && !AllFactors)
+                //{
+                //    if (!SyndicationFinished)
+                //    {
+                //        bool Syndication = false;
+                //        bool PostSyndication = false;
+                //        int SyndicationIndex = network.factors.IndexOf("Syndication"), PostIndex = network.factors.IndexOf("Post-Syndication");
+
+                //        if (SyndicationIndex > -1)
+                //        { 
+                //            Syndication = s.factorValues[SyndicationIndex];
+                //            CurrentFactors[SyndicationIndex] = (Syndication ? 1 : -1) - network.FactorAverages[SyndicationIndex];
+                //        }
+                //        if (PostIndex > -1) 
+                //        { 
+                //            PostSyndication = s.factorValues[PostIndex];
+                //            CurrentFactors[PostIndex] = (PostSyndication ? 1 : -1) - network.FactorAverages[PostIndex];
+                //        }
+
+
+                //        if (Syndication)
+                //            detailName = "Will be syndicated next season";
+                //        else if (PostSyndication)
+                //            detailName = "Has already been syndicated";
+                //        else
+                //            detailName = "Not syndicated yet";
+
+                //        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
+
+                //        detailValue = NewOdds - CurrentOdds;
+
+                //        CurrentOdds = NewOdds;
+
+                //        details.Add(new DetailsContainer(detailName, detailValue));
+
+                //        SyndicationFinished = true;
+                //    }
+                //}
+                else if (i == FactorCount + 3) // Syndication
                 {
-                    if (!SyndicationFinished)
-                    {
-                        bool Syndication = false;
-                        bool PostSyndication = false;
-                        int SyndicationIndex = network.factors.IndexOf("Syndication"), PostIndex = network.factors.IndexOf("Post-Syndication");
+                    //detailName = s.PreviousEpisodes + " Episodes aired before this season";
+                    detailName = "Syndication";
 
-                        if (SyndicationIndex > -1)
-                        { 
-                            Syndication = s.factorValues[SyndicationIndex];
-                            CurrentFactors[SyndicationIndex] = (Syndication ? 1 : -1) - network.FactorAverages[SyndicationIndex];
-                        }
-                        if (PostIndex > -1) 
-                        { 
-                            PostSyndication = s.factorValues[PostIndex];
-                            CurrentFactors[PostIndex] = (PostSyndication ? 1 : -1) - network.FactorAverages[PostIndex];
-                        }
+                    CurrentFactors[i] = (s.PreviousEpisodes - network.FactorAverages[i]) / network.PreviousEpisodeDeviation;
 
+                    NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
 
-                        if (Syndication)
-                            detailName = "Will be syndicated next season";
-                        else if (PostSyndication)
-                            detailName = "Has already been syndicated";
-                        else
-                            detailName = "Not syndicated yet";
+                    detailValue = NewOdds - CurrentOdds;
 
-                        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
+                    CurrentOdds = NewOdds;
 
-                        detailValue = NewOdds - CurrentOdds;
-
-                        CurrentOdds = NewOdds;
-
-                        details.Add(new DetailsContainer(detailName, detailValue));
-
-                        SyndicationFinished = true;
-                    }
+                    details.Add(new DetailsContainer(detailName, detailValue));
                 }
                 else if ((network.factors[i] == "Spring" || network.factors[i] == "Summer" || network.factors[i] == "Fall") && !AllFactors)
                 {
@@ -380,19 +396,22 @@ namespace TV_Ratings_Predictions
 
                 //var Adjustments = network.model.GetAdjustments(true);
 
-                var FactorCount = network.factors.Count + 3;
+                var FactorCount = network.factors.Count;
                 int Iterations = 20000; //Enough for precision within 0.01%
 
                 var AllResults = new DetailsCombo[Iterations];
                 var Random = new Random();
 
-                var Numbers = new int[FactorCount];
-                Numbers[0] = FactorCount - 1;
-                Numbers[1] = FactorCount - 3;
-                Numbers[2] = FactorCount - 2;
+                var Numbers = new int[FactorCount+5];
+                Numbers[0] = FactorCount + 2;
+                Numbers[1] = FactorCount;
+                Numbers[2] = FactorCount + 3;
+                Numbers[3] = FactorCount + 1;
 
-                for (int i = 3; i < FactorCount; i++)
-                    Numbers[i] = i - 3;
+                var InputCount = FactorCount + 5;
+
+                for (int i = 5; i < InputCount; i++)
+                    Numbers[i] = i - 5;
 
                 BreakdownProgress.Value = 0;
                 BreakdownProgress.Maximum = Iterations;
@@ -425,6 +444,7 @@ namespace TV_Ratings_Predictions
                 var count = FactorNames.Count;
                 var FactorValues = new double[count];
 
+
                 Parallel.For(0, count, i => FactorValues[i] = AllResults.SelectMany(x => x.details).Where(x => x.Name == FactorNames[i]).Select(x => x.Value).Average());
 
                 var DetailsList = new List<DetailsContainer>();
@@ -432,6 +452,138 @@ namespace TV_Ratings_Predictions
                     DetailsList.Add(new DetailsContainer(FactorNames[i], FactorValues[i]));
 
                 var Results = new DetailsCombo(DetailsList, AllResults[0].BaseOdds, AllResults[0].CurrentOdds);
+
+                ///Determine Syndication Status
+                ///
+                if (FactorNames.Contains("Syndication"))
+                {
+                    var SyndicationIndex = FactorNames.IndexOf("Syndication");
+                    var inputs = network.model.GetInputs(s);
+
+                    //Create new list representing odds for each season
+                    var AllSeasonOdds = new List<double>();
+
+                    //First, find the lowest and highest # Season that exists in the database
+                    var AllSeasons = shows.Where(x => x.Name == s.Name).OrderBy(x => x.Season);
+                    var LowestSeason = AllSeasons.First();
+                    var HighestSeason = AllSeasons.Last();
+
+                    var EpisodesPerSeason = AllSeasons.Select(x => x.Episodes).Sum() / AllSeasons.Count();
+                    var CurrentYear = LowestSeason.year - (LowestSeason.Season - 1);
+                    var PreviousEpisodes = 0;
+
+                    //If there are missing seasons, extrapolate episode numbers and years, and determine odds based on that
+                    if (LowestSeason.Season > 1)
+                    {
+                        EpisodesPerSeason = LowestSeason.PreviousEpisodes / (LowestSeason.Season - 1);
+
+                        for (int i = 0; i < LowestSeason.Season - 1; i++)
+                        {
+                            var ModifiedInputs = inputs.ToArray();
+                            ModifiedInputs[FactorCount + 2] = (i + 1 - network.FactorAverages[FactorCount + 2]) / network.SeasonDeviation;
+                            ModifiedInputs[FactorCount + 4] = (CurrentYear - network.FactorAverages[FactorCount + 4]) / network.YearDeviation;
+                            ModifiedInputs[FactorCount] = (EpisodesPerSeason / 26.0 * 2 - 1) - network.FactorAverages[FactorCount];
+
+                            ModifiedInputs[FactorCount + 3] = (PreviousEpisodes - network.FactorAverages[FactorCount + 3]) / network.PreviousEpisodeDeviation;
+                            PreviousEpisodes += EpisodesPerSeason;
+
+                            AllSeasonOdds.Add(network.model.GetModifiedOdds(s, ModifiedInputs));
+                            CurrentYear++;
+                        }
+                    }
+
+                    //Add any existing seasons to the list, interpolating when necessary
+                    if (LowestSeason.Season < s.Season)
+                    {
+                        for (int i = LowestSeason.Season; i < HighestSeason.Season; i++)
+                        {
+                            var ModifiedInputs = inputs.ToArray();
+
+                            var MatchedSeason = shows.Where(x => x.Name == s.Name && x.Season == i);
+
+                            if (MatchedSeason.Count() == 0)
+                            {
+                                ModifiedInputs[FactorCount + 2] = (i - network.FactorAverages[FactorCount + 2]) / network.SeasonDeviation;
+                                ModifiedInputs[FactorCount + 4] = (CurrentYear - network.FactorAverages[FactorCount + 4]) / network.YearDeviation;
+                                ModifiedInputs[FactorCount] = (EpisodesPerSeason / 26.0 * 2 - 1) - network.FactorAverages[FactorCount];
+
+                                ModifiedInputs[count + 3] = (PreviousEpisodes - network.FactorAverages[count + 3]) / network.PreviousEpisodeDeviation;
+                                PreviousEpisodes += EpisodesPerSeason;
+
+                                AllSeasonOdds.Add(network.model.GetModifiedOdds(s, ModifiedInputs));
+                                CurrentYear++;
+                            }
+                            else if (i == s.Season)
+                            {
+                                AllSeasonOdds.Add(Results.CurrentOdds);
+                                PreviousEpisodes = s.PreviousEpisodes + s.Episodes;
+                                EpisodesPerSeason = PreviousEpisodes / i;
+                                CurrentYear = s.year + 1;
+                            }
+                            else
+                            {
+                                CurrentYear = MatchedSeason.First().year;
+                                EpisodesPerSeason = MatchedSeason.First().Episodes;
+
+                                ModifiedInputs[FactorCount + 2] = (i + 1 - network.FactorAverages[FactorCount + 2]) / network.SeasonDeviation;
+                                ModifiedInputs[FactorCount + 4] = (CurrentYear - network.FactorAverages[FactorCount + 4]) / network.YearDeviation;
+                                ModifiedInputs[FactorCount] = (EpisodesPerSeason / 26.0 * 2 - 1) - network.FactorAverages[FactorCount];
+
+                                PreviousEpisodes = MatchedSeason.First().PreviousEpisodes;
+                                ModifiedInputs[FactorCount + 3] = (PreviousEpisodes - network.FactorAverages[FactorCount + 3]) / network.PreviousEpisodeDeviation;
+                                PreviousEpisodes += EpisodesPerSeason;
+
+                                AllSeasonOdds.Add(network.model.GetModifiedOdds(s, ModifiedInputs));
+                                EpisodesPerSeason = PreviousEpisodes / i;
+
+                                CurrentYear++;
+                            }
+                        }
+                    }
+
+                    //Check if additional seasons should be added
+                    var MaximumEpisodes = 100; //shows.Select(x => x.PreviousEpisodes).Max();
+
+                    if (MaximumEpisodes > PreviousEpisodes)
+                    {
+                        var MaximumSeason = (MaximumEpisodes - PreviousEpisodes) / EpisodesPerSeason;
+                        if (MaximumSeason > HighestSeason.Season)
+                        {
+                            for (int i = HighestSeason.Season + 1; i < MaximumSeason; i++)
+                            {
+                                var ModifiedInputs = inputs.ToArray();
+
+                                ModifiedInputs[FactorCount + 2] = (i + 1 - network.FactorAverages[FactorCount + 2]) / network.SeasonDeviation;
+                                ModifiedInputs[FactorCount + 4] = (CurrentYear - network.FactorAverages[FactorCount + 4]) / network.YearDeviation;
+                                ModifiedInputs[FactorCount] = (EpisodesPerSeason / 26.0 * 2 - 1) - network.FactorAverages[FactorCount];
+
+                                ModifiedInputs[FactorCount + 3] = (PreviousEpisodes - network.FactorAverages[FactorCount + 3]) / network.PreviousEpisodeDeviation;
+                                PreviousEpisodes += EpisodesPerSeason;
+
+                                AllSeasonOdds.Add(network.model.GetModifiedOdds(s, ModifiedInputs));
+                                CurrentYear++;
+                            }
+                        }
+                    }
+
+                    var SyndicationSeason = AllSeasonOdds.IndexOf(AllSeasonOdds.Max()) + 2;
+                    string SyndicationStatus;
+
+                    if (s.Season == SyndicationSeason)
+                        SyndicationStatus = (s.year == NetworkDatabase.MaxYear) ? "Will be syndicated this season" : "Was syndicated this season";
+                    else if (s.Season == SyndicationSeason - 1)
+                        SyndicationStatus = "Will be syndicated next season";
+                    else if (s.Season < SyndicationSeason)
+                        SyndicationStatus = "Not syndicated yet (expected at Season " + SyndicationSeason + ")";
+                    else
+                        SyndicationStatus = "Syndicated at Season " + SyndicationSeason;
+
+                    Results.details[SyndicationIndex].Name = SyndicationStatus;
+
+                }
+
+
+
                 foreach (DetailsContainer d in Results.details)
                     details.Add(d);             
 
