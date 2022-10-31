@@ -54,7 +54,7 @@ namespace TV_Ratings_Predictions
             //network.RefreshPredictions();
             //network.SortPredictions();
             NetworkName.Text = network.name;
-            HeaderThreshold.Text = "Typical Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear, true), 2);
+            HeaderThreshold.Text = "Typical Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear, true, true), 2);
             Adjustment.Text = (NetworkDatabase.CurrentYear == NetworkDatabase.MaxYear) ? "Current Adjustment: " + network.Adjustment : "";
             Predictions = network.Predictions;
             ShowsList.ItemsSource = Predictions;
@@ -71,7 +71,7 @@ namespace TV_Ratings_Predictions
 
         private void Predictions_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            HeaderThreshold.Text = "Typical Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear, true), 2);
+            HeaderThreshold.Text = "Typical Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear, true, true), 2);
             Adjustment.Text = (NetworkDatabase.CurrentYear == NetworkDatabase.MaxYear) ? "Current Adjustment: " + network.Adjustment : "";
         }
 
@@ -145,7 +145,7 @@ namespace TV_Ratings_Predictions
             {
 
                 ChartTitle.Text = network.name;
-                RenewalThreshold.Text = "Typical Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear, true), 2);
+                RenewalThreshold.Text = "Typical Renewal Threshold: " + Math.Round(network.model.GetNetworkRatingsThreshold(NetworkDatabase.CurrentYear, true, true), 2);
                 ChartTitle.Visibility = Visibility.Visible;
                 RenewalThreshold.Visibility = Visibility.Visible;
 

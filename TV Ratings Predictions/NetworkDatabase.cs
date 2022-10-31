@@ -66,7 +66,7 @@ namespace TV_Ratings_Predictions
 
         public static void SortNetworks()               //This sorts the networks according to their Average Renewal Threshold rating value
         {
-            Parallel.ForEach(NetworkList, n => n.model.GetNetworkRatingsThreshold(CurrentYear, false));    //Get the Average Renewal Threshold rating value for each network
+            Parallel.ForEach(NetworkList, n => n.model.GetNetworkRatingsThreshold(CurrentYear, false, true));    //Get the Average Renewal Threshold rating value for each network
 
             //Because this is an ObservableCollection, we can't use Linq to sort, as that would break bindings, so we have to sort manually.
             bool sorted = false;

@@ -7,14 +7,14 @@ namespace TV_Ratings_Predictions
     [Serializable]
     public class EvolutionTree
     {
-        public List<NeuralPredictionModel> Primary, Randomized;
+        public List<NeuralPredictionModel> Primary, CleanSlate, Randomized;
         public long Generations, CleanGenerations, RandomGenerations;
 
         [NonSerialized]
         public Network network;
 
         [NonSerialized]
-        bool IncreasePrimary, IncreaseRandom, Mutations, RandomMutations;
+        bool IncreasePrimary, IncreaseClean, IncreaseRandom, Mutations, CleanMutations, RandomMutations;
 
         [NonSerialized]
         public long ticks;
@@ -48,11 +48,13 @@ namespace TV_Ratings_Predictions
             network = n;
 
             Primary = new List<NeuralPredictionModel>();
+            CleanSlate = new List<NeuralPredictionModel>();
             Randomized = new List<NeuralPredictionModel>();
 
             for (int i = 0; i < 30; i++)
             {
                 Primary.Add(new NeuralPredictionModel(n));
+                CleanSlate.Add(new NeuralPredictionModel(n));
                 Randomized.Add(new NeuralPredictionModel(n));
             }
 
@@ -65,13 +67,15 @@ namespace TV_Ratings_Predictions
         {
             network = n;
 
-            Primary = new List<NeuralPredictionModel>(); ;
+            Primary = new List<NeuralPredictionModel>();
+            CleanSlate = new List<NeuralPredictionModel>();
             Randomized = new List<NeuralPredictionModel>();
 
             for (int i = 0; i < 30; i++)
             {
                 Primary.Add(new NeuralPredictionModel(n, midpoint));
-                Randomized.Add(new NeuralPredictionModel(n));
+                CleanSlate.Add(new NeuralPredictionModel(n, midpoint));
+                Randomized.Add(new NeuralPredictionModel(n, midpoint));
             }
 
             Generations = 1;
@@ -86,6 +90,11 @@ namespace TV_Ratings_Predictions
             Primary = new List<NeuralPredictionModel>();
             foreach (NeuralPredictionModel m in e.Primary.ToArray())
                 Primary.Add(new NeuralPredictionModel(m));
+
+            CleanSlate = new List<NeuralPredictionModel>();
+            foreach (NeuralPredictionModel m in e.CleanSlate.ToArray())
+                CleanSlate.Add(new NeuralPredictionModel(m));
+
             Randomized = new List<NeuralPredictionModel>();
             foreach (NeuralPredictionModel m in e.Randomized.ToArray())
                 Randomized.Add(new NeuralPredictionModel(m));
@@ -103,7 +112,7 @@ namespace TV_Ratings_Predictions
             for (int i = 0; i < 30; i++)
             {
                 Primary[i].shows = network.shows;
-                //CleanSlate[i].shows = network.shows;
+                CleanSlate[i].shows = network.shows;
                 Randomized[i].shows = network.shows;
             }
 
@@ -114,42 +123,76 @@ namespace TV_Ratings_Predictions
                 if (i == 2 || i == 3)
                 {
                     Primary[i].SetElite();
+                    CleanSlate[i].SetElite();
                     Randomized[i].SetElite();
                 }
                 else
                 {
                     Primary[i].TestAccuracy(true);
+                    CleanSlate[i].TestAccuracy(true);
                     Randomized[i].TestAccuracy(true);
                 }
             }
 
             Primary.Sort();
+            CleanSlate.Sort();
             Randomized.Sort();
 
             for (int i = 29; i > 0; i--)
             {
                 if (Primary[i] == Primary[i - 1])
                     Primary[i].SetElite();
+                if (CleanSlate[i] == CleanSlate[i - 1])
+                    CleanSlate[i].SetElite();
                 if (Randomized[i] == Randomized[i - 1])
                     Randomized[i].SetElite();
             }
 
             Primary.Sort();
+            CleanSlate.Sort();
             Randomized.Sort();
 
             if (IncreasePrimary)
                 Primary[r.Next(4)].IncreaseMutationRate();
+            if (IncreaseClean)
+                CleanSlate[r.Next(4)].IncreaseMutationRate();
             if (IncreaseRandom)
                 Randomized[r.Next(4)].IncreaseMutationRate();
 
             IncreasePrimary = false;
+            IncreaseClean = false;
             IncreaseRandom = false;
 
             //CHeck if any models in CleanSlate or Randomized beat any of the top 4 in Primary
             //If so, add them to Primary
-            bool randomUpdate = false;
+            bool randomUpdate = false, cleanUpdate = false;
 
             bool finished = false;
+
+
+            //CleanSlate
+            for (int i = 0; i < 4 && !finished; i++)
+            {
+                if (CleanSlate[i] > Primary[3])
+                {
+
+                    if (CleanSlate[i] > Primary[0])
+                        Primary.Insert(0, new NeuralPredictionModel(CleanSlate[i]));
+                    else if (CleanSlate[i] > Primary[1])
+                        Primary.Insert(1, new NeuralPredictionModel(CleanSlate[i]));
+                    else if (CleanSlate[i] > Primary[2])
+                        Primary.Insert(2, new NeuralPredictionModel(CleanSlate[i]));
+                    else
+                        Primary.Insert(3, new NeuralPredictionModel(CleanSlate[i]));
+
+                    Primary.RemoveAt(30);
+
+                    cleanUpdate = true;
+                }
+                else
+                    finished = true;
+                
+            }
 
 
 
@@ -170,6 +213,20 @@ namespace TV_Ratings_Predictions
 
                     Primary.RemoveAt(30);
                 }
+                else if (!cleanUpdate && Randomized[i] > CleanSlate[3])
+                {
+
+                    if (Randomized[i] > Primary[0])
+                        CleanSlate.Insert(0, new NeuralPredictionModel(Randomized[i]));
+                    else if (Randomized[i] > Primary[1])
+                        CleanSlate.Insert(1, new NeuralPredictionModel(Randomized[i]));
+                    else if (Randomized[i] > Primary[2])
+                        CleanSlate.Insert(2, new NeuralPredictionModel(Randomized[i]));
+                    else
+                        CleanSlate.Insert(3, new NeuralPredictionModel(Randomized[i]));
+
+                    CleanSlate.RemoveAt(30);
+                }
                 else
                     finished = true;
 
@@ -188,7 +245,7 @@ namespace TV_Ratings_Predictions
             else if (network.refreshEvolution)
             {
                 network.refreshEvolution = false;
-                //cleanUpdate = true;
+                cleanUpdate = true;
                 randomUpdate = true;
             }
 
@@ -196,7 +253,35 @@ namespace TV_Ratings_Predictions
             RandomMutations = false;
 
 
-            //If models were chosen from Randomized, then reset that branch based on the above rules
+            //if any models were chosen from CleanSlate, then reset that branch
+            //if not, perform normal evolution rules
+            if (cleanUpdate)
+            {
+                //for (int i = 0; i < 30; i++)
+                Parallel.For(0, 30, i => CleanSlate[i] = new NeuralPredictionModel(network));
+
+                CleanGenerations = 1;
+            }
+            else
+            {
+                Parallel.For(4, 30, i =>
+                {
+                    int Parent1 = r.Next(4), Parent2 = r.Next(4);
+
+                    CleanSlate[i] = CleanSlate[Parent1] + Randomized[Parent2];
+
+                    if (CleanSlate[i].isMutated) CleanMutations = true;
+                });
+
+                if (!CleanMutations)
+                    IncreaseClean = true;
+
+                CleanGenerations++;
+            }
+
+
+
+            //If model improved, then reset the Randomized branch based on the above rules
             //If not, perform normal evolution rules            
             if (randomUpdate)
             {
