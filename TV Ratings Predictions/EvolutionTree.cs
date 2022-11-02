@@ -268,7 +268,7 @@ namespace TV_Ratings_Predictions
                 {
                     int Parent1 = r.Next(4), Parent2 = r.Next(4);
 
-                    CleanSlate[i] = CleanSlate[Parent1] + Randomized[Parent2];
+                    CleanSlate[i] = CleanSlate[Parent1] + CleanSlate[Parent2];
 
                     if (CleanSlate[i].isMutated) CleanMutations = true;
                 });

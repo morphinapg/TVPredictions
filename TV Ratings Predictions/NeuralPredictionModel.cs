@@ -867,11 +867,28 @@ namespace TV_Ratings_Predictions
                 var tempList = shows.Where(x => x.year != NetworkDatabase.MaxYear);
                 var years = tempList.Select(x => x.year).Distinct();
 
-                double total, weight, midpoint, maximum, currentweight;
-                total = 0;
-                weight = 0;
+                //double total, weight, midpoint, maximum, currentweight;
+
+                double midpoint, maximum, currentweight;
+                //total = 0;
+                //weight = 0;
+
+                //var rawpoints = shows.AsParallel().Where(x => x.year < NetworkDatabase.MaxYear).Select(x => new { year = x.year, threshold = GetThreshold(x) }).GroupBy(x => x.year).Select(x => new { year = x.Key, average = x.Average(y => y.threshold) }).ToList();
+                //var points = rawpoints.Select(x => new { year = x.year, average = Math.Log(x.average / (1 - x.average)) });
+                //var n = years.Count();
+
+                //var slope = (n * points.Select(x => x.year * x.average).Sum() - points.Sum(x => x.year) * points.Sum(x => x.average)) / (n * points.Select(x => x.year * x.year).Sum() - Math.Pow(points.Sum(x => x.year), 2));
+                //var intercept = (points.Sum(x => x.average) - slope * points.Sum(x => x.year)) / n;
+
+                //var ExpectedThreshold = slope * NetworkDatabase.MaxYear + intercept;
+                //ExpectedThreshold = 1 / (1 + Math.Exp(-ExpectedThreshold));
+
 
                 ///First, adjust so that typical renewal threshold gives a target rating similar to the weighted average target rating / maximum rating for that network
+
+                var rawpoints = new Dictionary<int, double>();
+                var points = new Dictionary<int, double>();
+                var weights = new Dictionary<int, double>();
 
                 foreach (int year in years)
                 {
@@ -881,12 +898,31 @@ namespace TV_Ratings_Predictions
                     maximum = GetTargetRating(year, 0.75);
 
                     currentweight = 1.0 / (NetworkDatabase.MaxYear - year + 1) * tempList.Where(x => x.year == year && (x.Renewed || x.Canceled)).Count();
-                    total += midpoint / maximum * currentweight;
-                    weight += currentweight;
+                    //total += midpoint / maximum * currentweight;
+                    //weight += currentweight;
+
+                    rawpoints[year] = midpoint / maximum;
+                    points[year] = Math.Log(rawpoints[year] / (1 - rawpoints[year]));
+                    weights[year] = currentweight;
                 }
+                //var SortedPoints = rawpoints.OrderBy(x => x.Key);
+
+                //var n = points.Count;
+                var n = weights.Values.Sum();
+
+                var newpoints = points.Select(x => new { Key = x.Key * weights[x.Key], Value = x.Value * weights[x.Key] });
+                //var slope = (n * points.Select(x => x.Key * x.Value).Sum() - points.Keys.Sum() * points.Values.Sum()) / (n * points.Select(x => x.Key * x.Key).Sum() - Math.Pow(points.Sum(x => x.Key), 2));
+                
+                var slope = (points.Select(x => x.Key * x.Value * weights[x.Key]).Sum() - newpoints.Sum(x => x.Key) * newpoints.Sum(x => x.Value) / n) / (points.Select(x => weights[x.Key] * x.Key * x.Key).Sum() - Math.Pow(newpoints.Sum(x => x.Key), 2) / n);
+
+                
+                //var intercept = (points.Values.Sum() - slope * points.Keys.Sum()) / n;
+                var intercept = newpoints.Sum(x => x.Value) / n - slope * newpoints.Sum(x => x.Key) / n;
+
+                var ExpectedMidpoint = 1 / (1 + Math.Exp(-1 * (slope * NetworkDatabase.MaxYear + intercept)));
 
                 maximum = GetTargetRating(NetworkDatabase.MaxYear, 0.75);
-                var TargetRating = total / weight * maximum;
+                var TargetRating = ExpectedMidpoint * maximum; //total / weight * maximum;
 
                 double PreviousIndex = 0, CurrentTotal = 0, GrandTotal = ThisYear.Select(x => x.AverageRating * (x.Halfhour ? 0.5 : 1)).Sum(), NewIndex, PreviousRating = 0, CurrentRating, TargetIndex = -1, CurrentSegment;
 
