@@ -980,10 +980,6 @@ namespace TV_Ratings_Predictions
                 if (decided > 0)
                     percentage = Math.Pow(percentage, decided+1); ///The more shows have been decided, the less important the adjustment should be, to an exponential level
 
-                int z = 0;
-                if (ThisYear.Select(x => x.Name).Contains("Coroner")) 
-                    z = 1;
-
 
 
                 return adjustment * percentage + (1 - percentage);
