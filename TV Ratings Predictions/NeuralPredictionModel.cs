@@ -1221,16 +1221,6 @@ namespace TV_Ratings_Predictions
         {
             year = CheckYear(year);
 
-            ////_ratingstheshold = GetTargetRating(year, GetAverageThreshold(parallel));
-            //var s = shows.First();
-
-
-            ////var Adjustment = GetAdjustments(parallel)[year];
-            //var threshold = GetModifiedThreshold(s, -1);
-
-            //if (year == NetworkDatabase.MaxYear)
-            //    threshold = Math.Pow(threshold, s.network.Adjustment);
-
             var threshold = shows.AsParallel().Where(x => x.year == year).Select(x => GetThreshold(x)).Average();
 
             if (adjusted && year == NetworkDatabase.MaxYear)
@@ -1250,19 +1240,6 @@ namespace TV_Ratings_Predictions
             //var tempShows = shows.Where(x => x.year == year && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
             if (tempShows.Count == 0)
             {
-                //var yearList = shows.Where(x => x.ratings.Count > 0).Select(x => x.year).ToList();
-                //yearList.Sort();
-                //if (yearList.Contains(year - 1))
-                //    year--;
-                //else if (yearList.Contains(year + 1))
-                //    year++;
-                //else if (yearList.Where(x => x < year).Count() > 0)
-                //    year = yearList.Where(x => x < year).Last();
-                //else
-                //    year = yearList.Where(x => x > year).First();
-
-                //year = yearList.Last();
-
                 year = CheckYear(year);
                 tempShows = shows.Where(x => x.year == year && x.ratings.Count > 0).OrderByDescending(x => x.ShowIndex).ToList();
             }

@@ -221,7 +221,7 @@ namespace TV_Ratings_Predictions
 
                     details.Add(new DetailsContainer(detailName, detailValue));
                 }
-                else if ((network.factors[i] == "Spring" || network.factors[i] == "Summer" || network.factors[i] == "Fall") && !AllFactors)
+                else if (i < FactorCount && (network.factors[i] == "Spring" || network.factors[i] == "Summer" || network.factors[i] == "Fall") && !AllFactors)
                 {
                     if (!PremiereFinished)
                     {
@@ -285,7 +285,7 @@ namespace TV_Ratings_Predictions
                         SummerFinished = true;
                     }
                 }
-                else if ((network.factors[i] == "Not Original" || network.factors[i] == "CBS Show") && !AllFactors)
+                else if (i < FactorCount && (network.factors[i] == "Not Original" || network.factors[i] == "CBS Show") && !AllFactors)
                 {
                     if (!OwnedFinished)
                     {
@@ -323,7 +323,7 @@ namespace TV_Ratings_Predictions
                         OwnedFinished = true;
                     }
                 }
-                else
+                else if (i < FactorCount)
                 {
                     CurrentFactors[i] = (s.factorValues[i] ? 1 : -1) - network.FactorAverages[i];
 
@@ -410,6 +410,7 @@ namespace TV_Ratings_Predictions
                 Numbers[1] = FactorCount;
                 Numbers[2] = FactorCount + 3;
                 Numbers[3] = FactorCount + 1;
+                Numbers[4] = FactorCount + 4;
 
                 var InputCount = FactorCount + 5;
 
