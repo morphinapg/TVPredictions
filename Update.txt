@@ -1,41 +1,11 @@
-This week, I made some changes to the way the AI that makes the predictions works, in an attempt to adapt to the changes happening in broadcast TV networks, to hopefully result in some better predictions. In the past, I would manually decide whether I thought a show was in the position to be renewed for syndication purposes, or whether I thought it had already been syndicated. This was based on a rule of thumb that if the next season was going to pass 80 episodes, the show is likely headed for syndication, and its chances of renewal increase. However, as more and more shows are airing in shorter seasons, it's becoming harder and harder to hit that 80 episode threshold. Because of this, I believe networks are probably relaxing their requirements for syndication, but unfortunately, that makes it a lot harder to guess at the syndication factors for each show. 
+This week, NBC premiered Lopez vs. Lopez and Young Rock. Lopez vs. Lopez starts out leaning towards renewal, while Young Rock starts out leaning towards cancellation.
 
-So I decided... well, I'm using AI to predict the show's fate already, so why not let the AI figure out how syndication plays a part in the show's chances? So I took out the true/false factors related to Syndication for each network, and I added a new factor which represents the total number of episodes that have aired in previous seasons. So I figure, with the year, the season, the number of previous episodes, and the number of current episodes, the AI can probably good a pretty good estimate of the requirements for syndication, and understand how they're changing over time, so I've done just that. The problem is, I can no longer be certain whether the AI is considering a show syndicated or not, so for the purposes of the prediction breakdown on the app, I've decided to calculate the odds of renewal for each season of the show, past, present, and future, and use those odds to take a guess at when Syndication would most likely happen. The mobile app however has not yet been updated, so the prediction breakdown section will not be working correctly until I do that. It will still give you its best estimate given the circumstances, but it will be less accurate than it was in the past.
+Law & Order: Organized Crime and The Good Doctor both upgrade from likely to certain renewals.
 
-Next, I wanted to modify the adjustment that gets added to the predictions earlier in the season when less shows have premiered and less renewal/cancellation decisions have happened. This adjustment takes a look at the average renewal threshold of previous seasons, compared to where the most viewed shows rated, and uses that ratio to adjust the current season's average renewal threshold to match that level. This adjustment reduces throughout the season as more and more shows are renewed or canceled. The problem was that this was a simple weighted average, adjusting it to match the most recent seasons basically. Instead, I decided to create a weighted trendline, projecting the ratio from previous data forward, which creates an estimate of where that ratio should be for the current season before the adjustment is applied. This, I think will give us a better starting place for these earlier parts of the season. I am particularly interested in how it handled CW, which obviously became much more strict last year. The new model now has CW becoming even more strict this year, which I believe is likely true, because of the new ownership.
+Fire Country and S.W.A.T. both drop from likely renewals to just leaning renewed.
 
-That being said, after I made these modifications, I basically had to reset all of the AI models and retrain them from scratch for the last several days. The training has converged on fairly consistent results by now, but many of the predictions will be wildly different than they were before. Some of these predictions will probably be more accurate, but some may not be as accurate as the previous predictions. While the models have trained well on the existing data, the best training comes from adapting to new data after already being trained on the historical data, but this will take time.
+La Brea upgrades from leaning towards renewal to likely renewed.
 
-But we do have the first piece of new data to train the model on. The CW decided to cancel Stargirl. Our most recent prediction for Stargirl was a certain renewal, so unfortunately, we got that one wrong. Of course, this being the CW, I was frequently mentioning that I was doubting my own predictions, because of the change in leadership, so while the prediction was wrong, I am not surprised. I would not be surprised if nearly every existing CW show does not survive by the summer. In fact, with the new AI model, I am currently predicting that every show aside from the two All American shows will be canceled on the CW. 
+So Help Me Todd drops from leaning towards renewal to a likely cancellation.
 
-As I said, there will be a lot of big changes to the predictions this week, so here they are:
-
-All American, 9-1-1, Family Guy, and Law & Order: Organized Crime all drop from certain renewals to just likely renewed.
-
-All American: Homecoming drops all the way from a certain renewal to just leaning renewed.
-
-The Resident drops all the way from a certain renewal to a likely cancellation.
-
-Walker drops all the way from a certain renewal to leaning towards cancellation.
-
-Kung Fu drops all the way from a certain renewal to a certain cancellation.
-
-East New York and The Goldbergs both upgrade from likely to certain renewals.
-
-The Winchesters drop all the way from a likely renewal to leaning towards cancellation.
-
-Walker: Independence drops all the way from a likely renewal to a certain cancellation.
-
-NCIS drops from a likely renewal to just leaning renewed.
-
-Quantum Leap, Bob ♥️ Abishola, NCIS: Hawai'i, and The Rookie: Feds all drop from leaning towards renewal to leaning towards cancellation.
-
-NCIS: Los Angeles and Big Sky both upgrade from leaning towards renewal to likely renewed.
-
-CSI: Vegas, Coroner, and Professionals drop all the way from leaning canceled to certain cancellation.
-
-Alaska Daily upgrades from a likely cancellation to just leaning canceled.
-
-Call Me Kat drops from a likely to certain cancellation.
-
-Home Economics upgrades all the way from a likely cancellation to a certain renewal.
+Quantum Leap upgrades from leaning towards cancellation to leaning towards renewal.
