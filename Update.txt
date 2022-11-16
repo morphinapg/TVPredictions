@@ -1,11 +1,20 @@
-This week, NBC premiered Lopez vs. Lopez and Young Rock. Lopez vs. Lopez starts out leaning towards renewal, while Young Rock starts out leaning towards cancellation.
+This week, East New York drops all the way from a certain renewal to just leaning renewed.
 
-Law & Order: Organized Crime and The Good Doctor both upgrade from likely to certain renewals.
+Blue Bloods drops all the way from a likely renewal to a likely cancellation.
 
-Fire Country and S.W.A.T. both drop from likely renewals to just leaning renewed.
+NCIS: Los Angeles and Ghosts both drop from likely renewals to leaning towards cancellation.
 
-La Brea upgrades from leaning towards renewal to likely renewed.
+9-1-1 drops from a likely renewal to just leaning renewed.
 
-So Help Me Todd drops from leaning towards renewal to a likely cancellation.
+S.W.A.T. drops from leaning towards renewal to leaning towards cancellation.
 
-Quantum Leap upgrades from leaning towards cancellation to leaning towards renewal.
+Bob ♥️ Abishola and Alaska Daily both drop from leaning towards renewal to likely cancellations.
+
+NCIS: Hawai'i drops all the way from leaning canceled to a certain cancellation.
+
+The Winchesters upgrades from leaning towards cancellation to leaning towards renewal.
+
+So Help Me Todd drops from a likely to certain cancellation.
+
+
+As you might have noticed, a lot of shows on CBS seem to have lowered their predictions. Looking at the data for CBS, I would imagine this is because one of the higher rated shows, FBI, received a big ratings bump this week, which both caused a shift in the relative positions of the other shows, as well as an increase in the expected typical renewal threshold for the network, which was 0.42 last week and rose to 0.46 this week. This has resulted in no shows receiving a likely renewal or higher prediction, and probably too many shows being predicted as cancellation. It's possible this may just be an error in the prediction model that a future model could improve on, or it could just be the result of this week's unexpectedly high ratings for FBI. Either way, more ratings data will help going forward, and I will also continue training the AI models for every network, as there's still a ways to go with how accurate they can get, although the best results will happen once these networks start making renewal or cancellation decisions of rthis year's shows.
