@@ -1,20 +1,19 @@
-This week, East New York drops all the way from a certain renewal to just leaning renewed.
+This week, Law & Order: Organized Crime drops from a certain renewal to just likely renewed.
 
-Blue Bloods drops all the way from a likely renewal to a likely cancellation.
+All American drops from a likely renewal to just leaning renewed.
 
-NCIS: Los Angeles and Ghosts both drop from likely renewals to leaning towards cancellation.
+Quantum Leap and All American: Homecoming both upgrade from leaning towards renewal to likely renewed.
 
-9-1-1 drops from a likely renewal to just leaning renewed.
+NCIS and The Winchesters both drop from leaning towards renewal to leaning towards cancellation.
 
-S.W.A.T. drops from leaning towards renewal to leaning towards cancellation.
+Walker and Ghosts both upgrade from leaning towards cancellation to leaning towards renewal.
 
-Bob ♥️ Abishola and Alaska Daily both drop from leaning towards renewal to likely cancellations.
+S.W.A.T. upgrades from leaning towards cancellation to a likely renewal.
 
-NCIS: Hawai'i drops all the way from leaning canceled to a certain cancellation.
+Blue Bloods upgrades from a likely cancellation to leaning towards renewal.
 
-The Winchesters upgrades from leaning towards cancellation to leaning towards renewal.
+The Resident drops from a likely to certain cancellation.
 
-So Help Me Todd drops from a likely to certain cancellation.
+NCIS: Hawai'i upgrades from a certain cancellation to just likely canceled.
 
-
-As you might have noticed, a lot of shows on CBS seem to have lowered their predictions. Looking at the data for CBS, I would imagine this is because one of the higher rated shows, FBI, received a big ratings bump this week, which both caused a shift in the relative positions of the other shows, as well as an increase in the expected typical renewal threshold for the network, which was 0.42 last week and rose to 0.46 this week. This has resulted in no shows receiving a likely renewal or higher prediction, and probably too many shows being predicted as cancellation. It's possible this may just be an error in the prediction model that a future model could improve on, or it could just be the result of this week's unexpectedly high ratings for FBI. Either way, more ratings data will help going forward, and I will also continue training the AI models for every network, as there's still a ways to go with how accurate they can get, although the best results will happen once these networks start making renewal or cancellation decisions of rthis year's shows.
+Walker: Independence upgrades all the way from a certain cancellation to leaning towards renewal.
