@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -22,16 +23,56 @@ namespace TV_Ratings_Predictions
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class ShowsByFactor : Page
+    public sealed partial class ShowsByFactor : Page, INotifyPropertyChanged
     {
         Network network;
         public ObservableCollection<string> factors;
         public ObservableCollection<FactorContainer> shows;
         ObservableCollection<Show> showList;
 
+        bool _isInverted;
+        public bool IsInverted
+        {
+            get => _isInverted;
+            set
+            {
+                _isInverted= value;
+                OnPropertyChanged("IsInverted");
+            }
+        }
+
+        bool _allYears;
+        public bool allYears
+        {
+            get => _allYears;
+            set
+            {
+                _allYears = value;
+                OnPropertyChanged("allYears");
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+            if (name == "allYears")
+            {
+                if (allYears)
+                    showList = new ObservableCollection<Show>(network.shows.OrderBy(s => s.ShowIndex));
+                else
+                    showList = network.FilteredShows;
+            }                
+
+            if (showList.Count > 0)
+                Update_Selection();
+        }
+
         public ShowsByFactor()
         {
             this.InitializeComponent();
+            DataContext = this;
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -65,13 +106,11 @@ namespace TV_Ratings_Predictions
         {
             var i = FactorSelector.SelectedIndex;
 
-            //shows.Clear();
             shows.Clear();
-            bool allYears = (bool)AllYears.IsChecked;
 
             foreach (Show s in showList)
             {
-                if (s.factorValues[i])
+                if (s.factorValues[i] != IsInverted)
                     shows.Insert(0, new FactorContainer(s, allYears));
             }
 
@@ -79,18 +118,6 @@ namespace TV_Ratings_Predictions
             {
                 c.Width = DataGridLength.Auto;
             }
-        }
-
-        private void AllYears_Checked(object sender, RoutedEventArgs e)
-        {
-            showList = new ObservableCollection<Show>(network.shows.OrderBy(s => s.ShowIndex));
-            Update_Selection();
-        }
-
-        private void AllYears_Unchecked(object sender, RoutedEventArgs e)
-        {
-            showList = network.FilteredShows;
-            Update_Selection();
         }
     }
 }

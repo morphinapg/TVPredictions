@@ -30,10 +30,12 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Text="Choose a factor" FontSize="20" Margin="10,25,10,10"/>
-                        <CheckBox x:Name="AllYears" Grid.Column="1" Content="Show all years" VerticalAlignment="Center" Margin="10,25,10,10" Checked="AllYears_Checked" Unchecked="AllYears_Unchecked" />
+                        <CheckBox x:Name="AllYears" Grid.Column="1" Content="Show all years" VerticalAlignment="Center" Margin="10,25,10,10" IsChecked="{x:Bind allYears, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <CheckBox x:Name="Inverted" Grid.Column="2" Content="Show shows without this factor only" VerticalAlignment="Center" Margin="10,25,10,10" IsChecked="{x:Bind IsInverted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </Grid>
                     
                     <ComboBox x:Name="FactorSelector" HorizontalAlignment="Stretch" ItemsSource="{x:Bind factors, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectionChanged="FactorSelector_SelectionChanged"/>

@@ -64,6 +64,8 @@ namespace TV_Ratings_Predictions
                     var midpoint = network.GetMidpoint();
                     network.model = new NeuralPredictionModel(network, midpoint);
                     network.evolution = new EvolutionTree(network, midpoint);
+                    network.RealAverages = network.model.GetAverages(network.factors);
+                    network.FactorAverages = network.RealAverages;
 
                     NetworkDatabase.pendingSave = true;
                     Frame.GoBack();

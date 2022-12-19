@@ -59,7 +59,7 @@ namespace TV_Ratings_Predictions
 
             var details = new List<DetailsContainer>();
 
-            bool SyndicationFinished = false, OwnedFinished = false, PremiereFinished = false, SummerFinished = false, SeasonFinished = false;
+            bool OwnedFinished = false, PremiereFinished = false, SummerFinished = false, SeasonFinished = false;
             string detailName;
 
             
@@ -166,44 +166,6 @@ namespace TV_Ratings_Predictions
 
                     details.Add(new DetailsContainer(detailName, detailValue));
                 }
-                //else if ((network.factors[i] == "Syndication" || network.factors[i] == "Post-Syndication") && !AllFactors)
-                //{
-                //    if (!SyndicationFinished)
-                //    {
-                //        bool Syndication = false;
-                //        bool PostSyndication = false;
-                //        int SyndicationIndex = network.factors.IndexOf("Syndication"), PostIndex = network.factors.IndexOf("Post-Syndication");
-
-                //        if (SyndicationIndex > -1)
-                //        { 
-                //            Syndication = s.factorValues[SyndicationIndex];
-                //            CurrentFactors[SyndicationIndex] = (Syndication ? 1 : -1) - network.FactorAverages[SyndicationIndex];
-                //        }
-                //        if (PostIndex > -1) 
-                //        { 
-                //            PostSyndication = s.factorValues[PostIndex];
-                //            CurrentFactors[PostIndex] = (PostSyndication ? 1 : -1) - network.FactorAverages[PostIndex];
-                //        }
-
-
-                //        if (Syndication)
-                //            detailName = "Will be syndicated next season";
-                //        else if (PostSyndication)
-                //            detailName = "Has already been syndicated";
-                //        else
-                //            detailName = "Not syndicated yet";
-
-                //        NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
-
-                //        detailValue = NewOdds - CurrentOdds;
-
-                //        CurrentOdds = NewOdds;
-
-                //        details.Add(new DetailsContainer(detailName, detailValue));
-
-                //        SyndicationFinished = true;
-                //    }
-                //}
                 else if (i == FactorCount + 3) // Syndication
                 {
                     //detailName = s.PreviousEpisodes + " Episodes aired before this season";
@@ -263,7 +225,6 @@ namespace TV_Ratings_Predictions
 
                         details.Add(new DetailsContainer(detailName, detailValue));
                     }
-
                     if (network.factors[i] == "Summer" && !SummerFinished)
                     {
                         CurrentFactors[i] = (s.factorValues[i] ? 1 : -1) - network.FactorAverages[i];
@@ -285,23 +246,34 @@ namespace TV_Ratings_Predictions
                         SummerFinished = true;
                     }
                 }
-                else if (i < FactorCount && (network.factors[i] == "Not Original" || network.factors[i] == "CBS Show") && !AllFactors)
+                else if (i < FactorCount && (network.factors[i] == "Not Original" || network.factors[i] == "CBS Show" || network.factors[i] == "WB Show") && !AllFactors)
                 {
                     if (!OwnedFinished)
                     {
-                        if (s.factorNames.Contains("CBS Show") && s.factorNames.Contains("Not Original"))
+                        if (s.factorNames.Contains("CBS Show") && s.factorNames.Contains("WB Show") && s.factorNames.Contains("Not Original"))
                         {
-                            int index = s.factorNames.IndexOf("Not Original"), index2 = s.factorNames.IndexOf("CBS Show");
-                            bool NotOriginal = s.factorValues[index], CBSShow = s.factorValues[index2];
+                            int index = s.factorNames.IndexOf("Not Original"), index2 = s.factorNames.IndexOf("CBS Show"), index3 = s.factorNames.IndexOf("WB Show");
+                            bool NotOriginal = s.factorValues[index], CBSShow = s.factorValues[index2], WBShow = s.factorValues[index3];
                             CurrentFactors[index] = (NotOriginal ? 1 : -1) - network.FactorAverages[index];
                             CurrentFactors[index2] = (CBSShow ? 1 : -1) - network.FactorAverages[index2];
+                            CurrentFactors[index3] = (WBShow ? 1 : -1) - network.FactorAverages[index3];
 
-                            if (NotOriginal)
-                                detailName = "Show is not owned by the network";
-                            else if (CBSShow)
+                            if (CBSShow)
                                 detailName = "Show is owned by CBS";
-                            else
+                            else if (WBShow)
                                 detailName = "Show is owned by WB";
+                            else if (!NotOriginal)
+                                detailName = "Show is owned by the network";
+                            else
+                                detailName = "Show is not owned by the network";
+
+
+                            //if (NotOriginal)
+                            //    detailName = "Show is not owned by the network";
+                            //else if (CBSShow)
+                            //    detailName = "Show is owned by CBS";
+                            //else
+                            //    detailName = "Show is owned by WB";
 
                             NewOdds = network.model.GetModifiedOdds(s, CurrentFactors);
                         }
@@ -365,6 +337,14 @@ namespace TV_Ratings_Predictions
 
                                 break;
                             }
+                        case "Foreign":
+                            {
+                                if (s.factorValues[i])
+                                    detailName = "Show is produced outside the United States";
+                                else
+                                    detailName = "Show is produced in the United States";
+                                break;
+                            }                            
                         default:
                             {
                                 if (s.factorValues[i])
