@@ -1,17 +1,16 @@
-This week, NBC renewed Quantum Leap. We had this leaning towards renewal, so it was probably a close call but we got it right. I am thankful that I implemented the early season adjustment to predictions last year, because without that adjustment, the show would have been predicted as a likely cancellation. Typically, the predictions calculate renewal threshold as a relative position in the network, compared to how all of the other shows are performing above and below that show. However, a lot of shows premiere in the spring which can change this relative ranking of shows, so earlier on it's better to keep an eye on where the average renewal threshold SHOULD be, based on previous years, and adjust the current renewal thresholds to match that. The more shows become renewed and canceled in the year, the less adjustment is applied. 
+This week I've published a new version of the app which should load images quicker, and also makes use of the changes I talked about last week for how I categorize CW show ownership. This also means there may be some more significant changes to CW show predictions as I had to retrain the prediction model again.
 
-Also this week, FOX premiered HouseBroken. It starts out as a likely cancellation. When adding this show I realized that FOX is now producing some of their own shows again. When Disney bought the old Fox studios (now 20th Century), the FOX network no longer had any of its own original programming. When that happened I removed an old tag from my FOX database regarding show ownership, since I figured they weren't going to be producing any of their own content anymore, just publishing content from other studios, but now that they are, I've gone in and added a tag for ownership, and gone back and applied it to all of the shows where it was applicable for all of the historical data. This required a full re-training of the FOX AI prediction model, but in the end, resulted in a higher accuracy rate. The majority of FOX programming is still not owned, but that could change in the future. As I retrained the FOX prediction model entirely, there may be several changes in those predictions this week.
 
-Speaking of ownership tags, I've noticed something similar about the CW. In the past, I would have one tag for ownership, and another tag for whether a show was owned by CBS. In the past, all shows were either owned by CBS, by WB, or not owned by the network at all (usually foreign imports). Currently, CW is now owned by Nexstar, not CBS and WB, so they currently own none of the shows on the network. My old tag system therefore won't work correctly for CW and should be updated to reflect that change, requiring an extra tag for WB ownership, and possibly another for foreign imports. I may check to see if any other networks could use the foreign tag too. Any change in the tagging system requires changing the structure of the neural network that processes the predictions, so that will require a full retraining of the model. As I didn't have enough time to retrain the CW model, I will be making that change next week instead.
+Home Economics drops all the way from a certain renewal to leaning towards cancellation.
 
-9-1-1, Bob's Burgers, and Family Guy all drop from certain renewals to just likely renewed. 
+9-1-1 and Bob's Burgers both drop from likely renewals to just leaning renewed.
 
-East New York upgrades from leaning towards renewal to likely renewed.
+All American, Walker, and The Rookie: Feds all upgrade from leaning towards renewal to likely renewed.
 
-Welcome to Flatch and Young Rock both drop from leaning towards renewal to leaning towards cancellation.
+Welcome to Flatch and Walker: Independence both drop from leaning towards cancellation to likely canceled.
 
-NCIS upgrades from leaning towards cancellation to leaning towards renewal.
+The Winchesters upgrades from leaning towards cancellation to leaning towards renewal.
 
-The Resident drops from leaning towards cancellation to likely canceled.
+Kung Fu upgrades all the way from a likely cancellation to a likely renewal.
 
-Call Me Kat, Kung Fu, and Professionals all upgrade from certain cancellations to just likely cancelled.
+Professionals and The Resident both drop from likely to certain cancellations.
