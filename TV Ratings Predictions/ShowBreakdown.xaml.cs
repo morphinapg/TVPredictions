@@ -583,9 +583,9 @@ namespace TV_Ratings_Predictions
                     if (s.Season == SyndicationSeason)
                         SyndicationStatus = (s.year == NetworkDatabase.MaxYear) ? "Will likely be syndicated this season" : "Was likely syndicated this season";
                     else if (s.Season == SyndicationSeason - 1)
-                        SyndicationStatus = "Will likely be syndicated next season";
+                        SyndicationStatus = s.Renewed ? "Will likely be syndicated next season" : "Would likely be syndicated next season";
                     else if (s.Season < SyndicationSeason)
-                        SyndicationStatus = "Will likely be syndicated in Season " + SyndicationSeason;
+                        SyndicationStatus = network.shows.Where(x => x.Name == s.Name && s.Season == SyndicationSeason).Any() ? "Was likely syndicated in season " + SyndicationSeason : "Would likely be syndicated in Season " + SyndicationSeason;
                     else
                         SyndicationStatus = "Was likely syndicated in Season " + SyndicationSeason;
 
