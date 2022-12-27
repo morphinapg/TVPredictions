@@ -1,16 +1,7 @@
-This week I've published a new version of the app which should load images quicker, and also makes use of the changes I talked about last week for how I categorize CW show ownership. This also means there may be some more significant changes to CW show predictions as I had to retrain the prediction model again.
+There were no major changes to the ratings this week, but further training of the AI models for NBC and CW has resulted in a few changes in predictions:
 
+Law & Order: Organized Crime and All American both upgrade from likely to certain renewals.
 
-Home Economics drops all the way from a certain renewal to leaning towards cancellation.
+Kung Fu drops all the way from a likely renewal to a likely cancellation.
 
-9-1-1 and Bob's Burgers both drop from likely renewals to just leaning renewed.
-
-All American, Walker, and The Rookie: Feds all upgrade from leaning towards renewal to likely renewed.
-
-Welcome to Flatch and Walker: Independence both drop from leaning towards cancellation to likely canceled.
-
-The Winchesters upgrades from leaning towards cancellation to leaning towards renewal.
-
-Kung Fu upgrades all the way from a likely cancellation to a likely renewal.
-
-Professionals and The Resident both drop from likely to certain cancellations.
+Walker: Independence upgrades from a likely cancellation to leaning towards renewal.
