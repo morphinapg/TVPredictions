@@ -1,7 +1,1 @@
-There were no major changes to the ratings this week, but further training of the AI models for NBC and CW has resulted in a few changes in predictions:
-
-Law & Order: Organized Crime and All American both upgrade from likely to certain renewals.
-
-Kung Fu drops all the way from a likely renewal to a likely cancellation.
-
-Walker: Independence upgrades from a likely cancellation to leaning towards renewal.
+No additions to the ratings and no major changes to predictions this week. The only difference is that the AI training improved the prediction model for NBC slightly, so there are some subtle differences in the prediction confidences for those shows, but all predictions remain in the same category as last week.
