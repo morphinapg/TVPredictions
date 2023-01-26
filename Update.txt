@@ -1,17 +1,27 @@
-This week, ABC renewed Abbott Elementary. We had this predicted as a certain renewal, so this is not a surprise.
+This week, CBS renewed The Neighborhood and Bob ♥ Abishola, and canceled NCIS: Los Angeles. Unfortunately, we somehow got all of these wrong. The Neighborhood we were closest on, because we had that listed as leaning towards cancellation with 0% confidence in that prediction, meaning it was right on the line between a renewal and cancellation prediction, and fell just slightly under. NCIS: Los Angeles was also close, as we had it leaning towards renewal with only a 9% confidence in a renewal prediction. Bob ♥ Abishola is however a bigger surprise, as we had that listed as a likely cancellation, with 55% confidence that it would be canceled, which is actually really close to going over the "certain cancellation" level. 
 
-CW renewed All American. While the prediction model did have this as a certain renewal, I was personally still unsure whether the new owners would be continuing to order ANY programming from WB or CBS, but if they were going to renew even just one show, All American was my best guess for that.
+Comparing the prediction breakdown from last week to this, it looks like there may have been two main areas the previous AI model was misjudging. First, while a 22 episode order improved its chances, the current model estimates that the full season order improved its chances by about 35% more than previously estimated. Further, the previous model appears to have overestimated the standard by which CBS places on half hour shows compared to hour length shows, suggesting that CBS may be hoping to push more half hour shows through this season than in the past.
 
-CBS renewed Ghosts. We had this predicted as a likely renewal, so again, not a surprise. All in all, these predictions have correctly predicted all 5 renewals so far this year, as well as the one cancellation. So far that's a pretty good rate, although of course the early renewals or cancellations are more often the obvious choices.
+Unfortunately, these 3 misses bring us down to only prediction 6 of the 9 shows currently decided. I have now entered this data into the database and the AI has been retrained on it, so hopefully predictions will be more accurate for CBS going forward. 
 
-Also this week, FOX premiered Alert. It received considerably lower ratings than FOX probably would have liked, so it starts out as a likely cancellation.
+Also this week, NBC premiered Night Court, to very good ratings. It starts out as a certain renewal, with 100% confidence that it will be renewed. Its ratings start out well above the expected renewal threshold for a show in its position, and that confidence level does include the margin of error for the variability in ratings from a premiere to the finale. It is very rare for a season or series premiere to start out with 100% confidence in renewal, so fans of that show should be happy.
 
-Family Guy drops from a certain renewal to just likely renewed.
+The Simpsons drops from a certain renewal to just likely renewed.
 
-Will Trent drops from a likely renewal to just leaning renewed.
+East New York and 9-1-1 both upgrade from likely to certain renewals.
 
-Home Economics and The Neighborhood both drop from leaning towards renewal to leaning towards cancellation.
+Family Guy and Bob's Burgers both drop from likely renewals to just leaning renewed.
 
-NCIS: Los Angeles upgrades from leaning towards cancellation to leaning towards renewal.
+Will Trent and Blue Bloods both upgrade from leaning towards renewal to likely renewed.
 
-NCIS: Hawai'i upgrades from a likely cancellation to just leaning canceled.
+Lopez vs Lopez drops from leaning towards renewal to leaning towards cancellation.
+
+Young Rock drops from leaning towards cancellation to likely canceled.
+
+Welcome to Flatch and So Help Me Todd both upgrade from likely cancellations to just leaning canceled.
+
+Alert drops from a likely to certain cancellation.
+
+The Resident upgrades all the way from a certain cancellation to leaning towards renewal.
+
+The Cleaning Lady upgrades from a certain cancellation to just likely canceled.
