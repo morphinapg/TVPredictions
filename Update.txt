@@ -1,27 +1,21 @@
-This week, CBS renewed The Neighborhood and Bob ♥ Abishola, and canceled NCIS: Los Angeles. Unfortunately, we somehow got all of these wrong. The Neighborhood we were closest on, because we had that listed as leaning towards cancellation with 0% confidence in that prediction, meaning it was right on the line between a renewal and cancellation prediction, and fell just slightly under. NCIS: Los Angeles was also close, as we had it leaning towards renewal with only a 9% confidence in a renewal prediction. Bob ♥ Abishola is however a bigger surprise, as we had that listed as a likely cancellation, with 55% confidence that it would be canceled, which is actually really close to going over the "certain cancellation" level. 
+Sorry for the delay for this week's predictions. Once again, news kept coming in while I was still processing the ratings, which requires me to reprocess the data before I can generate new predictions. 
 
-Comparing the prediction breakdown from last week to this, it looks like there may have been two main areas the previous AI model was misjudging. First, while a 22 episode order improved its chances, the current model estimates that the full season order improved its chances by about 35% more than previously estimated. Further, the previous model appears to have overestimated the standard by which CBS places on half hour shows compared to hour length shows, suggesting that CBS may be hoping to push more half hour shows through this season than in the past.
+As I said before, Night Court was predicted as a certain renewal with 100% confidence in that prediction, and as expected, it has been renewed. NBC also renewed La Brea, which was predicted as a likely renewal. Deadline also reported that this renewal is for a shorter final season, so I've marked it as such. Renewals for final seasons affect the prediction model in a slightly different way than full renewals, because they're seen as shows that have ratings that are just barely good enough for renewal, but the next season is unlikely to hit that mark. 
 
-Unfortunately, these 3 misses bring us down to only prediction 6 of the 9 shows currently decided. I have now entered this data into the database and the AI has been retrained on it, so hopefully predictions will be more accurate for CBS going forward. 
+FOX also renewed The Simpsons for 2 seasons. We had this predicted as a likely renewal, so no surprise. Family Guy and Bob's Burgers were also renewed for 2 seasons each. We had these leaning towards renewal, so while the prediction was correct, a renewal for 2 seasons is surprising given their ratings. Even more surprising is the renewal of The Cleaning Lady, which we had predicted as a likely cancellation.
 
-Also this week, NBC premiered Night Court, to very good ratings. It starts out as a certain renewal, with 100% confidence that it will be renewed. Its ratings start out well above the expected renewal threshold for a show in its position, and that confidence level does include the margin of error for the variability in ratings from a premiere to the finale. It is very rare for a season or series premiere to start out with 100% confidence in renewal, so fans of that show should be happy.
+CBS renewed So Help Me Todd. We had this one leaning towards cancellation, but were only 1% confident that it would be canceled, which means it was close to 50/50 odds, so a renewal is not particularly surprising, but still a miss.
 
-The Simpsons drops from a certain renewal to just likely renewed.
+This week, NBC premiered the new season of American Auto, which performed well below where I expect it would need to be renewed. It starts out predicted as a certain cancellation.
 
-East New York and 9-1-1 both upgrade from likely to certain renewals.
+FOX premiered Accused and the new season of 9-1-1: Lone Star. Accused started out well below where the network would likely want it to be, so it starts out predicted as a certain cancellation. 9-1-1: Lone Star on the other hand, performed fairly well, so it starts out predicted as a likely renewal.
 
-Family Guy and Bob's Burgers both drop from likely renewals to just leaning renewed.
+Will Trent drops from a certain renewal to just likely renewed.
 
-Will Trent and Blue Bloods both upgrade from leaning towards renewal to likely renewed.
+The Rookie: Feds and All American: Homecoming both upgrade from likely to certain renewals.
 
-Lopez vs Lopez drops from leaning towards renewal to leaning towards cancellation.
+The Resident upgrades from leaning renewed to a certain renewal.
 
-Young Rock drops from leaning towards cancellation to likely canceled.
+Walker: Independence drops from leaning towards renewal to leaning towards cancellation.
 
-Welcome to Flatch and So Help Me Todd both upgrade from likely cancellations to just leaning canceled.
-
-Alert drops from a likely to certain cancellation.
-
-The Resident upgrades all the way from a certain cancellation to leaning towards renewal.
-
-The Cleaning Lady upgrades from a certain cancellation to just likely canceled.
+Alert upgrades from a certain cancellation to just likely canceled.
