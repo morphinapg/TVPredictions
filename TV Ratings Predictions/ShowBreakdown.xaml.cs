@@ -344,7 +344,15 @@ namespace TV_Ratings_Predictions
                                 else
                                     detailName = "Show is produced in the United States";
                                 break;
-                            }                            
+                            }
+                        case "VFX / Action":
+                            {
+                                if (s.factorValues[i])
+                                    detailName = "Show is likely expensive to produce (heavy on VFX/action/etc)";
+                                else
+                                    detailName = "Show is not likely expensive to produce (light on VFX/action/etc)";
+                                break;
+                            }
                         default:
                             {
                                 if (s.factorValues[i])

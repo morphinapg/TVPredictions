@@ -73,20 +73,32 @@ namespace TV_Ratings_Predictions
             }
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             network = e.Parameter as Network;
-            var tempList = network.shows.OrderBy(x => x.year).ThenBy(x => x.Name).ThenBy(x => x.Season);
-            var yearList = new List<int>();
+            //var tempList = network.shows.OrderBy(x => x.year).ThenBy(x => x.Name).ThenBy(x => x.Season);
+            //var yearList = new List<int>();
 
-            foreach (Show s in tempList)
-                if (!yearList.Contains(s.year))
-                    yearList.Add(s.year);
+            //foreach (Show s in tempList)
+            //    if (!yearList.Contains(s.year))
+            //        yearList.Add(s.year);
 
-            yearList.Sort();
+            //yearList.Sort();
 
-            foreach (int year in yearList)
-                AllShows.Add(new GroupedAddingFactor(tempList, year));
+            //foreach (int year in yearList)
+            //    AllShows.Add(new GroupedAddingFactor(tempList, year));
+
+            var tempList = network.shows.OrderBy(x => x.Name).ThenBy(x => x.Season);
+            var showList = tempList.Select(x => x.Name).Distinct().ToList();
+
+
+            showList.Sort();
+
+            await Task.Run(async () => 
+            {
+                foreach (string name in showList)
+                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => AllShows.Add(new GroupedAddingFactor(tempList, name)));
+            });        
         }
 
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
@@ -109,7 +121,8 @@ namespace TV_Ratings_Predictions
         {
             get
             {
-                return show.NameWithSeason;
+                //return show.NameWithSeason;
+                return "Season " + show.Season + " (" + show.year + " - " + (show.year + 1) + ")";
             }
         }
 
@@ -153,7 +166,7 @@ namespace TV_Ratings_Predictions
         {
             get
             {
-                return "Season " + show.Season;
+                return "Season " + show.Season + " (" + show.year + " - " + (show.year + 1) + ")";
             }
         }
 
@@ -186,24 +199,20 @@ namespace TV_Ratings_Predictions
 
     public class GroupedAddingFactor : List<AddingFactor>
     {
-        public int _year;
-        public string Year
-        {
-            get
-            {
-                return _year + " - " + (_year+1);
-            }
-        }
+        public string _name;
+        public string Name
+        { get { return _name; } }
+
         public List<AddingFactor> ListOfAddFactor => this;
 
-        public GroupedAddingFactor(IOrderedEnumerable<Show> shows, int year)
+        public GroupedAddingFactor(IOrderedEnumerable<Show> shows, string name)
         {
-            var tempList = shows.Where(x => x.year == year);
+            var tempList = shows.Where(x => x.Name == name);
 
             foreach (Show s in tempList)
                 ListOfAddFactor.Add(new AddingFactor(s));
 
-            _year = year;
+            _name = name;
         }
     }
 

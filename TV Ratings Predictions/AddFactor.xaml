@@ -51,7 +51,7 @@
                         <GroupStyle>
                             <GroupStyle.HeaderTemplate>
                                 <DataTemplate>
-                                    <TextBlock FontSize="24" FontWeight="Bold" Text="{Binding Year}"/>
+                                    <TextBlock FontSize="24" FontWeight="Bold" Text="{Binding Name}"/>
                                 </DataTemplate>
                             </GroupStyle.HeaderTemplate>
                         </GroupStyle>
