@@ -348,9 +348,9 @@ namespace TV_Ratings_Predictions
                         case "VFX / Action":
                             {
                                 if (s.factorValues[i])
-                                    detailName = "Show is likely expensive to produce (heavy on VFX/action/etc)";
+                                    detailName = "Show is likely expensive to produce";
                                 else
-                                    detailName = "Show is not likely expensive to produce (light on VFX/action/etc)";
+                                    detailName = "Show is not likely expensive to produce";
                                 break;
                             }
                         default:

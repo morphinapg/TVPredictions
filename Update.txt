@@ -1,21 +1,27 @@
-Sorry for the delay for this week's predictions. Once again, news kept coming in while I was still processing the ratings, which requires me to reprocess the data before I can generate new predictions. 
+This week, I updated and retrained the AI models for each network using a couple of new tags for each show. Like I did with CW a few weeks ago, I went through and checked which of the shows on each network going back as far as the database goes were produced for another network before being brought to this network. After that, I added a new tag which looks at whether a show makes use of expensive elements like VFX, action, or expensive sets. The best way I could determine this was by checking the genres in the wikipedia tab. If they listed Action, Sci-fi, Superhero, or supernatural, I would automatically tag them with that factor. Additionally, if the show was described as a fantasy, I would include it if the show did not take place in a mostly modern real world setting, and finally if the show is a period show, where it's far enough in the past to need extensive set, CGI, and costume work to deliver that period realistically, then I would also include those shows in this tag. 
 
-As I said before, Night Court was predicted as a certain renewal with 100% confidence in that prediction, and as expected, it has been renewed. NBC also renewed La Brea, which was predicted as a likely renewal. Deadline also reported that this renewal is for a shorter final season, so I've marked it as such. Renewals for final seasons affect the prediction model in a slightly different way than full renewals, because they're seen as shows that have ratings that are just barely good enough for renewal, but the next season is unlikely to hit that mark. 
+The goal is to point out the shows that cost more to produce as opposed to the shows that don't use these more expensive elements, as differences in budget can absolutely affect the level at which renewal would be most likely. That being said, there's always a chance for me to have tagged some shows wrong. For example, maybe the show doesn't make use of traditionally expensive elements, but may have an expensive actor on the cast. Unfortunately, those type of situations are harder to track.
 
-FOX also renewed The Simpsons for 2 seasons. We had this predicted as a likely renewal, so no surprise. Family Guy and Bob's Burgers were also renewed for 2 seasons each. We had these leaning towards renewal, so while the prediction was correct, a renewal for 2 seasons is surprising given their ratings. Even more surprising is the renewal of The Cleaning Lady, which we had predicted as a likely cancellation.
+Because I had to retrain the AI on the new data, there will be some considerable changes in many of the predictions.
 
-CBS renewed So Help Me Todd. We had this one leaning towards cancellation, but were only 1% confident that it would be canceled, which means it was close to 50/50 odds, so a renewal is not particularly surprising, but still a miss.
+Law & Order: SVU and Law & Order both drop from certain renewals to just likely renewed.
 
-This week, NBC premiered the new season of American Auto, which performed well below where I expect it would need to be renewed. It starts out predicted as a certain cancellation.
+Big Sky drops all the way from a likely renewal to leaning towards cancellation.
 
-FOX premiered Accused and the new season of 9-1-1: Lone Star. Accused started out well below where the network would likely want it to be, so it starts out predicted as a certain cancellation. 9-1-1: Lone Star on the other hand, performed fairly well, so it starts out predicted as a likely renewal.
+Will Trent and Walker both drop from likely renewals to just leaning renewed.
 
-Will Trent drops from a certain renewal to just likely renewed.
+The Winchesters drops all the way from leaning towards renewal to a likely cancellation.
 
-The Rookie: Feds and All American: Homecoming both upgrade from likely to certain renewals.
+Lopez vs. Lopez, Walker: Independence, and Alaska Daily all drop from leaning canceled to certain cancellations.
 
-The Resident upgrades from leaning renewed to a certain renewal.
+Welcome to Flatch drops from leaning canceled to a likely cancellation.
 
-Walker: Independence drops from leaning towards renewal to leaning towards cancellation.
+NCIS: Hawai'i upgrades from leaning towards cancellation to leaning towards renewal.
 
-Alert upgrades from a certain cancellation to just likely canceled.
+Home Economics upgrades all the way from leaning towards cancellation to a certain renewal.
+
+Young Rock drops from a likely to certain cancellation.
+
+Kung Fu and HouseBroken both upgrade from likely cancellations to just leaning canceled.
+
+CSI: Vegas upgrades from a certain cancellation to just leaning canceled.
