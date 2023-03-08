@@ -1,19 +1,25 @@
-Sorry about the delay. Last week was very busy for me, so I decided to wait and combine two weeks of ratings into one predictions update instead. 
+This week, CBS premiered True Lies, but the ratings were below what the network likely was hoping for, so it starts out predicted as a likely cancellation.
 
-In a major surprise, The Goldbergs was canceled. We had this predicted as a certain renewal, as the ratings were roughly 80% better than we expected the network would likely have needed to renew the show. My guess is it may have something to do with Jeff Garlin leaving the show due to some controversial behind the scenes issues, so perhaps the sudden change in the cast caused other issues in the production, or the creative team simply decided to end the show now. Unfortunately, situations like these can not be accounted for in a data-based prediction system.
+NBC premiered new seasons of The Blacklist and Grand Crew. It has already been announced that this will be the final season of The Blacklist. If that wasn't already announced, it would have started out predicted as leaning towards cancellation, so the network is likely making the right choice here. Grand Crew on the other hand had much lower ratings than the network would likely have wanted, so it starts out predicted as a certain cancellation.
 
-CBS renewed NCIS. We had this as a likely renewal, so no surprise there. NCIS: Hawai'i was also renewed. We had this one as leaning towards renewal, so slightly less confident, but still correct. On the other hand, CBS renewed CSI: Vegas, which we had predicted as leaning towards cancellation. It was close enough that this isn't a surprising miss, but still a miss.
+Grey's Anatomy and The Good Doctor both drop from a certain renewals to just leaning renewed. 
 
-NBC premiered the new season of Magnum P.I., which started out with ratings just slightly above where NBC would likely need for it to be renewed, so for now, the prediction is just leaning towards renewal.
+Home Economics drops all the way from a certain renewal to a likely cancellation.
 
-FOX premiered Animal Control, which didn't have the greatest ratings. It starts out predicted as a likely cancellation.
+Will Trent drops all the way from a certain renewal to leaning towards cancellation.
 
-ABC premiered The Company You Keep, which had fairly good ratings, so it starts out predicted as a likely renewal.
+The Rookie: Feds and Law & Order: SVU both upgrade from likely to certain renewals.
 
-Will Trent upgrades from a likely to certain renewal.
+The Company You Keep drops from a likely renewal to just leaning renewed.
 
-Blue Bloods upgrades from leaning towards renewal to likely renewed.
+Big Sky drops all the way from a likely renewal to a likely cancellation.
 
-Call Me Kat upgrades from a likely cancellation to just leaning canceled.
+Walker drops from leaning towards renewal to leaning towards cancellation.
 
-Kung Fu and The Winchesters both drop from likely to certain cancellations.
+Call Me Kat drops from leaning towards cancellation to likely canceled.
+
+Alert drops from a likely to certain cancellation.
+
+Animal Control upgrades from a likely cancellation to just leaning canceled.
+
+Some of these changes for ABC shows are likely due to a change in the prediction model for ABC, following the cancellation of The Goldbergs, which was predicted as a certain renewal, so some predictions on ABC appear to have lowered confidence in a potential renewal.
