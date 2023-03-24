@@ -1,17 +1,9 @@
-Well, it turns out I have completely missed a show, both this year as well as in the 2020-2021 TV season. I was under the impression that Fantasy Island was a reality TV show for whatever reason, and so I haven't been tracking it, but I just added the first and second season to the database this week. So I apologize for missing this show for so long, but now that it's tracked, the rating appears to be just under where I would expect FOX would want it to be to renew, so the starting prediction is leaning towards cancellation.
+Sorry about the delay again this week. I was out of town last weekend and it caused a disruption in my schedule, so it took me a few days to recover. 
 
-Also this week, Magnum P.I. and The Good Doctor both upgrade from leaning renewed to certain renewals.
+This week, CW premiered Gotham Knights and the new season of Superman & Lois. Both shows performed just barely above the minimum level that the CW would likely expect them to perform at, so they both start out predicted as leaning towards renewal, although with the network's ownership change, there's a good chance they get canceled as well.
 
-Grey's Anatomy upgrades from leaning towards renewal to likely renewed.
+In a surprising move, FOX renewed Alert and Accused. We had both of these predicted as cancellations, with Accused even being predicted as a certain cancllation, with 70% confidence in that prediction. At this time, the prediction model is still not able to make sense of that one, although with Alert it appears it was able to solve it by reducing the importance of some of the factors in its calculation, and focusing more on the raw ratings.
 
-The Company You Keep and Not Dead Yet both drop from leaning towards renewal to leaning canceled.
+Not Dead Yet, Animal Control, and Welcome to Flatch all upgrade from leaning towards cancellation to leaning renewed.
 
-Will Trent upgrades from leaning towards cancellation to a likely renewal.
-
-Call Me Kat and Welcome to Flatch both upgrade from likely cancellations to just leaning canceled.
-
-Big Sky and Home Economics both upgrade from a likely cancellations to leaning towards renewal.
-
-True Lies drops from a likely to certain cancelllation.
-
-Alaska Daily and Alert both upgrade from certain cancellations to just likely canceled.
+Fantasy Island drops from leaning towards cancellation to likely canceled.
