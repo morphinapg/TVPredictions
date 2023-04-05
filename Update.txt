@@ -1,7 +1,18 @@
-This week, ABC renewed Grey's Anatomy. We had that predicted as a likely renewal, so no surprise there.
+This week, CW premiered the final season of Riverdale. Fans of the show will likely be happy that they decided to end it, as the ratings are fairly low, and it would have received a prediction of certain cancellation if not. Of course even the shows predicted as renewal on CW right now are under question with the change in ownership.
 
-Animal Control drops from leaning towards renewal to leaning canceled.
+CBS renewed Blue Bloods. We had this as a likely renewal, so no surprise there.
 
-Big Sky upgrades from leaning towards renewal to likely renewed.
+Welcome to Flatch drops all the way from leaning towards renewal to a certain cancellation. 
 
-The Company You Keep upgrades from leaning towards cancellation to leaning renewed.
+Housebroken and Call Me Kat both drop from leaning towards renewal to likely cancellations.
+
+Animal Control upgrades all the way from leaning towards cancellation to a certain renewal.
+
+Walker upgrades from leaning towards cancellation to leaning renewed.
+
+Fantasy Island upgrades all the way from a likely cancellation to a likely renewal.
+
+Kung Fu upgrades from a certain cancellation to just likely canceled.
+
+
+I did some extra training of the AI models this week compared to usual, so some of the bigger changes are more likely due to some significant changes in the prediction models, rather than a major change in the ratings. 
