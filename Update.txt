@@ -1,13 +1,17 @@
-This week, ABC renewed The Rookie and Will Trent. We had both shows predicted as certain renewals, so this is no surprise.
+In a surprise, FOX canceled The Resident. We actually had this predicted as a certain renewal with 99% confidence in that prediction, so this is a particularly surprising miss. The FOX model has been retrained and is now able to predict a target renewal threshold that gives some justification for the cancellation, so hopefully future predictions for shows in a similar state will be more accurate from now on.
 
-The Good Doctor and The Rookie: Feds both drop from certain renewals to just likely renewed.
+On the other hand, ABC renewed Station 19, which we had also predicted as a certain renewal, so we got that one right at least. They also renewed The Good Doctor, which we had predicted as a likely renewal.
 
-Home Economics, Gotham Knights, and Not Dead Yet all drop from certain renewals to just leaning renewed.
+Magnum P.I. drops from a certain renewal to just likely renewed.
 
-Superman & Lois drops from a likely renewal to just leaning renewed.
+The Rookie: Feds upgrades from a likely to certain renewal.
 
-Walker drops from leaning towards renewal to leaning canceled.
+Home Economics drops from leaning towards renewal to likely canceled.
 
-The Company You Keep drops from leaning towards cancellation to likely canceled.
+Not Dead Yet upgrades all the way from leaning renewed to a certain renewal.
 
-Alaska Daily and Kung Fu both drop from likely to certain cancellations.
+The Company You Keep upgrades from a likely cancellation to leaning renewed.
+
+Call Me Kat upgrades all the way from a likely cancellation to a likely renewal.
+
+Welcome to Flatch upgrades all the way from a certain cancellation to leaning renewed.
