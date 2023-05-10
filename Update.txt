@@ -1,16 +1,19 @@
-This week, in surprising news, FOX renewed 9-1-1: Lone Star, but not the original 9-1-1. Instead, ABC renewed that show. This is surprising because 9-1-1 was the best rated show on FOX and had the highest chances of renewal. Now, while this technically counts as a cancellation on FOX, it's hard to say exactly what happened business wise. It's possible FOX would have renewed the show, but Disney, who owns the show, decided not to renew their agreement with FOX, and decided to bring the show to their own network. 9-1-1 is one of many shows produced by the old FOX. While the channel retains the FOX name, it's a different company now, as Disney bought all the studios and content from the old FOX, including this show. So originally, the studio owned the show and the network, but after the Disney deal, the same studio, now operated by Disney, owned the show but no longer owned the network, meaning they don't get quite as much of a cut of the profits if the show does well. So it does make sense to move it to their own network, but the confusing part of this is why Lone Star stayed on FOX. It may not perform as well, but it does still perform well above ABC's standards for most shows, and it's certainly strange to see a franchise split across two networks. Anyway, we predicted that both shows would be certain renewals. It's not easy to score 9-1-1, because technically we were both right and wrong at the same time, but at least we can say we got Lone Star right. I've also placed 9-1-1 on the ABC chart now so that you can see how it compares to the other shows on that network. Similarly, if the show was on ABC the entire season, I would have also predicted it as a certain renewal, which is not surprising, considering it had better ratings than any other ABC show this year.
+This post will likely be the last predictions for most of the remaining shows. Normally I would have wanted to train the prediction models a little further with the new data before posting this, as some renewals/cancellations have come in already, but there's a good chance we're going to be getting news like that every day, so because this could be the last chance to make predictions for these shows, I felt like it was a good idea to just post them now, even though I would have liked to train the AI models a little further. 
 
-Superman & Lois and Gotham Knights both upgrade all the way from leaning renewed to certain renewals.
+In a surprising move, CBS canceled East New York. I had this predicted as a certain renewal, with the prediction model expecting that CBS would have a lower renewal threshold for a first season show, but also having a full season order is usually a good predictor for renewal.
 
-Welcome to Flatch upgrades from leaning towards renewal to likely renewed.
+Originally, it was reported that S.W.A.T. was canceled, but then it seems a deal was made at the last minute to renew the show for a final season. We had this predicted as a likely renewal, so this was a close call, but ultimately a correct prediction.
 
-The Company You Keep drops from leaning towards renewal to leaning canceled.
+FOX canceled Call Me Kat. While we had previously predicted this as a cancellation, recent decisions by FOX affected the prediction model which was most recently predicting it as a likely renewal. So that's a miss.
 
-Walker upgrades from leaning towards cancellation to leaning renewed.
+CW renewed Walker. We had this as leaning towards renewal, just above the renewal threshold, so this was a close call but we got this one right. They also canceled Walker: Independence, which we predicted as a certain cancellation. Any renewal from the CW at this point is actually pretty surprising given the information we have about the change in ownership of the network and the profitability of CW shows, but fans will be happy.
 
-Home Economics drops from a likely to certain cancellation.
+CBS canceled True Lies. We had this predicted as a certain cancellation, so this is no surprise.
 
-HouseBroken upgrades from a certain cancellation to just likely canceled.
+Animal Control and Not Dead Yet both drop from certain renewals to just likely renewed.
 
+Welcome to Flatch drops all the way from a likely renewal to likely canceled.
 
-Next week will probably be the last time I'm able to make predictions for most of the remaining shows, as the final renewals and cancellations will be happening that week or so for most remaining shows.
+Fantasy Island drops from leaning towards renewal to likely canceled.
+
+HouseBroken drops from a likely to certain cancellation.
