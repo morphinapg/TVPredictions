@@ -1,19 +1,25 @@
-This post will likely be the last predictions for most of the remaining shows. Normally I would have wanted to train the prediction models a little further with the new data before posting this, as some renewals/cancellations have come in already, but there's a good chance we're going to be getting news like that every day, so because this could be the last chance to make predictions for these shows, I felt like it was a good idea to just post them now, even though I would have liked to train the AI models a little further. 
+This week, as expected, many shows got renewed and canceled, with only a handful of shows still awaiting their news. Typically at this point if news has not been decided, the chances for renewal do drop a bit, but because my AI prediction models have no sense of timing of announcements, they can't take that into account.
 
-In a surprising move, CBS canceled East New York. I had this predicted as a certain renewal, with the prediction model expecting that CBS would have a lower renewal threshold for a first season show, but also having a full season order is usually a good predictor for renewal.
+ABC renewed The Conners and Not Dead Yet. The Conners is no surprise as we had this predicted as a certain renewal, with a 99% confidence in that prediction. Not Dead Yet we had predicted as a likely renewal, so no surprise there either.
 
-Originally, it was reported that S.W.A.T. was canceled, but then it seems a deal was made at the last minute to renew the show for a final season. We had this predicted as a likely renewal, so this was a close call, but ultimately a correct prediction.
+ABC canceled Big Sky, which is pretty surprising as we had this predicted as a likely renewal. It looks like the previous model was likely overestimating the effect of airing at 10pm, and underestimating how much higher of a standard ABC would likely have for shows that premiered in the fall.
 
-FOX canceled Call Me Kat. While we had previously predicted this as a cancellation, recent decisions by FOX affected the prediction model which was most recently predicting it as a likely renewal. So that's a miss.
+ABC also canceled The Company You Keep. We had this as leaning towards cancellation, so we got this one right, although just barely. Alaska Daily was also canceled, which we had predicted as a certain cancellation, so no surprise there.
 
-CW renewed Walker. We had this as leaning towards renewal, just above the renewal threshold, so this was a close call but we got this one right. They also canceled Walker: Independence, which we predicted as a certain cancellation. Any renewal from the CW at this point is actually pretty surprising given the information we have about the change in ownership of the network and the profitability of CW shows, but fans will be happy.
+FOX renewed Animal Control, which we had predicted as a likely renewal, so again, no surprise.
 
-CBS canceled True Lies. We had this predicted as a certain cancellation, so this is no surprise.
+FOX canceled Fantasy Island, which we had predicted as a likely cancellation, so no surprise there either.
 
-Animal Control and Not Dead Yet both drop from certain renewals to just likely renewed.
+CW canceled Kung Fu and The Winchesters, both of which we had predicted as certain cancellations, so no surprise.
 
-Welcome to Flatch drops all the way from a likely renewal to likely canceled.
+In a very surprising move, NBC renewd Lopez vs Lopez, which we had predicted as a certain cancellation, with 100% confidence in that prediction. Well, technically 99.98% confidence, lol. This one will definitely affect NBC's prediction model going forward. 
 
-Fantasy Island drops from leaning towards renewal to likely canceled.
+Gotham Knights drops from a certain renewal to just likely renewed.
 
-HouseBroken drops from a likely to certain cancellation.
+Welcome to Flatch upgrades from a likely cancellation to leaning towards renewal.
+
+HouseBroken upgrades from a certain cancellation to just likely canceled.
+
+Home Economics upgrades all the way from a certain cancellation to a likely renewal.
+
+Young Rock upgrades all the way from a certain cancellation to leaning towards renewal.
