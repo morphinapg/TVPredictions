@@ -1,25 +1,3 @@
-This week, as expected, many shows got renewed and canceled, with only a handful of shows still awaiting their news. Typically at this point if news has not been decided, the chances for renewal do drop a bit, but because my AI prediction models have no sense of timing of announcements, they can't take that into account.
+It looks like reports from last year that said Magnum PI was picked up for two 10 episode seasons may have been accurate. Some sites were saying that season 5 was supposed to be 20 episodes, but only 10 episodes have aired at this point. It seems that most likely the remaining 10 episodes will air next season, but if they happen to air this summer, I can change the show's status back. For reference, the show had been predicted as a likely renewal, but would have increased to a certain renewal if the episode count was set at 10. 
 
-ABC renewed The Conners and Not Dead Yet. The Conners is no surprise as we had this predicted as a certain renewal, with a 99% confidence in that prediction. Not Dead Yet we had predicted as a likely renewal, so no surprise there either.
-
-ABC canceled Big Sky, which is pretty surprising as we had this predicted as a likely renewal. It looks like the previous model was likely overestimating the effect of airing at 10pm, and underestimating how much higher of a standard ABC would likely have for shows that premiered in the fall.
-
-ABC also canceled The Company You Keep. We had this as leaning towards cancellation, so we got this one right, although just barely. Alaska Daily was also canceled, which we had predicted as a certain cancellation, so no surprise there.
-
-FOX renewed Animal Control, which we had predicted as a likely renewal, so again, no surprise.
-
-FOX canceled Fantasy Island, which we had predicted as a likely cancellation, so no surprise there either.
-
-CW canceled Kung Fu and The Winchesters, both of which we had predicted as certain cancellations, so no surprise.
-
-In a very surprising move, NBC renewd Lopez vs Lopez, which we had predicted as a certain cancellation, with 100% confidence in that prediction. Well, technically 99.98% confidence, lol. This one will definitely affect NBC's prediction model going forward. 
-
-Gotham Knights drops from a certain renewal to just likely renewed.
-
-Welcome to Flatch upgrades from a likely cancellation to leaning towards renewal.
-
-HouseBroken upgrades from a certain cancellation to just likely canceled.
-
-Home Economics upgrades all the way from a certain cancellation to a likely renewal.
-
-Young Rock upgrades all the way from a certain cancellation to leaning towards renewal.
+American Auto drops from leaning towards renewal to leaning canceled.
