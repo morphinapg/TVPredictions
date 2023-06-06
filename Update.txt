@@ -1,3 +1,9 @@
-It looks like reports from last year that said Magnum PI was picked up for two 10 episode seasons may have been accurate. Some sites were saying that season 5 was supposed to be 20 episodes, but only 10 episodes have aired at this point. It seems that most likely the remaining 10 episodes will air next season, but if they happen to air this summer, I can change the show's status back. For reference, the show had been predicted as a likely renewal, but would have increased to a certain renewal if the episode count was set at 10. 
+Based on TV Ratings data through June 3rd
 
-American Auto drops from leaning towards renewal to leaning canceled.
+Sorry about the delay, my computer has been busy for over a week now, but I finally managed to gather the ratings data and calculate new predictions.
+
+CW premiered The Rising, Nancy Drew, and Barons. The Rising and Barons are shows that aired first in other countries. This will likely be a common trend going forward, with several shows ordered from other countries slated for the fall as well. This is one way the CW will likely be saving money, by not needing to produce their own shows anymore, and not renewing very many CBS/WB owned shows either. As of now however, this doesn't appear to be the greatest plan, as even taking into account their foreign status, the prediction model still expects both shows to be certain cancellations. Although as I've said before, CW predictions may be less accurate than usual as we still have only a small amount of data on how the new owners do things.
+
+Young Rock drops from leaning towards renewal to leaning canceled.
+
+HouseBroken drops from a likely to certain cancellation.
