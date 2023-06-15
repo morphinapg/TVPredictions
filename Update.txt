@@ -1,9 +1,9 @@
-Based on TV Ratings data through June 3rd
+All American: Homecoming was renewed. While I would love to say this is no surprise because the prediction model was 100% confident in renewal, the truth is, with the new way the CW is being run, it's become harder to predict what they will do, so just about any renewal of previous CBS/WB owned content is certainly a surprise at this point. The same goes for Superman & Lois, which was also renewed, and also predicted as a certain renewal. This one though was renewed for a shorter season, which is often an indication that it would be the last season, but then again, the same could have been said for the current season, so who knows.
 
-Sorry about the delay, my computer has been busy for over a week now, but I finally managed to gather the ratings data and calculate new predictions.
+On the other hand, CW canceled Gotham Knights, which we had predicted as a likely renewal.
 
-CW premiered The Rising, Nancy Drew, and Barons. The Rising and Barons are shows that aired first in other countries. This will likely be a common trend going forward, with several shows ordered from other countries slated for the fall as well. This is one way the CW will likely be saving money, by not needing to produce their own shows anymore, and not renewing very many CBS/WB owned shows either. As of now however, this doesn't appear to be the greatest plan, as even taking into account their foreign status, the prediction model still expects both shows to be certain cancellations. Although as I've said before, CW predictions may be less accurate than usual as we still have only a small amount of data on how the new owners do things. Nancy Drew on the other hand is already announced as the final season.
+NBC canceled Young Rock, which we had leaning towards cancellation, so not much of a surprise there, although it was close. NBC also canceled Grand Crew, which we had as a certain cancellation, so definitely no surprise there.
 
-Young Rock drops from leaning towards renewal to leaning canceled.
+Welcome to Flatch drops from leaning towards renewal to leaning canceled.
 
-HouseBroken drops from a likely to certain cancellation.
+The Rising upgrades from a certain cancellation to just leaning canceled.
