@@ -1,7 +1,9 @@
-This week, ABC canceled Home Economics. We had this leaning towards cancellation, so it was close, but we were right.
+This week, FOX canceled Welcome to Flatch. We had this predicted as leaning towards cancellation, so it was close, but we got this one right.
 
-Also this week, NBC premiered The Irrational. The ratings started out pretty strong, compared to what we expect the network was likely hoping for, so it starts out predicted as a certain renewal.
+Also this week, FOX premiered new seasons of The Simpsons, Bob's Burgers, and Family Guy. The Simpsons performed well, so it starts out predicted as a likely renewal. The other shows performed probably a bit lower than the network would be hoping, so Bob's Burgers starts out leaning towards cancellation, and Family Guy is predicted as likely canceled. Note that it is still pretty early in the season. The prediction model works by comparing how shows rank relative to each other, and right now FOX is only airing animated series, so that could be skewing some things. That said, the model does have a way to make an adjustment for earlier in the season, by analyzing the downward trend each year of where the renewal threshold typically sits, and using that as the basis for an adjustment on the predictions early on. As shows start getting renewed or canceled, this adjustment is weakened. However, I can't say whether an unbalanced lineup of similar types of shows works well with that adjustment or not, so it may still be ideal to wait and see what happens once other types of shows start airing. Unfortunately, because of the strikes, that could be a while.
 
-FOX premiered Krapopolis, which also started out strong. FOX had already renewed this show about a year ago, and again recently for a third season, but if that weren't the case, we would have predicted this as a certain renewal as well. Clearly, FOX made the right call, although a surprising one so early in advance.
+NBC also premiered the new season of Quantum Leap, and the  final season of Magnum P.I., and both performed okay. Quantum Leap performed just well enough to earn a prediction of leaning towards renewal. If Magnum P.I.'s fate had not already been decided, it would have received the same prediction. Given that, it's possible NBC's decision on the show may have been premature, but it's also possible these predictions could be skewed like those on FOX.
 
-The Swarm upgrades from leaning towards cancellation to leaning renewed.
+The Irrational drops from a certain renewal to just leaning renewed.
+
+The Swarm upgrades from leaning towards renewal to likely renewed.
