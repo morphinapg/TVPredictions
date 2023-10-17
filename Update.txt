@@ -1,9 +1,11 @@
-This week, FOX canceled Welcome to Flatch. We had this predicted as leaning towards cancellation, so it was close, but we got this one right.
+This week, NBC premiered Transplant, which was already renewed before it started airing. Based on the ratings, NBC likely made the right choice here.
 
-Also this week, FOX premiered new seasons of The Simpsons, Bob's Burgers, and Family Guy. The Simpsons performed well, so it starts out predicted as a likely renewal. The other shows performed probably a bit lower than the network would be hoping, so Bob's Burgers starts out leaning towards cancellation, and Family Guy is predicted as likely canceled. Note that it is still pretty early in the season. The prediction model works by comparing how shows rank relative to each other, and right now FOX is only airing animated series, so that could be skewing some things. That said, the model does have a way to make an adjustment for earlier in the season, by analyzing the downward trend each year of where the renewal threshold typically sits, and using that as the basis for an adjustment on the predictions early on. As shows start getting renewed or canceled, this adjustment is weakened. However, I can't say whether an unbalanced lineup of similar types of shows works well with that adjustment or not, so it may still be ideal to wait and see what happens once other types of shows start airing. Unfortunately, because of the strikes, that could be a while.
+CW premiered The Spencer Sisters and Sullivan's Crossing. Sullivan's crossing was already renewed before it started airing, and based on the ratings, it looks like that was a wise choice. The Spencer Sisters starts out predicted as leaning towards renewal.
 
-NBC also premiered the new season of Quantum Leap, and the  final season of Magnum P.I., and both performed okay. Quantum Leap performed just well enough to earn a prediction of leaning towards renewal. If Magnum P.I.'s fate had not already been decided, it would have received the same prediction. Given that, it's possible NBC's decision on the show may have been premature, but it's also possible these predictions could be skewed like those on FOX.
+The Simpsons drops from a likely renewal to leaning canceled.
 
-The Irrational drops from a certain renewal to just leaning renewed.
+The Irrational and Quantum Leap both upgrade from leaning renewed to certain renewals.
 
-The Swarm upgrades from leaning towards renewal to likely renewed.
+Bob's Burgers upgrades from leaning towards cancellation to leaning renewed.
+
+Family Guy upgrades from a likely cancellation to leaning renewed.
