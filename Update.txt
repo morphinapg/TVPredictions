@@ -1,7 +1,9 @@
-This week, CW premiered the third season of The Chosen to okay ratings. While the show has already been renewed, it's not currently known whether CW will air the fourth season, but based on these ratings, it starts out predicted as leaning towards renewal.
+This week, ABC canceled The Rookie: Feds. This one is weird. It was predicted to be a certain renewal, with 100% confidence that it would be renewed, but we strangely never got any news about the show until now. Perhaps the strikes impacted the ability to renew it in time to get the show back up and running.
 
-Found drops from a certain renewal to just likely renewed.
+Bob's Burgers and Children Ruin Everything both drop from likely renewals to leaning canceled.
 
-The Spencer Sisters upgrades from leaning towards cancellation to leaning renewed.
+Family Guy drops from a likely renewal to just leaning renewed.
 
-Children Ruin Everything upgrades from leaning towards cancellation to likely renewed.
+The Simpsons upgrades all the way from a likely cancellation to a likely renewal.
+
+You'll notice that FOX animated shows often bounce up and down between renewal and cancellation predictions. The problem is, the predictions weigh the ratings more towards the newer episodes, and with FOX animated shows, sometimes they air after a football game, and sometimes they don't. This inconsistency is difficult to account for in the prediction model, unfortunately. I do take into account variance of the ratings to increase the margin of error for the show, which does reduce confidence in the prediction somewhat, but unfortunately I can't account for it when projecting the final season rating, which is what's ultimately used to predict renewal or cancellation. Once football is done however, things tend to settle down and the predictions become more useful for those shows at that point.
