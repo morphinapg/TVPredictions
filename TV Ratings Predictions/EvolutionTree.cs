@@ -216,11 +216,11 @@ namespace TV_Ratings_Predictions
                 else if (!cleanUpdate && Randomized[i] > CleanSlate[3])
                 {
 
-                    if (Randomized[i] > Primary[0])
+                    if (Randomized[i] > CleanSlate[0])
                         CleanSlate.Insert(0, new NeuralPredictionModel(Randomized[i]));
-                    else if (Randomized[i] > Primary[1])
+                    else if (Randomized[i] > CleanSlate[1])
                         CleanSlate.Insert(1, new NeuralPredictionModel(Randomized[i]));
-                    else if (Randomized[i] > Primary[2])
+                    else if (Randomized[i] > CleanSlate[2])
                         CleanSlate.Insert(2, new NeuralPredictionModel(Randomized[i]));
                     else
                         CleanSlate.Insert(3, new NeuralPredictionModel(Randomized[i]));
