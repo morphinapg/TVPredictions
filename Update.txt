@@ -1,18 +1,24 @@
-This week, CBS renewed The Equalizer and canceled NCIS: Hawai'i. We had The Equalizer as a certain renewal, so no surprise there, but we had NCIS: Hawai'i as leaning towards renewal with a 0% confidence in that rating. It was just on the line, so we were close, but just barely got that one wrong. 
+Sorry about the delay, have been busy this week. Note that these calculations were done earlier in the week, so I apologize if I've missed any renewals or cancellations that have happened in the last few days, but if so, they will be on the next post.
 
-So far, we have 23/26 shows predicted correctly this year.
+This week, NBC renewed Lopez vs Lopez and Night Court. I had both of these predicted as certain renewals, so no surprise there.
+
+NBC also canceled Law & Order: OC. Well, sort of. It's moving to Peacock, so there will still be more of the show, but as far as the network is concerned, it's canceled. This one I had as a certain renewal, so it's surprising that NBC would want to drop it from its current placement, but perhaps they needed more attractive content on Peacock, but since the model treats this as a cancellation, that's a miss.
+
+NBC also canceled Extended Family. Another surprising miss. I had this one predicted as a likely renewal.
+
+ABC renewed The Conners for a final season. No surprise there. Had this one predicted as a certain renewal.
+
+It seems I missed the announcement that CBS had renewed NCIS: Sydney a while ago. Another surprising miss. This one was predicted as a certain cancellation, with 97% confidence in that prediction.
+
+So far this year, my predictions have gotten 26 out of 32 correct.
 
 
-Walker drops all the way from a certain renewal to just leaning renewed.
+Wild Cards and Children Ruin Everything both drop from likely renewals to just leaning renewed.
 
-Lopez vs Lopez upgrades from a likely to certain renewal.
+Walker upgrades from leaning towards renewal to likely renewed.
 
-The Chosen upgrades from leaning towards cancellation to leaning renewed.
+Sight Unseen drops from leaning towards renewal to leaning canceled.
 
-Children Ruin Everything upgrades from leaning towards cancellation to a likely renewal.
+The Spencer Sisters drops from a likely to certain cancellation.
 
-Sight Unseen upgrades from a likely cancellation to leaning towards renewal.
-
-Wild Cards upgrades all the way from a certain cancellation to a likely renewal.
-
-Family Law upgrades from a certain cancellation to just likely canceled.
+Not Dead Yet upgrades from a certain cancellation to just likely canceled.
