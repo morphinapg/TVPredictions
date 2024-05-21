@@ -264,7 +264,7 @@ namespace TV_Ratings_Predictions
                     _ = await newFile.CopyAsync(ApplicationData.Current.LocalFolder, "ExportedSettings", NameCollisionOption.ReplaceExisting);
                 }
 
-                await NetworkDatabase.WritePredictionsAsync();
+                //await NetworkDatabase.WritePredictionsAsync();
 
                 
 
